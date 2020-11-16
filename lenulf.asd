@@ -14,7 +14,8 @@
                (:file "preprocessing-rules")   
                (:file "stem")
                (:file "tt")
-               (:file "postprocess-ulf-tree"))
+               (:file "postprocess-ulf-tree")
+               (:file "gene-util"))
   :around-compile (lambda (next)
                     ; For debugging/development.
                     ; NB: debug 3 caused a heap space error.
