@@ -60,6 +60,26 @@ If your current package is locked (e.g. the `common-lisp` package in SBCL) you
 may need to unlock it. This is common lisp implementation dependent. For SBCL
 `(sb-ext:unlock-package *package*)` will do it.
 
+## Choosing the underlying syntactic parser
+
+By default the package uses the BLLIP parser with the parser path set to the
+location where it is installed in the URCS grad network. To use this elsewhere,
+you can modify the `*parser*` and `*pdata*` parameters in `parse.lisp` to the
+appropriate locations. This package also supports [the Berkeley
+parser](https://github.com/nikitakit/self-attentive-parser), (dubbed the K&K
+parser within the group). This is done in Lisp by making python calls with
+`py4cl` and assumes that the parser is installed. The repository has the basic
+instructions for installing this parser. Here are a few issues that I ran into
+while installing the parser:
+
+- You must use Python 3.6. The repository states that it is supported by Python 3.6+, but uses a keyword that became reserved in Python starting with 3.7 and will lead to an error.
+
+- The `pip install benepar[cpu]` will install the most recent Tensorflow version, but the code is written for Tensorflow 1.x. So after this, please run
+```
+pip uninstall tensorflow
+pip install tensorflow==1.15
+```
+
 ## Original README
 ```
           PARSING ENGLISH INTO ULF -- PRELIMINARY VERSION
