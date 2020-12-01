@@ -24,3 +24,6 @@
 # NFS filesystem
 .nfs*
 
+# Project dependencies
+deps/
+
