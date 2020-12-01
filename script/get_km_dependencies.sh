@@ -3,6 +3,8 @@
 # Stop on error
 set -e
 
+mkdir -p deps
+
 cd deps
 
 # Clone the repository with the code that we need to run.

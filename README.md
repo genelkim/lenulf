@@ -77,9 +77,11 @@ up with
 * (ql:quickload :lenulf+)
 * (in-package :lenulf)
 ```
-To get the system to load, please make the code under `deps/ptb2cf` available
-to quicklisp through a symbolic link. The other CL dependency, `py4cl` will
-be downloaded automatically.
+To get the system to load, please get the
+[ptb2cf](https://github.com/yosihide/ptb2cf.git) repository available on
+quicklisp. The bash script `script/get_lenulf+_dependencies.sh` will set this
+all up for the default quicklisp installation.  The other CL dependency,
+`py4cl` will be downloaded automatically.
 
 The API is the same as the basic package. The syntactic parser is chosen using
 the `:synparser` keyword argument of `english-to-ulf` which can be `"BLLIP"`,
