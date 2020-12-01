@@ -95,11 +95,13 @@ call since the model needs to be loaded into memory.
 The following instructions describe how to install the K&K and K&M parsers,
 which are Python systems.
 
+### Installing the Python parsers
+
 The K&K parser is called in Lisp with Python calls through `py4cl`. This
 package assumes that the parser is already installed, that is the `benepar`
-package can be imported from Python. The linked repository has the basic
-instructions for installing this parser. Here are a few issues that I ran into
-while installing the parser.
+package can be imported from Python. [The repository](https://github.com/nikitakit/self-attentive-parser)
+has the basic instructions for installing this parser. Here are a few 
+issues that I ran into while installing the parser.
 
 - You must use Python 3.6. The repository states that it is supported by Python 3.6+, but uses a keyword that became reserved in Python starting with 3.7 and will lead to an error.
 - The `pip install benepar[cpu]` will install the most recent Tensorflow version, but the code is written for Tensorflow 1.x. So after this, please run
@@ -113,7 +115,7 @@ version of the K&K parser as well as a separate Lisp pacakge. Please run the
 script, `script/get_km_dependencies.sh` to download and decompress the
 pretrained model and get the necessary dependencies. The model is several
 gigabytes in size so the script will take a while to complete. In addition to
-the K&K parser, install
+the K&K parser's dependencies, install
 - pytorch
 - pytorch-pretrained-bert
 
