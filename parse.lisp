@@ -20,16 +20,6 @@
 ;;         parser is still in nl
 (defparameter *pdata* "/p/nl/tools/reranking-parser/first-stage/DATA/EN/")
 
-;; Flag for loading the K&K parser if necessary.
-(defparameter *k&k-setup-complete* nil)
-;; Flag for loading the K&M parser if necessary.
-(defparameter *k&m-setup-complete* nil)
-;; TODO: set this to cloned directory in deps.
-(defparameter *k&m-path* "/u/gkim21/research/berkeley-parser/self-attentive-parser/src/")
-;; TODO: change this to correct relative path after setting up download script.
-(defparameter *k&m-pretrained-model* "/u/gkim21/research/berkeley-parser/k&m/model/model-BERT_dev=94.81.pt")
-(defparameter *k&m-dict* "/u/gkim21/research/berkeley-parser/k&m/model/dict")
-
 
 (defun parse-all (str)
 ; Here we allow str to consist of multiple sentences separated by
@@ -60,7 +50,8 @@
 
 (defun parse (str &key (parser "BLLIP"))
 ;; Here str (a string) is assumed to be a single sentence
-;; The keyword argument can be "bllip", or "k&k", case-insensitive.
+;; The keyword argument can be "bllip", "k&k", or "k&m" case-insensitive.
+;; NB: Only BLLIP is supported in :lenulf. :lenulf+
   (cond
     ;; BLLIP parser
     ;; We create a new file via a 'let', to be used for the stream,
@@ -78,69 +69,11 @@
        result))
     ;; K&K parser (basic Berkeley parser)
     ((equal (string-upcase parser) "K&K")
-     (when (not *k&k-setup-complete*)
-       (format t "Loading K&K parser...")
-       (finish-output)
-       (py4cl:python-exec "import benepar")
-       (py4cl:python-exec "benepar.download('benepar_en2')")
-       (py4cl:python-exec "parser = benepar.Parser('benepar_en2')")
-       (setf *k&k-setup-complete* t)
-       (format t "Done!~%"))
-     (lispify-parser-output
-       (py4cl:python-eval (format nil "str(parser.parse(\"~a\"))" str))))
+     (parse-kk str))
     ;; K&M parser (Kato and Matsubara gap filling).
     ((equal (string-upcase parser) "K&M")
      (parse-km str))
     (t (error "Unknown parser selection: ~a~%" parser))))
-
-(defun parse-km (str)
-;; Calls the pretrained K&K parser for K&M through python. This is slightly
-;; more complicated than the standard K&K parser since it isn't part of the
-;; benepar package. Then post-processes it with the Lisp package for recovering
-;; the PTB format. This function is independently implemented since it's
-;; complicated enough already.
-  (when (not *k&m-setup-complete*)
-    (format t "Loading K&M parser...")
-    (finish-output) ; flush.
-    ;; Set up nltk tokenizer.
-    (py4cl:python-exec "import nltk")
-    (py4cl:python-exec "nltk.download('punkt')")
-    (py4cl:python-exec "from nltk.tokenize import word_tokenize")
-    ;; Add the parser code to the system path (since it isn't packaged and installed).
-    (py4cl:python-exec "import sys")
-    (py4cl:python-exec (format nil "sys.path.append(\"~a\")" *k&m-path*))
-    ;; Load up parser.
-    (py4cl:python-exec "import torch")
-    (py4cl:python-exec "import parse_nk")
-    (py4cl:python-exec (format nil
-                               "info = (torch.load(\"~a\") if torch.cuda.is_available() else torch.load(\"~a\", map_location=lambda storage, location: storage))"
-                               *k&m-pretrained-model*
-                               *k&m-pretrained-model*))
-    (py4cl:python-exec "parser = parse_nk.NKChartParser.from_spec(info['spec'], info['state_dict'])")
-    (setf *k&m-setup-complete* t)
-    (format t "Done!~%"))
-
-  ;; Parse sentence.
-  (py4cl:python-exec (format nil "tokens = word_tokenize(\"~a\")" str))
-  (py4cl:python-exec "predicted, _ = parser.parse([('UNK', token) for token in tokens])")
-  (let ((pyout (py4cl:python-eval "predicted.convert().linearize()"))
-        (mid-file (format nil "~a.txt" (gensym)))
-        (end-file (format nil "~a.txt" (gensym)))
-        result)
-    ;; TODO: speed this up by calling the cf->ptb internal code directly rather than through the file system.
-    (with-open-file (to-recover mid-file :direction :output
-                                         :if-exists :supersede)
-      (format to-recover pyout))
-    (ptb2cf:cf->ptb :cf mid-file :ptb end-file :dictionary *k&m-dict*)
-    (setf result (lispify-parser-output
-                   (with-open-file (s end-file)
-                     (let ((data (make-string (file-length s))))
-                       (read-sequence data s)
-                       data))))
-    (delete-file mid-file)
-    (delete-file end-file)
-    result))
-
 
 ;; prefix sentence string with <s>, postfix with </s>
 (defun preproc-for-parse (str)
@@ -228,3 +161,10 @@
                   (push #\\ result) (push ch result) )
                  (T (push ch result)) ))
         (coerce (reverse result) 'string)))
+
+;; Modifiable placeholder functions for the K&K and K&M parsers.
+(define parse-kk (str)
+  (error "The K&K parser is not available through the :lenulf system. Please load the :lenulf+ system (with the same package name) for K&K parser support."))
+(define parse-km (str)
+  (error "The K&M parser is not available through the :lenulf system. Please load the :lenulf+ system (with the same package name) for K&M parser support."))
+

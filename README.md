@@ -62,19 +62,36 @@ may need to unlock it. This is common lisp implementation dependent. For SBCL
 
 ## Choosing the underlying syntactic parser
 
-By default the package uses the BLLIP parser with the parser path set to the
-location where it is installed in the URCS grad network. To use this elsewhere,
-you can modify the `*parser*` and `*pdata*` parameters in `parse.lisp` to the
-appropriate locations. The syntactic parser is chosen using the `:synparser`
-keyword argument of `english-to-ulf` which can be `"BLLIP"`, `"K&K"`, or
-`"K&M"`, case-insensitive.
+The basic system and by default this uses the BLLIP parser with the parser path
+set to the location where it is installed in the URCS grad network. To use this
+elsewhere, you can modify the `*parser*` and `*pdata*` parameters in
+`parse.lisp` to the appropriate locations.
 
+This repository includes an extended version of the system, `:lenulf+`, under
+the same package name, `:lenulf` which supports additional parsers. The separate
+system allows the basic functionality to be available without downloading or
+installing dependencies that are only used in the additional parsers. Once those
+dependencies have been appropriately downloaded the extended system can be loaded
+up with
+```
+* (ql:quickload :lenulf+)
+* (in-package :lenulf)
+```
+To get the system to load, please make the code under `deps/ptb2cf` available
+to quicklisp through a symbolic link. The other CL dependency, `py4cl` will
+be downloaded automatically.
+
+The API is the same as the basic package. The syntactic parser is chosen using
+the `:synparser` keyword argument of `english-to-ulf` which can be `"BLLIP"`,
+`"K&K"`, or `"K&M"`, case-insensitive.
 - `"BLLIP"` is [the Charniak parser](https://github.com/BLLIP/bllip-parser)
 - `"K&K"` is the [Kitaev and Klein self-attentive parser](https://github.com/nikitakit/self-attentive-parser).
 - `"K&M"` is the [Kato and Matsubara gap parser](https://github.com/yosihide/ptb2cf) which is built on top of the K&K parser.
+The K&K parser and _especially_ the K&M parser will take a while on the first
+call since the model needs to be loaded into memory.
 
-The K&K and K&M parsers will take a while on the first call since the model
-needs to be loaded into memory.
+The following instructions describe how to install the K&K and K&M parsers,
+which are Python systems.
 
 The K&K parser is called in Lisp with Python calls through `py4cl`. This
 package assumes that the parser is already installed, that is the `benepar`
