@@ -6,16 +6,11 @@
 (defparameter *k&k-setup-complete* nil)
 ;; Flag for loading the K&M parser if necessary.
 (defparameter *k&m-setup-complete* nil)
-;; TODO: set this to cloned directory in deps.
-;(defparameter *k&m-path* "/u/gkim21/research/berkeley-parser/self-attentive-parser/src/")
 (defparameter *k&m-path* (merge-pathnames "deps/self-attentive-parser/src/"
                                           lenulf+/config:*base-directory*))
-;; TODO: change this to correct relative path after setting up download script.
-;(defparameter *k&m-pretrained-model* "/u/gkim21/research/berkeley-parser/k&m/model/model-BERT_dev=94.81.pt")
 (defparameter *k&m-pretrained-model*
   (merge-pathnames "deps/model/model-BERT_dev=94.81.pt"
                    lenulf+/config:*base-directory*))
-;(defparameter *k&m-dict* "/u/gkim21/research/berkeley-parser/k&m/model/dict")
 (defparameter *k&m-dict* (merge-pathnames "deps/model/dict"
                                           lenulf+/config:*base-directory*))
 
