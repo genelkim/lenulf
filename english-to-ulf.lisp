@@ -13,10 +13,13 @@
 
 (in-package :lenulf)
 
-(defun english-to-ulf (str)
+(defun english-to-ulf (str &key (synparser "BLLIP"))
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Apply 'english-to-parse-tree' and then 'parse-tree-to-ulf'
 ;
+; The keyword argument `synparser` selects the underlying syntactic parser.
+; Currently supports "BLLIP" and "K&K" (the Berkeley parser). This is
+; case-insensitive.
  (let (parse-tree)
       (when (not (stringp str))
             (format t "~%**INPUT TO 'ENGLISH-TO-ULF' MUST BE A STRING")
@@ -24,12 +27,12 @@
       (when (string= "" str)
             (format t "~%**'ENGLISH-TO-ULF' RECEIVED EMPTY STRING AS INPUT")
             (return-from english-to-ulf nil))
-      (setq parse-tree (english-to-parse-tree str))
+      (setq parse-tree (english-to-parse-tree str :parser synparser))
       (parse-tree-to-ulf parse-tree)
  )); english-to-ulf
       
 
-(defun english-to-parse-tree (str)
+(defun english-to-parse-tree (str &key (parser "BLLIP"))
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; This is extracted from the 'interpret' program from 'process-sentence1.lisp',
 ; except for input checks (moved to 'english-to-ulf'), omission of the final 
@@ -39,16 +42,14 @@
 ; The 'str' argument is a sentence given as a string
 ;
 ; Steps:
-;   Obtain the Charniak parse using a system call, and convert
-;   it into "Lispified" form (with special characters meaningful
-;   in Lisp prefixed with a backslash)
-;
+;   Obtain the parse using an external call, and convert it into "Lispified"
+;   form (with special characters meaningful in Lisp prefixed with a backslash)
  (let (parse-tree)
   ;   (setq str (repair-input str)); omit for now (photo-caption-oriented)
   ;   (if *show-stages*
   ;       (format t "~%~% (Possibly) adjusted input string: ~%   ~s~%~%"
   ;                 str))
-      (setq parse-tree (parse str)); Charniak parse
+      (setq parse-tree (parse str :parser parser)); Charniak or Berkeley parse
        ; which handles multi-sentence strings (with {. ! ?} punctuation)
       (if *show-stages*
           (format t "~%~% Initial parse tree: ~%   ~s~%~%" parse-tree))

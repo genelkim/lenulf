@@ -60,6 +60,71 @@ If your current package is locked (e.g. the `common-lisp` package in SBCL) you
 may need to unlock it. This is common lisp implementation dependent. For SBCL
 `(sb-ext:unlock-package *package*)` will do it.
 
+## Choosing the underlying syntactic parser
+
+The basic system and by default this uses the BLLIP parser with the parser path
+set to the location where it is installed in the URCS grad network. To use this
+elsewhere, you can modify the `*parser*` and `*pdata*` parameters in
+`parse.lisp` to the appropriate locations.
+
+This repository includes an extended version of the system, `:lenulf+`, under
+the same package name, `:lenulf` which supports additional parsers. The separate
+system allows the basic functionality to be available without downloading or
+installing dependencies that are only used in the additional parsers. Once those
+dependencies have been appropriately downloaded the extended system can be loaded
+up with
+```
+* (ql:quickload :lenulf+)
+* (in-package :lenulf)
+```
+To get the system to load, please get the
+[ptb2cf](https://github.com/yosihide/ptb2cf.git) repository available on
+quicklisp. The bash script `script/get_lenulf+_dependencies.sh` will set this
+all up for the default quicklisp installation.  The other CL dependency,
+`py4cl` will be downloaded automatically.
+
+The API is the same as the basic package. The syntactic parser is chosen using
+the `:synparser` keyword argument of `english-to-ulf` which can be `"BLLIP"`,
+`"K&K"`, or `"K&M"`, case-insensitive.
+- `"BLLIP"` is [the Charniak parser](https://github.com/BLLIP/bllip-parser)
+- `"K&K"` is the [Kitaev and Klein self-attentive parser](https://github.com/nikitakit/self-attentive-parser).
+- `"K&M"` is the [Kato and Matsubara gap parser](https://github.com/yosihide/ptb2cf) which is built on top of the K&K parser.
+The K&K parser and _especially_ the K&M parser will take a while on the first
+call since the model needs to be loaded into memory.
+
+The following instructions describe how to install the K&K and K&M parsers,
+which are Python systems.
+
+### Installing the Python parsers
+
+The K&K parser is called in Lisp with Python calls through `py4cl`. This
+package assumes that the parser is already installed, that is the `benepar`
+package can be imported from Python. [The repository](https://github.com/nikitakit/self-attentive-parser)
+has the basic instructions for installing this parser. Here are a few 
+issues that I ran into while installing the parser.
+
+- You must use Python 3.6. The repository states that it is supported by Python 3.6+, but uses a keyword that became reserved in Python starting with 3.7 and will lead to an error.
+- The `pip install benepar[cpu]` will install the most recent Tensorflow version, but the code is written for Tensorflow 1.x. So after this, please run
+```
+pip uninstall tensorflow
+pip install tensorflow==1.15
+```
+
+The K&M parser is a bit more work to get working. It is a specially trained
+version of the K&K parser as well as a separate Lisp pacakge. Please run the
+script, `script/get_km_dependencies.sh` to download and decompress the
+pretrained model and get the necessary dependencies. The model is several
+gigabytes in size so the script will take a while to complete. In addition to
+the K&K parser's dependencies, install
+- pytorch
+- pytorch-pretrained-bert
+
+If you run out of space while pytorch-pretrained-bert is downloading the BERT
+model, you'll need to delete the cache in `~/.pytorch-pretrained-bert/` before
+rerunning with more space. This might happen on the URCS cluster since this
+model and the necessary packages are all quite large and the cluster allots
+a fairly limited amount of space for each person's home directory.
+
 ## Original README
 ```
           PARSING ENGLISH INTO ULF -- PRELIMINARY VERSION
@@ -74,11 +139,11 @@ assignments. So along with parenteses (ignoring phrase labels), this
 comes pretty close to ULF (using POS's to determine ULF atom types).
 
 It does require quite a lot of parse-tree postprocessing (thus, tree
-PRE-processing rules, before extracting a ULF), but this can be done 
-very modularly with rules written in TT -- a simplification of TTT, 
-using position indices in output templates to refer to pieces of an 
+PRE-processing rules, before extracting a ULF), but this can be done
+very modularly with rules written in TT -- a simplification of TTT,
+using position indices in output templates to refer to pieces of an
 input (generalizing the matching in Eta). See the rules in
-  "preprocessing-rules.lisp". 
+  "preprocessing-rules.lisp".
 
 After doing
   (load "init.lisp"),
@@ -97,7 +162,7 @@ I've made some adaptations so that basic BLLIP (Charniak) parses work
 as well, but much checking remains to be done, ad in particular, TRACES
 (empty constituents corresponding to "moved" phrases) need to be added.)
 
-The lexical-level ULF derivation code is in 
+The lexical-level ULF derivation code is in
    pos+word-to-ulf.lisp
 This also requires loading of "stem.lisp" (a variant of previous versions)
 
@@ -107,7 +172,7 @@ for tt, viz., "tt-documantation". It's pretty simple!
 At the time of writing (Sep 20/20), ULF postprocessing remains to be done
 (based on looking at lots of examples of the "raw" ULF deriven from
 Brown trees). It's not always clear what should be done in proeprocessing
-parse trees or postprocessing ULFs. 
+parse trees or postprocessing ULFs.
 
 It may also be quite feasible to rewrite the ULF-to-ELF rules in TT.
 ```
