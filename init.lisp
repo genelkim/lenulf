@@ -4,16 +4,17 @@
 
 (in-package :cl-user)
 
-(load "package.lisp")
-(load "english-to-ulf.lisp")
-(load "parse.lisp")
-(load "parse-tree-to-ulf.lisp")
-(load "preprocess-tree-for-ulf.lisp")
-(load "pos+word-to-ulf.lisp")        
-(load "preprocessing-rules.lisp")   
-(load "stem.lisp")
-(load "tt.lisp")
-(load "postprocess-ulf-tree.lisp")
+(load "package")
+(load "gene-util")
+(load "english-to-ulf")
+(load "parse")
+(load "parse-tree-to-ulf")
+(load "preprocess-tree-for-ulf")
+(load "pos+word-to-ulf")
+(load "preprocessing-rules")
+(load "stem")
+(load "tt")
+(load "postprocess-ulf-tree")
 
 (in-package :lenulf)
 
