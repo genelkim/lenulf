@@ -81,7 +81,14 @@ To get the system to load, please get the
 [ptb2cf](https://github.com/yosihide/ptb2cf.git) repository available on
 quicklisp. The bash script `script/get_lenulf+_dependencies.sh` will set this
 all up for the default quicklisp installation.  The other CL dependency,
-`py4cl` will be downloaded automatically.
+`py4cl` will be downloaded automatically. If you lready had `lenulf` in your
+quicklisp local projects directory before the `:lenulf+`, you may need to run
+the following command to enable quicklisp to find the system.
+```
+* (ql:register-local-projects)
+```
+Quicklisp automatically rescans for systems when a change is made to the local
+projects directory, but not when changes are made to its subdirectories. 
 
 The API is the same as the basic package. The syntactic parser is chosen using
 the `:synparser` keyword argument of `english-to-ulf` which can be `"BLLIP"`,
