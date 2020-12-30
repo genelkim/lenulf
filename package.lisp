@@ -9,5 +9,5 @@
            :parse-tree-to-ulf))
 
 (in-package :lenulf)
-(setq *show-stages* t)
+(defparameter *show-stages* t)
 
