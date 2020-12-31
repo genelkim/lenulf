@@ -21,11 +21,11 @@
       (finish-output)
       (py4cl:python-exec "import benepar")
       (py4cl:python-exec "benepar.download('benepar_en2')")
-      (py4cl:python-exec "parser = benepar.Parser('benepar_en2')")
+      (py4cl:python-exec "benepar_parser = benepar.Parser('benepar_en2')")
       (setf *k&k-setup-complete* t)
       (format t "Done!~%"))
     (lispify-parser-output
-      (py4cl:python-eval (format nil "str(parser.parse(\"~a\"))" str))))
+      (py4cl:python-eval (format nil "str(benepar_parser.parse(\"~a\"))" str))))
 
 (rewrite parse-km (str)
 ;; Calls the pretrained K&K parser for K&M through python. This is slightly
