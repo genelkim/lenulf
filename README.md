@@ -132,7 +132,48 @@ rerunning with more space. This might happen on the URCS cluster since this
 model and the necessary packages are all quite large and the cluster allots
 a fairly limited amount of space for each person's home directory.
 
-## Original README
+## standardize-ulf
+
+This repository contains an additional separate package called `standardize-ulf`
+which is complementary to the main `lenulf` package. It exports a function called
+`standardize-ulf` which takes a ULF result (without token indices) from the `lenulf`
+parser and infers a ULF formula which follows the ULF annotation guidelines. For 
+example, the generic `ADV` suffix from `lenulf` is converted to `ADV-A` or `ADV-S`
+according to the context. This standardization doesn't retain some of the ambiguity
+inherent in the parses and makes an arbitrary call in some instances. This is not
+important for converting to English, but may have unintended consequences if used
+as the basis for inference. `standardize-ulf` takes a keyword argument `:pkg` which
+is the package which the output symbols will be interned into. Below is an example
+of its usage.
+```
+* (ql:quickload :lenulf)
+* (ql:quickload :standardize-ulf)
+* (in-package :lenulf)
+* (use-package :standardize-ulf)
+* (standardize-ulf (remove-token-indices (english-to-ulf "This is a sentence")) :pkg :lenulf)
+(THIS.D ((PRES BE.V) (= (A.D SENTENCE.N))))
+```
+
+Getting this system working may require the following call to make Quicklisp aware
+of this additional package in the repository.
+```
+* (ql:register-local-projects)
+```
+
+### standardize-ulf dependencies
+
+The function `standardize-ulf` is placed in a separate package since it has additional
+dependencies that are not necessary for the parser alone. The following dependencies
+are not currently available automatically through quicklisp and must be installed in
+the local-projects directory.
+- [cl-util](https://github.com/genelkim/cl-util)
+- [ttt](https://github.com/genelkim/ttt)
+- [ulf-lib](https://github.com/genelkim/ulf-lib)
+- [ulf2english](https://github.com/genelkim/ulf2english)
+`ulf2english` requires its own install, so please take a look in the repository README for
+instructions. 
+
+## Original README by Len
 ```
           PARSING ENGLISH INTO ULF -- PRELIMINARY VERSION
           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
