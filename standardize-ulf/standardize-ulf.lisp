@@ -304,7 +304,8 @@
 
 (defparameter *punct-list*
     '(\: \' \. \, \- \_ \{ \} \[ \] \~
-      \;
+      \; ;; The semicolon was messing up the editor highlighting 
+         ;; so it was put in this form
      )) 
 
 (defun punct? (x)
