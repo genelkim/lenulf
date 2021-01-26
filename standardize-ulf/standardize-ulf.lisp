@@ -467,41 +467,41 @@
     '(/ ((!1 (lex-tense? be.v) be.v) term?)
         (!1 (= term?)))
 
-    ;; PROG in place of modifiers	
-    ;; NB: This rule is absolutely NOT general. Assumes that we don't have	
-    ;; tense-less progressives and that these present participle forms always	
-    ;; turn into adjectives. They can in fact become nouns, verb modifiers, or	
-    ;; reified verbs.	
-    '(/ ((prog lex-verb?) noun?)	
-        ((mod-n (adjectivize-ulf-expr! (gerundify! lex-verb?))) noun?))	
-    '(/ ((prog lex-verb?) adj?)	
-        ((mod-a (adjectivize-ulf-expr! (gerundify! lex-verb?))) adj?))	
+    ;; PROG in place of modifiers
+    ;; NB: This rule is absolutely NOT general. Assumes that we don't have
+    ;; tense-less progressives and that these present participle forms always
+    ;; turn into adjectives. They can in fact become nouns, verb modifiers, or
+    ;; reified verbs.
+    '(/ ((prog lex-verb?) noun?)
+        ((mod-n (adjectivize-ulf-expr! (gerundify! lex-verb?))) noun?))
+    '(/ ((prog lex-verb?) adj?)
+        ((mod-a (adjectivize-ulf-expr! (gerundify! lex-verb?))) adj?))
 
 
-    ;; Likely relativizers	
-    ;; (N SENT[with possible relativizer pronoun]) -> (N+PREDS N SENT[pro->rel])	
-    '(/ (noun? possible-relative-clause?)	
-        (n+preds noun? (relativize-sent! possible-relative-clause?)))	
+    ;; Likely relativizers
+    ;; (N SENT[with possible relativizer pronoun]) -> (N+PREDS N SENT[pro->rel])
+    '(/ (noun? possible-relative-clause?)
+        (n+preds noun? (relativize-sent! possible-relative-clause?)))
 
-    ;; Likely kinds	
-    ;; (NOUN TENSED-VERB) -> ((k NOUN) TENSED-VERB)	
-    '(/ (noun? tensed-verb?)	
-        ((k noun?) tensed-verb?))	
+    ;; Likely kinds
+    ;; (NOUN TENSED-VERB) -> ((k NOUN) TENSED-VERB)
+    '(/ (noun? tensed-verb?)
+        ((k noun?) tensed-verb?))
 
-    ;;	
-    ;; Fix types	
-    ;;	
+    ;;
+    ;; Fix types
+    ;;
 
-    ;; Infer nouns under plur/k operator	
-    '(/ ((!1 plur k) (!2 ~ noun?))	
-        (!1 (nominalize-ulf-expr! !2)))	
-    ;; Infer nouns under determiners (are more permissive than plur/k)	
-    '(/ (det? (! ~ noun? pp?))	
-        (det? (nominalize-ulf-expr! !)))	
+    ;; Infer nouns under plur/k operator
+    '(/ ((!1 plur k) (!2 ~ noun?))
+        (!1 (nominalize-ulf-expr! !2)))
+    ;; Infer nouns under determiners (are more permissive than plur/k)
+    '(/ (det? (! ~ noun? pp?))
+        (det? (nominalize-ulf-expr! !)))
 
-    ;;	
-    ;; Fix punctuation	
-    ;;	
+    ;;
+    ;; Fix punctuation
+    ;;
 
     ;; Removing periods from ULFs.
     *ttt-remove-periods*
