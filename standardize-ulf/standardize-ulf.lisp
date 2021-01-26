@@ -180,7 +180,9 @@
       (_*1 _*2)))
 
 (defparameter *punct-list*
-    '(\: \' \. \, \- \_ \{ \} \[ \] \~)) ;; Had to take out \;
+    '(\: \' \. \, \- \_ \{ \} \[ \] \~
+      \;
+     )) 
 
 (defun punct? (x)
   (in-intern (x new-x :ulf-nlog) (if (member new-x *punct-list*) t nil)))
