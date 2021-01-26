@@ -71,8 +71,8 @@
               (max-tense-count (apply #'max (alexandria:hash-table-keys tense-counts)))
               ;; Get first corresponding tense.
               (mode-tense (let ((*package* (find-package :standardize-ulf)))
-														(read-from-string
-															(first (gethash max-tense-count tense-counts))))
+                            (read-from-string
+                              (first (gethash max-tense-count tense-counts)))))
               ;; Convert tense to ULF format.
               (ulf-tense (cdrassoc mode-tense '((present . pres)
                                                 (infinitive . pres)
@@ -82,9 +82,9 @@
       ((sym (if (atom aux) aux (second aux)))
        (sympair (multiple-value-list (split-by-suffix sym)))
        (wrd (first sympair))
-			 (lemma (let ((*package* (find-package :standardize-ulf)))
-			 					(read-from-string
-									(python-eval
+       (lemma (let ((*package* (find-package :standardize-ulf)))
+                 (read-from-string
+                  (python-eval
                     (format nil "str(lemma(\"~s\"))" wrd)))))
        ;; Tense
        (ulf-tense (if (atom aux) (get-tense wrd) (first aux)))
@@ -97,18 +97,18 @@
       ;; Build.
       (list ulf-tense (add-suffix lemma ulf-suffix)))))
 
-(defun gerundify! (ulf-atom)	
-  "Takes a ULF atom and returns the same but with the symbol as a gerund.	
-  Assumes the atom is verb-like. Example:	
-    run.v -> running.v	
-    glide.v -> gliding.v	
-    lead.v -> leading.v"	
-  (multiple-value-bind (wrd suffix) (split-by-suffix ulf-atom)	
-    (let ((conjugated	
-            (python-eval	
-              (let ((*package* (find-package :standardize-ulf)))	
-                (format nil "str(conjugate(\"~s\", aspect=PROGRESSIVE))" wrd)))))	
-      (add-suffix (intern (string-upcase conjugated) :standardize-ulf) suffix))))	
+(defun gerundify! (ulf-atom)
+  "Takes a ULF atom and returns the same but with the symbol as a gerund.
+  Assumes the atom is verb-like. Example:
+    run.v -> running.v
+    glide.v -> gliding.v
+    lead.v -> leading.v"
+  (multiple-value-bind (wrd suffix) (split-by-suffix ulf-atom)
+    (let ((conjugated
+            (python-eval
+              (let ((*package* (find-package :standardize-ulf)))
+                (format nil "str(conjugate(\"~s\", aspect=PROGRESSIVE))" wrd)))))
+      (add-suffix (intern (string-upcase conjugated) :standardize-ulf) suffix))))
 
 ;;
 ;; Len's parser-specific suffix matching.
@@ -121,9 +121,9 @@
   (in-intern (inx x :standardize-ulf)
     (equal 'adv (nth-value 1 (split-by-suffix x)))))
 
-(defun prt? (inx)	
-  (in-intern (inx x :standardize-ulf)	
-    (equal 'prt (nth-value 1 (split-by-suffix x)))))	
+(defun prt? (inx)
+  (in-intern (inx x :standardize-ulf)
+    (equal 'prt (nth-value 1 (split-by-suffix x)))))
 
 (defun replace-suffix! (sym new-suffix)
   (multiple-value-bind (lemma _) (split-by-suffix sym)
@@ -150,32 +150,32 @@
   (multiple-value-bind (lemma suffix) (split-by-suffix sym)
     (and (eql suffix 'pro)
          (member lemma *determiners*))))
-(defun unknown-det? (sym)	
-  "Returns t if the symbol is a possible determiner with no known type."	
-  (multiple-value-bind (lemma suffix) (split-by-suffix sym)	
-    (and (lex-unknown? sym)	
-         (member lemma *determiners*))))	
+(defun unknown-det? (sym)
+  "Returns t if the symbol is a possible determiner with no known type."
+  (multiple-value-bind (lemma suffix) (split-by-suffix sym)
+    (and (lex-unknown? sym)
+         (member lemma *determiners*))))
 
-(defun bad-a-few? (expr)	
-  "Matches '(A.* (FEW.* ...))"	
-  (and (listp expr)	
-       (= 2 (length expr))	
-       (symbolp (first expr))	
-       (eql 'a (nth-value 0 (ulf:split-by-suffix (first expr))))	
-       (listp (second expr))	
-       (symbolp (first (second expr)))	
-       (eql 'few (nth-value 0 (ulf:split-by-suffix (first (second expr)))))))	
-(defun fix-a-few! (expr)	
-  (let* ((asym (ulf:split-by-suffix (first expr)))	
-         (fewsym (ulf:split-by-suffix (first (second expr))))	
-         (pred (cdr (second expr)))	
-         (afewsym (ulf:add-suffix	
-                    (fuse-into-atom (list asym '_ fewsym) :pkg :standardize-ulf)	
-                    'd	
-                    :pkg :standardize-ulf)))	
-    (cons afewsym pred)))	
+(defun bad-a-few? (expr)
+  "Matches '(A.* (FEW.* ...))"
+  (and (listp expr)
+       (= 2 (length expr))
+       (symbolp (first expr))
+       (eql 'a (nth-value 0 (ulf:split-by-suffix (first expr))))
+       (listp (second expr))
+       (symbolp (first (second expr)))
+       (eql 'few (nth-value 0 (ulf:split-by-suffix (first (second expr)))))))
+(defun fix-a-few! (expr)
+  (let* ((asym (ulf:split-by-suffix (first expr)))
+         (fewsym (ulf:split-by-suffix (first (second expr))))
+         (pred (cdr (second expr)))
+         (afewsym (ulf:add-suffix
+                    (fuse-into-atom (list asym '_ fewsym) :pkg :standardize-ulf)
+                    'd
+                    :pkg :standardize-ulf)))
+    (cons afewsym pred)))
 
-(defparameter *a-few-fix*	
+(defparameter *a-few-fix*
   '(/ bad-a-few? (fix-a-few! bad-a-few?)))
 (defun remove-vp-tense! (vp)
   "Removes the tense from the head verb of the ULF verb phrase."
@@ -197,8 +197,8 @@
 (defun lex-unknown? (term)
   "Returns whether the given term is a lexical and of an unknown type."
   (and (atom term)
-			 (not (len-aux? term))
-			 (not (len-adv? term))
+       (not (len-aux? term))
+       (not (len-adv? term))
        (let ((types (ulf:phrasal-ulf-type? term :callpkg :standardize-ulf)))
          (equal types '(unknown)))))
 
@@ -213,76 +213,76 @@
                  (cons 'string (mapcar #'symbol-name names)))
           :standardize-ulf))
 
-(defun convert-expr-to-type (expr suffix)	
-  (cond	
-    ;; Swap out the suffix.	
-    ((or (symbolp expr) (numberp expr))	
-     (ulf:add-suffix	
-       (nth-value 0 (ulf:split-by-suffix expr))	
-       suffix	
-       :pkg :standardize-ulf))	
-    ;; Give up.	
-    (t expr)))	
+(defun convert-expr-to-type (expr suffix)
+  (cond
+    ;; Swap out the suffix.
+    ((or (symbolp expr) (numberp expr))
+     (ulf:add-suffix
+       (nth-value 0 (ulf:split-by-suffix expr))
+       suffix
+       :pkg :standardize-ulf))
+    ;; Give up.
+    (t expr)))
 
-(defun nominalize-ulf-expr! (expr)	
-  "Simple inference to nominalize. For symbols, simply swap the suffix.	
-  Otherwise, give up for now."	
-  (convert-expr-to-type expr 'n))	
-(defun adjectivize-ulf-expr! (expr)	
-  (convert-expr-to-type expr 'a))	
+(defun nominalize-ulf-expr! (expr)
+  "Simple inference to nominalize. For symbols, simply swap the suffix.
+  Otherwise, give up for now."
+  (convert-expr-to-type expr 'n))
+(defun adjectivize-ulf-expr! (expr)
+  (convert-expr-to-type expr 'a))
 
-(defparameter *english-relativizers*	
-  '(who whom which that whose where when what))	
+(defparameter *english-relativizers*
+  '(who whom which that whose where when what))
 
-(defun possible-relativizer-pronoun? (ulf)	
-  "A pronoun which may be a mis-identified relativizer."	
-  (when (atom ulf)	
-    (multiple-value-bind (wrd suffix) (split-by-suffix ulf)	
-      (and (member wrd *english-relativizers*)	
-           (eql suffix 'pro)))))	
+(defun possible-relativizer-pronoun? (ulf)
+  "A pronoun which may be a mis-identified relativizer."
+  (when (atom ulf)
+    (multiple-value-bind (wrd suffix) (split-by-suffix ulf)
+      (and (member wrd *english-relativizers*)
+           (eql suffix 'pro)))))
 
-(defun possible-relative-clause? (ulf)	
-  "A tensed sentence which may be a relative clause is one which starts with a	
-  pronoun or a substitution of a pronoun which may be a relativizer: who, whom,	
-  which, that, tht, etc."	
-  (and (tensed-sent? ulf)	
-       (ttt::match-expr '(! (possible-relativizer-pronoun? _+)	
-                            (sub possible-relativizer-pronoun? _!))	
-                        ulf)))	
+(defun possible-relative-clause? (ulf)
+  "A tensed sentence which may be a relative clause is one which starts with a
+  pronoun or a substitution of a pronoun which may be a relativizer: who, whom,
+  which, that, tht, etc."
+  (and (tensed-sent? ulf)
+       (ttt::match-expr '(! (possible-relativizer-pronoun? _+)
+                            (sub possible-relativizer-pronoun? _!))
+                        ulf)))
 
-(defun relativize-sent! (ulf)	
-  "Takes a sentence that might be a relative clause with the relativizer	
-  mislabeled as a pronoun and converts it to an actual relative clause.	
-  Assumes the input is a tensed sentence with a subject or substituted	
-  pronoun."	
-  (cond	
-    ((eql 'sub (first ulf))	
-     (cons 'sub (relativize-sent! (cdr ulf))))	
-    (t (cons (convert-expr-to-type (car ulf) 'rel)	
-             (cdr ulf)))))	
+(defun relativize-sent! (ulf)
+  "Takes a sentence that might be a relative clause with the relativizer
+  mislabeled as a pronoun and converts it to an actual relative clause.
+  Assumes the input is a tensed sentence with a subject or substituted
+  pronoun."
+  (cond
+    ((eql 'sub (first ulf))
+     (cons 'sub (relativize-sent! (cdr ulf))))
+    (t (cons (convert-expr-to-type (car ulf) 'rel)
+             (cdr ulf)))))
 
-(defun flat-sent? (ulf)	
-  "Whether this ULF is a flat sentence construction that is common in some	
-  parsers. This is recognized through a TERM VP next to each other and	
-  bracketed with other things with known types, but is analyzed as an unknown	
-  type."	
-  (and (or (ttt:match-expr '(_+ term? (* len-adv? sent-mod?)	
-                                (! verb? tensed-verb?) _*)	
-                           ulf)	
-           (ttt:match-expr '(_* term? (* len-adv? sent-mod?)	
-                                (! verb? tensed-verb?) _+)	
-                           ulf))	
-       (ulf::unknown? ulf)	
-       (not (some #'ulf::unknown? ulf))))	
+(defun flat-sent? (ulf)
+  "Whether this ULF is a flat sentence construction that is common in some
+  parsers. This is recognized through a TERM VP next to each other and
+  bracketed with other things with known types, but is analyzed as an unknown
+  type."
+  (and (or (ttt:match-expr '(_+ term? (* len-adv? sent-mod?)
+                                (! verb? tensed-verb?) _*)
+                           ulf)
+           (ttt:match-expr '(_* term? (* len-adv? sent-mod?)
+                                (! verb? tensed-verb?) _+)
+                           ulf))
+       (ulf::unknown? ulf)
+       (not (some #'ulf::unknown? ulf))))
 
-(defun fix-flat-sent! (ulf)	
-  "Mapping function corresponding to flat-sent?. Assumes that flat-sent? is	
-  true already. Simply brackets the term and verb together."	
-  (ttt:apply-rules	
-    '((/ (_+1 term? (*2 len-adv? sent-mod?) (!3 verb? tensed-verb?) _*4)	
-         (_+1 (term? *2 !3) _*4))	
-      (/ (_*1 term? (*2 len-adv? sent-mod?) (!3 verb? tensed-verb?) _+4)	
-         (_*1 (term? *2 !3) _+4)))	
+(defun fix-flat-sent! (ulf)
+  "Mapping function corresponding to flat-sent?. Assumes that flat-sent? is
+  true already. Simply brackets the term and verb together."
+  (ttt:apply-rules
+    '((/ (_+1 term? (*2 len-adv? sent-mod?) (!3 verb? tensed-verb?) _*4)
+         (_+1 (term? *2 !3) _*4))
+      (/ (_*1 term? (*2 len-adv? sent-mod?) (!3 verb? tensed-verb?) _+4)
+         (_*1 (term? *2 !3) _+4)))
     ulf))
 
 ;; Removes periods from ULFs.
@@ -296,7 +296,7 @@
 
 ;; Removes all punctuations.
 (defparameter *ttt-remove-punctuations*
-  '(/ (_*1 punct? _*2)  
+  '(/ (_*1 punct? _*2)
       (_*1 _*2)))
 
 (defparameter *punct-list*
@@ -320,15 +320,15 @@
 ;; Rules used for performing domain-specific fixes.
 (defparameter *ttt-ulf-fixes*
   (list
-    ;; Lift question marks and exclamation marks to scope around sentence.	
-    '(/ (_!1 _+2 (!3 [!] [?]))	
-        ((_!1 _+2) !3))	
+    ;; Lift question marks and exclamation marks to scope around sentence.
+    '(/ (_!1 _+2 (!3 [!] [?]))
+        ((_!1 _+2) !3))
 
     ;; N+PREDS bug.
     '(/ n+pred n+preds)
     ;; Negation
     '(/ (! not.adv |N'T.ADV|) not)
-    ;; Stray PRT	
+    ;; Stray PRT
     '(/ prt? (replace-suffix! prt? adv-a))
     ;; Add tense, lemmatize, and canonicalize suffix for auxiliaries.
     '(/ (! (lex-tense? len-aux?))
@@ -368,22 +368,22 @@
         ((replace-suffix! pro-det? d)
          !))
 
-    ;; (QUANT[NO SUFFIX] ...) -> (QUANT.D ..)	
-    '(/ (unknown-det? (! noun? pp?))	
-        ((replace-suffix! unknown-det? d)	
-         !))	
-    ;; (A.* (FEW.* ...)) -> (a_few.d ...)	
+    ;; (QUANT[NO SUFFIX] ...) -> (QUANT.D ..)
+    '(/ (unknown-det? (! noun? pp?))
+        ((replace-suffix! unknown-det? d)
+         !))
+    ;; (A.* (FEW.* ...)) -> (a_few.d ...)
     *a-few-fix*
 
     ;; Introduce N+PREDS
     ;; ((k/Q X) PRED) -> (k/Q (N+PREDS X PRED))
     '(/ (((!1 det? k) (!2 ~ (n+preds _*))) (!3 pred? ~ verb? tensed-verb?))
         (!1 (n+preds !2 !3)))
-    ;; Fix terms in N+PREDS	
-    ;; This doesn't work in general since sometimes there are hidden prepositions, e.g.	
-    ;; (the.d (n+preds right.n (to (live.v (in.p |Europe|))))) should become	
-    ;; -> (the.d (n+preds right.n ({for}.p (to (live.v (in.p |Europe|))))))	
-    ;; rather than having the equality.	
+    ;; Fix terms in N+PREDS
+    ;; This doesn't work in general since sometimes there are hidden prepositions, e.g.
+    ;; (the.d (n+preds right.n (to (live.v (in.p |Europe|))))) should become
+    ;; -> (the.d (n+preds right.n ({for}.p (to (live.v (in.p |Europe|))))))
+    ;; rather than having the equality.
     '(/ (n+preds _*1 term? _*2) (n+preds _*1 (= term?) _*2))
 
     ;; (V ... ADV ...) -> (V ... ADV-A ...)
@@ -395,41 +395,41 @@
            (replace-suffix! len-adv? adv-a)
            _*2))
 
-    ;; Infer sentence modifiers	
-    ;; (ADV TERM VP) -> (ADV-S TERM VP)	
-    ;; (TERM ADV VP) -> (TERM ADV-S VP)	
-    ;; (TERM VP ADV) -> (TERM VP ADV-S)	
-    '(/ ((*1 sent-mod?) (!5 len-adv?) (*2 sent-mod? len-adv?) term?	
-         (*3 sent-mod? len-adv?) (!6 verb? tensed-verb?) (*4 sent-mod? len-adv?))	
-        (*1 (replace-suffix! !5 adv-s) *2 term? *3 !6 *4))	
-    '(/ ((*1 sent-mod? len-adv?) term? (*2 sent-mod?) (!5 len-adv?)	
-         (*3 sent-mod? len-adv?) (!6 verb? tensed-verb?) (*4 sent-mod? len-adv?))	
-        (*1 term? *2 (replace-suffix! !5 adv-s) *3 !6 *4))	
-    '(/ ((*1 sent-mod? len-adv?) term?	
-         (*2 sent-mod? len-adv?) (!6 verb? tensed-verb?)	
-         (*3 sent-mod?)	
-         (!5 len-adv?)	
-         (*4 sent-mod? len-adv?))	
-        (*1 term? *2 !6 *3 (replace-suffix! !5 adv-s) *4))	
+    ;; Infer sentence modifiers
+    ;; (ADV TERM VP) -> (ADV-S TERM VP)
+    ;; (TERM ADV VP) -> (TERM ADV-S VP)
+    ;; (TERM VP ADV) -> (TERM VP ADV-S)
+    '(/ ((*1 sent-mod?) (!5 len-adv?) (*2 sent-mod? len-adv?) term?
+         (*3 sent-mod? len-adv?) (!6 verb? tensed-verb?) (*4 sent-mod? len-adv?))
+        (*1 (replace-suffix! !5 adv-s) *2 term? *3 !6 *4))
+    '(/ ((*1 sent-mod? len-adv?) term? (*2 sent-mod?) (!5 len-adv?)
+         (*3 sent-mod? len-adv?) (!6 verb? tensed-verb?) (*4 sent-mod? len-adv?))
+        (*1 term? *2 (replace-suffix! !5 adv-s) *3 !6 *4))
+    '(/ ((*1 sent-mod? len-adv?) term?
+         (*2 sent-mod? len-adv?) (!6 verb? tensed-verb?)
+         (*3 sent-mod?)
+         (!5 len-adv?)
+         (*4 sent-mod? len-adv?))
+        (*1 term? *2 !6 *3 (replace-suffix! !5 adv-s) *4))
 
-    ;; Fix flat TERM-VPs that should be sentences.	
-    '(/ flat-sent?	
-        (fix-flat-sent! flat-sent?))	
+    ;; Fix flat TERM-VPs that should be sentences.
+    '(/ flat-sent?
+        (fix-flat-sent! flat-sent?))
 
-    ;; ((ADV SENT) SENT) -> ((PS SENT) SENT)	
-    ;; (SENT (ADV SENT)) -> (SENT (PS SENT))	
-    '(/ ((len-adv? (!1 sent? tensed-sent?)) (!2 sent? tensed-sent?))	
-        (((replace-suffix! len-adv? ps) !1) !2))	
-    '(/ ((!1 sent? tensed-sent?) (len-adv? (!2 sent? tensed-sent?)))	
-        (!1 ((replace-suffix! len-adv? ps) !2)))	
-    ;; (SENT-MOD TERM VP) -> (SENT-MOD (TERM VP))	
-    '(/ (sent-mod? term? (! verb? tensed-verb?))	
-        (sent-mod? (term? !)))	
-    ;; Weaker version, where in the right context, we assume ADV is PS.	
-    '(/ ((len-adv? (!1 sent? tensed-sent?))	
-         (*3 len-adv? sent-mod?) term? (*4 len-adv? sent-mod?)	
-         (!2 verb tensed-verb?) (*5 len-adv? sent-mod?))	
-        ((len-adv? !1) (*3 term? *4 !2 *5)))	
+    ;; ((ADV SENT) SENT) -> ((PS SENT) SENT)
+    ;; (SENT (ADV SENT)) -> (SENT (PS SENT))
+    '(/ ((len-adv? (!1 sent? tensed-sent?)) (!2 sent? tensed-sent?))
+        (((replace-suffix! len-adv? ps) !1) !2))
+    '(/ ((!1 sent? tensed-sent?) (len-adv? (!2 sent? tensed-sent?)))
+        (!1 ((replace-suffix! len-adv? ps) !2)))
+    ;; (SENT-MOD TERM VP) -> (SENT-MOD (TERM VP))
+    '(/ (sent-mod? term? (! verb? tensed-verb?))
+        (sent-mod? (term? !)))
+    ;; Weaker version, where in the right context, we assume ADV is PS.
+    '(/ ((len-adv? (!1 sent? tensed-sent?))
+         (*3 len-adv? sent-mod?) term? (*4 len-adv? sent-mod?)
+         (!2 verb tensed-verb?) (*5 len-adv? sent-mod?))
+        ((len-adv? !1) (*3 term? *4 !2 *5)))
 
     ;; Fix unsuffixed (or barred) atoms.
     '(/ lex-unknown? (add-bars! lex-unknown?))
@@ -440,9 +440,9 @@
              (_* (<> lex-name? (+ lex-name?)) _* lex-coord? _+))
         (_*1 (merge-lex-names! (<>)) _*2))
 
-    ;; Assume non-leading prepositions are supposed to be adv-a.	
-    '(/ (_+ lex-prep?)	
-        (_+ (replace-suffix! lex-prep? adv-a)))	
+    ;; Assume non-leading prepositions are supposed to be adv-a.
+    '(/ (_+ lex-prep?)
+        (_+ (replace-suffix! lex-prep? adv-a)))
 
     ;; DETERMINERS
     ;; (<D> x ...) -> (<D> (x ...))
@@ -461,13 +461,13 @@
         (! (n+preds noun? ((replace-suffix! rel-pro? rel) _+))))
 
     ;; ((pres be.v) <term>) -> ((pres be.v) (= <term>))
-		;; (be.v <term>) -> (be.v (= <term>))
+    ;; (be.v <term>) -> (be.v (= <term>))
     '(/ ((!1 (lex-tense? be.v) be.v) term?)
         (!1 (= term?)))
 
     ;; Removing periods from ULFs.
-    *ttt-remove-periods*  
-    
+    *ttt-remove-periods*
+
     ;; Removing double parenthesis from ULFs.
     *ttt-remove-parenthesis*
 
@@ -481,9 +481,9 @@
   outside of this package. Assumes the token-indexing has already been
   removed."
   (inout-intern (inulf ulf :standardize-ulf :callpkg pkg)
-    ;; TODO: make max-n a multiplicative factor of the ulf size	
-    (ttt:apply-rules *ttt-ulf-fixes* ulf	
-                     :max-n 1000	
-                     :deepest t	
+    ;; TODO: make max-n a multiplicative factor of the ulf size
+    (ttt:apply-rules *ttt-ulf-fixes* ulf
+                     :max-n 1000
+                     :deepest t
                    :rule-order :earliest-first)))
 
