@@ -95,7 +95,7 @@
                      (be 'v)
                      (have 'v)
                      (otherwise 'aux-v))))
-      
+
       ;; Build.
       (list ulf-tense (add-suffix lemma ulf-suffix)))))
 
@@ -157,7 +157,6 @@
   (multiple-value-bind (lemma suffix) (split-by-suffix sym)
     (and (lex-unknown? sym)
          (member lemma *determiners*))))
-
 
 (defun bad-a-few? (expr)
   "Matches '(A.* (FEW.* ...))"
@@ -292,13 +291,37 @@
 ;; Removes periods from ULFs.
 (defparameter *ttt-remove-periods*
     '(/ (_*1 (! \. (\.)) _*2)
-       (_*1 _*2))
-)
+       (_*1 _*2)))
 
 ;; Removes double parenthesis.
 (defparameter *ttt-remove-parenthesis*
-    '(/ ((_+)) (_+))
-)
+    '(/ ((_+)) (_+)))
+
+;; Removes all punctuations.
+(defparameter *ttt-remove-punctuations*
+  '(/ (_*1 punct? _*2)
+      (_*1 _*2)))
+
+(defparameter *punct-list*
+    '(\: \' \. \, \- \_ \{ \} \[ \] \~
+      \; ;; The semicolon was messing up the editor highlighting 
+         ;; so it was put in this form
+     )) 
+
+(defun punct? (x)
+  (in-intern (x new-x :standardize-ulf) (if (member new-x *punct-list*) t nil)))
+
+;; Fixing the possessives form
+
+;; n+preds singular pred case
+(defparameter *ttt-fix-possessives-sing*
+  '(/ ((det? (n+preds _!1 |'S|)) _!2)
+    (((det? _!1) 's) _!2)))
+
+;; n+preds plural preds case
+(defparameter *ttt-fix-possessives-pl*
+  '(/ ((det? (n+preds _!1 _+ |'S|)) _!2)
+    (((det? (n+preds _!1 _+)) 's) _!2)))
 
 ;; Rules used for performing domain-specific fixes.
 (defparameter *ttt-ulf-fixes*
@@ -488,6 +511,10 @@
 
     ;; Removing double parenthesis from ULFs.
     *ttt-remove-parenthesis*
+
+    ;; Fixing the possessives form
+    *ttt-fix-possessives-sing*
+    *ttt-fix-possessives-pl*
     ))
 
 (defun standardize-ulf (inulf &key pkg)
