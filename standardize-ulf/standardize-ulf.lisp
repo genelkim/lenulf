@@ -37,8 +37,10 @@
   adds the appropriate tense. 'be' and 'have' are converted to verbs and other
   auxiliaries are simply mapped to aux-v since this is a stronger assumption.
   If tense is already available, just use that.
+
   The function assumes that the input, `aux` is either a symbol or a pair of
   tense and aux symbols.
+
   e.g.
     is.aux -> (pres be.v)
     was.aux -> (past be.v)
@@ -83,7 +85,7 @@
        (sympair (multiple-value-list (split-by-suffix sym)))
        (wrd (first sympair))
        (lemma (let ((*package* (find-package :standardize-ulf)))
-                 (read-from-string
+                (read-from-string
                   (python-eval
                     (format nil "str(lemma(\"~s\"))" wrd)))))
        ;; Tense
@@ -177,6 +179,7 @@
 
 (defparameter *a-few-fix*
   '(/ bad-a-few? (fix-a-few! bad-a-few?)))
+
 (defun remove-vp-tense! (vp)
   "Removes the tense from the head verb of the ULF verb phrase."
   (let ((vphead (find-vp-head vp :callpkg :standardize-ulf)))
@@ -367,7 +370,6 @@
     '(/ (pro-det? (! noun? pp?))
         ((replace-suffix! pro-det? d)
          !))
-
     ;; (QUANT[NO SUFFIX] ...) -> (QUANT.D ..)
     '(/ (unknown-det? (! noun? pp?))
         ((replace-suffix! unknown-det? d)
@@ -464,6 +466,42 @@
     ;; (be.v <term>) -> (be.v (= <term>))
     '(/ ((!1 (lex-tense? be.v) be.v) term?)
         (!1 (= term?)))
+
+    ;; PROG in place of modifiers	
+    ;; NB: This rule is absolutely NOT general. Assumes that we don't have	
+    ;; tense-less progressives and that these present participle forms always	
+    ;; turn into adjectives. They can in fact become nouns, verb modifiers, or	
+    ;; reified verbs.	
+    '(/ ((prog lex-verb?) noun?)	
+        ((mod-n (adjectivize-ulf-expr! (gerundify! lex-verb?))) noun?))	
+    '(/ ((prog lex-verb?) adj?)	
+        ((mod-a (adjectivize-ulf-expr! (gerundify! lex-verb?))) adj?))	
+
+
+    ;; Likely relativizers	
+    ;; (N SENT[with possible relativizer pronoun]) -> (N+PREDS N SENT[pro->rel])	
+    '(/ (noun? possible-relative-clause?)	
+        (n+preds noun? (relativize-sent! possible-relative-clause?)))	
+
+    ;; Likely kinds	
+    ;; (NOUN TENSED-VERB) -> ((k NOUN) TENSED-VERB)	
+    '(/ (noun? tensed-verb?)	
+        ((k noun?) tensed-verb?))	
+
+    ;;	
+    ;; Fix types	
+    ;;	
+
+    ;; Infer nouns under plur/k operator	
+    '(/ ((!1 plur k) (!2 ~ noun?))	
+        (!1 (nominalize-ulf-expr! !2)))	
+    ;; Infer nouns under determiners (are more permissive than plur/k)	
+    '(/ (det? (! ~ noun? pp?))	
+        (det? (nominalize-ulf-expr! !)))	
+
+    ;;	
+    ;; Fix punctuation	
+    ;;	
 
     ;; Removing periods from ULFs.
     *ttt-remove-periods*
