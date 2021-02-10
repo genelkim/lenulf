@@ -207,6 +207,7 @@
 
 (defun add-bars! (term)
   "Add bars around a symbol by adding a space before intern."
+  ;(format t "add-bars!: ~s~%" term)
   (intern
     (concatenate 'string " " (symbol-name term))
     :standardize-ulf))
@@ -326,6 +327,15 @@
 ;; Rules used for performing domain-specific fixes.
 (defparameter *ttt-ulf-fixes*
   (list
+    ;'(/ ((lex-tense? have.v) _*1 ((perf lex-verb?) _*2)) ((lex-tense? perf) _*1 (lex-verb? _*2))) 
+    
+    ;; Removing periods from ULFs.
+    *ttt-remove-periods*
+
+    ;; Removing double parenthesis from ULFs.
+    *ttt-remove-parenthesis*
+
+
     ;; Lift question marks and exclamation marks to scope around sentence.
     '(/ (_!1 _+2 (!3 [!] [?]))
         ((_!1 _+2) !3))
@@ -460,6 +470,10 @@
            ~ ((! set-of lex-coord?) _* (<> lex-name? (+ lex-name?)) _*)
              (_* (<> lex-name? (+ lex-name?)) _* lex-coord? _+))
         (_*1 (merge-lex-names! (<>)) _*2))
+
+    ;; Correct possessives.
+    '(/ (! (| QUOTE S|) (| QUOTE| S))
+        's)
 
     ;; Assume non-leading prepositions are supposed to be adv-a.
     '(/ (_+ lex-prep?)
