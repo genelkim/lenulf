@@ -207,6 +207,7 @@
 
 (defun add-bars! (term)
   "Add bars around a symbol by adding a space before intern."
+  ;(format t "add-bars!: ~s~%" term)
   (intern
     (concatenate 'string " " (symbol-name term))
     :standardize-ulf))
@@ -326,9 +327,29 @@
 ;; Rules used for performing domain-specific fixes.
 (defparameter *ttt-ulf-fixes*
   (list
+    ;'(/ ((lex-tense? have.v) _*1 ((perf lex-verb?) _*2)) ((lex-tense? perf) _*1 (lex-verb? _*2))) 
+    
+    ;; Removing periods from ULFs.
+    *ttt-remove-periods*
+
+    ;; Removing double parenthesis from ULFs.
+    *ttt-remove-parenthesis*
+
+
     ;; Lift question marks and exclamation marks to scope around sentence.
     '(/ (_!1 _+2 (!3 [!] [?]))
         ((_!1 _+2) !3))
+
+    ;; Removing periods from ULFs.
+    *ttt-remove-periods*
+
+    ;; Removing double parenthesis from ULFs.
+    *ttt-remove-parenthesis*
+
+    ;;
+    ;; Fix punctuation
+    ;;
+    *ttt-remove-punctuations*
 
     ;; N+PREDS bug.
     '(/ n+pred n+preds)
@@ -384,6 +405,11 @@
     ;; ((k/Q X) PRED) -> (k/Q (N+PREDS X PRED))
     '(/ (((!1 det? k) (!2 ~ (n+preds _*))) (!3 pred? ~ verb? tensed-verb?))
         (!1 (n+preds !2 !3)))
+
+    ;; Fixing the possessives form
+    *ttt-fix-possessives-sing*
+    *ttt-fix-possessives-pl*
+
     ;; Fix terms in N+PREDS
     ;; This doesn't work in general since sometimes there are hidden prepositions, e.g.
     ;; (the.d (n+preds right.n (to (live.v (in.p |Europe|))))) should become
@@ -445,6 +471,10 @@
              (_* (<> lex-name? (+ lex-name?)) _* lex-coord? _+))
         (_*1 (merge-lex-names! (<>)) _*2))
 
+    ;; Correct possessives.
+    '(/ (! (| QUOTE S|) (| QUOTE| S))
+        's)
+
     ;; Assume non-leading prepositions are supposed to be adv-a.
     '(/ (_+ lex-prep?)
         (_+ (replace-suffix! lex-prep? adv-a)))
@@ -502,19 +532,23 @@
     '(/ (det? (! ~ noun? pp?))
         (det? (nominalize-ulf-expr! !)))
 
-    ;;
-    ;; Fix punctuation
-    ;;
+    ;; Fix progressive
+    '(/ ((lex-tense? be.v) _* (prog lex-verb?))
+        ((lex-tense? prog) _* lex-verb?))
+    '(/ ((lex-tense? be.v) _*1 ((prog lex-verb?) _*2))
+        ((lex-tense? prog) _*1 (lex-verb? _*2)))
 
-    ;; Removing periods from ULFs.
-    *ttt-remove-periods*
+    ;; Fix perfect
+    '(/ ((lex-tense? have.v) _* (perf lex-verb?))
+        ((lex-tense? perf) _* lex-verb?))
+    '(/ ((lex-tense? have.v) _*1 ((perf lex-verb?) _*2))
+        ((lex-tense? perf) _*1 (lex-verb? _*2)))
 
-    ;; Removing double parenthesis from ULFs.
-    *ttt-remove-parenthesis*
-
-    ;; Fixing the possessives form
-    *ttt-fix-possessives-sing*
-    *ttt-fix-possessives-pl*
+    ;; Fix passive
+    ;; '(/ ((lex-tense? be.v) _* (pasv lex-verb?))
+    ;;     ((lex-tense? (pasv lex-verb?)) _*))
+    '(/ ((lex-tense? be.v) _*1 ((pasv lex-verb?) _*2))
+        ((lex-tense? (pasv lex-verb?)) _*1 _*2))
     ))
 
 (defun standardize-ulf (inulf &key pkg)
@@ -526,5 +560,5 @@
     (ttt:apply-rules *ttt-ulf-fixes* ulf
                      :max-n 1000
                      :deepest t
-                   :rule-order :earliest-first)))
+                   :rule-order :fast-forward)))
 
