@@ -48,6 +48,7 @@
     had.aux -> (past have.v)
     did.aux -> (past do.aux-v)
     (pres can.aux) -> (pres can.aux-v)
+    |'s.aux| -> (pres be.v)
   "
   ;; Set up the pattern en package link in ulf2english if not yet ready.
   ;; TODO: move this to a more universal location.
@@ -84,10 +85,14 @@
       ((sym (if (atom aux) aux (second aux)))
        (sympair (multiple-value-list (split-by-suffix sym)))
        (wrd (first sympair))
-       (lemma (let ((*package* (find-package :standardize-ulf)))
-                (read-from-string
-                  (python-eval
-                    (format nil "str(lemma(\"~s\"))" wrd)))))
+       (lemma 
+         (cond
+           ((member wrd '(|'s| |'S|)) 'be)
+           (t
+            (let ((*package* (find-package :standardize-ulf)))
+              (read-from-string
+                (python-eval
+                  (format nil "str(lemma(\"~s\"))" wrd)))))))
        ;; Tense
        (ulf-tense (if (atom aux) (get-tense wrd) (first aux)))
        ;; Determine suffix.
