@@ -240,18 +240,30 @@
 (defun possible-relativizer? (ulf)
   "A pronoun or non-pronoun which may be a mis-identified relativizer."
   (when (atom ulf)
-    (multiple-value-bind (wrd suffix) (split-by-suffix ulf)
-      (member wrd *english-relativizers*)
-           )))
+       (let ((wrd (split-by-suffix ulf))) 
+                (member wrd *english-relativizers*))))
 
 ;; Checks each part of the ULF if any parts without the suffix are members of
 ;; the *english-relativizers* then if they are switch their suffix to be a
 ;; pronoun
 (defun switch-poss-rel-to-pro (ulf)
     (cond
-       ((member (split-by-suffix (car ulf)) *english-relativizers*) (convert-expr-to-type (car ulf) 'pro)) 
-       ((and (member (split-by-suffix (second ulf)) *english-relativizers*) (eql (car ulf) 'sub))
-             (convert-expr-to-type (second ulf) 'pro))))
+       ((and (atom ulf) 
+             (member (split-by-suffix ulf) *english-relativizers*)) 
+                (convert-expr-to-type ulf 'pro))
+       ((and (listp ulf) 
+             (member (split-by-suffix (car ulf)) *english-relativizers*)) 
+                (convert-expr-to-type (car ulf) 'pro)) 
+       ((and (listp ulf) 
+             (member (split-by-suffix (second ulf)) *english-relativizers*) 
+             (eql (car ulf) 'sub))
+                (convert-expr-to-type (second ulf) 'pro))
+       ((or (atom ulf) (listp ulf)) ulf)))
+
+(defun switch-to-pro (ulf)
+    (if (atom ulf)
+        (switch-poss-rel-to-pro ulf)
+        (mapcar #'switch-to-pro ulf)))
 
 (defun possible-relative-clause? (ulf)
   "A tensed sentence which may be a relative clause is one which starts with a
@@ -259,7 +271,7 @@
   which, that, tht, etc."
     (if (ttt::match-expr '(! (possible-relativizer? _+)
                              (sub possible-relativizer? _!)) ulf)
-                (tensed-sent? (switch-poss-rel-to-pro ulf)) nil))
+                (tensed-sent? (switch-to-pro ulf)) nil))
 
 (defun relativize-sent! (ulf)
   "Takes a sentence that might be a relative clause with the relativizer
