@@ -246,7 +246,7 @@
 ;; Checks each part of the ULF if any parts without the suffix are members of
 ;; the *english-relativizers* then if they are switch their suffix to be a
 ;; pronoun
-(defun switch-poss-rel-to-pro (ulf)
+(defun switch-simple-possible-rel-to-pro (ulf)
     (cond
        ((and (atom ulf) 
              (member (split-by-suffix ulf) *english-relativizers*)) 
@@ -263,9 +263,9 @@
                     (cddr ulf))))
        ((or (atom ulf) (listp ulf)) ulf)))
 
-(defun switch-rel-to-pro (ulf)
-  (let ((simple-res (switch-poss-rel-to-pro ulf))
-        (complex-res (cons (switch-poss-rel-to-pro (first ulf))
+(defun switch-possible-rel-to-pro (ulf)
+  (let ((simple-res (switch-simple-possible-rel-to-pro ulf))
+        (complex-res (cons (switch-simple-possible-rel-to-pro (first ulf))
                            (cdr ulf))))
     (if (not (equal simple-res ulf))
       simple-res
@@ -284,7 +284,7 @@
   (if (or (possible-simple-relative-clause? ulf)
           (ttt:match-expr '(possible-simple-relative-clause? (+ sent-mod?))
                           ulf))
-    (tensed-sent? (switch-rel-to-pro ulf))
+    (tensed-sent? (switch-possible-rel-to-pro ulf))
     nil))
 
 (defun relativize-sent! (ulf)
