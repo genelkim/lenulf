@@ -243,21 +243,55 @@
 (defparameter *english-relativizers*
   '(who whom which that whose where when what))
 
-(defun possible-relativizer-pronoun? (ulf)
-  "A pronoun which may be a mis-identified relativizer."
+(defun possible-relativizer? (ulf)
+  "A pronoun or non-pronoun which may be a mis-identified relativizer."
   (when (atom ulf)
-    (multiple-value-bind (wrd suffix) (split-by-suffix ulf)
-      (and (member wrd *english-relativizers*)
-           (eql suffix 'pro)))))
+       (let ((wrd (split-by-suffix ulf))) 
+                (member wrd *english-relativizers*))))
+
+;; Checks each part of the ULF if any parts without the suffix are members of
+;; the *english-relativizers* then if they are switch their suffix to be a
+;; pronoun
+(defun switch-simple-possible-rel-to-pro (ulf)
+    (cond
+       ((and (atom ulf) 
+             (member (split-by-suffix ulf) *english-relativizers*)) 
+        (convert-expr-to-type ulf 'pro))
+       ((and (listp ulf) 
+             (member (split-by-suffix (car ulf)) *english-relativizers*)) 
+        (cons (convert-expr-to-type (car ulf) 'pro)
+              (cdr ulf)))
+       ((and (listp ulf) 
+             (member (split-by-suffix (second ulf)) *english-relativizers*) 
+             (eql (car ulf) 'sub))
+        (cons (first ulf)
+              (cons (convert-expr-to-type (second ulf) 'pro)
+                    (cddr ulf))))
+       ((or (atom ulf) (listp ulf)) ulf)))
+
+(defun switch-possible-rel-to-pro (ulf)
+  (let ((simple-res (switch-simple-possible-rel-to-pro ulf))
+        (complex-res (cons (switch-simple-possible-rel-to-pro (first ulf))
+                           (cdr ulf))))
+    (if (not (equal simple-res ulf))
+      simple-res
+      complex-res)))
+
+;; Only checks for cases without modifiers around the sentence.
+(defun possible-simple-relative-clause? (ulf)
+  (ttt::match-expr '(! (possible-relativizer? _+)
+                       (sub possible-relativizer? _!))
+                   ulf))
 
 (defun possible-relative-clause? (ulf)
   "A tensed sentence which may be a relative clause is one which starts with a
   pronoun or a substitution of a pronoun which may be a relativizer: who, whom,
   which, that, tht, etc."
-  (and (tensed-sent? ulf)
-       (ttt::match-expr '(! (possible-relativizer-pronoun? _+)
-                            (sub possible-relativizer-pronoun? _!))
-                        ulf)))
+  (if (or (possible-simple-relative-clause? ulf)
+          (ttt:match-expr '(possible-simple-relative-clause? (+ sent-mod?))
+                          ulf))
+    (tensed-sent? (switch-possible-rel-to-pro ulf))
+    nil))
 
 (defun relativize-sent! (ulf)
   "Takes a sentence that might be a relative clause with the relativizer
