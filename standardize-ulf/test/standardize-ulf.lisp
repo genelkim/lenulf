@@ -20,6 +20,11 @@
                  '(which.pro ((pres alter.v)
                               (= (the.d (plur finding.n)))))))))
   (assert-true
+    (not (null (possible-relative-clause?
+                 '((which.pro (pres alter.v))
+                   (when.ps (it.pro (sub (k alteration.n)
+                                         ((pres find.v) *h)))))))))
+  (assert-true
     (not (null '(sub who.pro (you.pro ((pres know.v) *h))))))
   (assert-true
     (not (null
