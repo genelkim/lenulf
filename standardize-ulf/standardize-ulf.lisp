@@ -50,11 +50,6 @@
     (pres can.aux) -> (pres can.aux-v)
     |'s.aux| -> (pres be.v)
   "
-  ;; Set up the pattern en package link in ulf2english if not yet ready.
-  ;; TODO: move this to a more universal location.
-  (when (not ulf2english::*setup-complete*)
-    (ulf2english::setup-pattern-en-env #'ulf2english::python-over-py4cl))
-
   ;; No change if the format doesn't match the expected format.
   (when (not (or (len-aux? aux)
                  (and (listp aux) (= (length aux) 2)
@@ -594,6 +589,9 @@
   "Fixes the parsed ULF with domain-specific fixes which may not generalize
   outside of this package. Assumes the token-indexing has already been
   removed."
+  (when (not ulf2english::*setup-complete*)
+    (ulf2english::setup-pattern-en-env #'ulf2english::python-over-py4cl))
+
   (inout-intern (inulf ulf :standardize-ulf :callpkg pkg)
     ;; TODO: make max-n a multiplicative factor of the ulf size
     (ttt:apply-rules *ttt-ulf-fixes* ulf
