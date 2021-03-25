@@ -676,6 +676,11 @@
     ;; we're gonna ignore that for now.
     '(/ ((! verb? tensed-verb?) _*1 tensed-sent? _*2)
         (! _*1 (tht tensed-sent?) _*2))
+
+    ;; either-or
+    ;; todo: just make the type system more robust to multiple CCs in multiple places.
+    '(/ ((! either either.cc) _*1 (!2 or or.cc) _*3)
+        (_*1 either_or.cc _*3))
     ))
 
 (defun standardize-ulf (inulf &key pkg)
