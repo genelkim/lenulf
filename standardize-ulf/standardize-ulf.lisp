@@ -346,13 +346,19 @@
 (defun punct? (x)
   (in-intern (x new-x :standardize-ulf) (if (member new-x *punct-list*) t nil)))
 
+(defun tree-contains? (tree pred)
+  (cond
+    ((funcall pred tree) t)
+    ((atom tree) nil)
+    (t (mapcar #'(lambda (sub) (tree-contains? sub pred)) tree))))
+
 (defun cc-mismatched-types? (ulf)
   "Identifies coordinated conjunctions of ULFs with mismatched types."
   (and (listp ulf)
        ;; contains a coordinator
        (not (null (remove-if-not #'lex-coord? ulf)))
        ;; ensure unknowns are already converted to names
-       (null (remove-if-not #'lex-unknown? ulf))
+       (not (tree-contains? ulf #'lex-unknown?))
        (let ((args (remove-if #'lex-coord? ulf)))
          ;; at least 1 arg
          (and (> (length args) 1)
@@ -690,7 +696,8 @@
     ;; we're gonna ignore that for now.
     '(/ ((! verb? tensed-verb?) _*1 tensed-sent? _*2)
         (! _*1 (tht tensed-sent?) _*2))
-
+    '(/ ((! verb? tensed-verb?) _*1 sent? _*2)
+        (! _*1 (ke sent?) _*2))
     ;; either-or
     ;; todo: just make the type system more robust to multiple CCs in multiple places.
     '(/ ((! either either.cc) _*1 (!2 or or.cc) _*3)
