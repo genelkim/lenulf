@@ -437,6 +437,10 @@
   (list
     ;'(/ ((lex-tense? have.v) _*1 ((perf lex-verb?) _*2)) ((lex-tense? perf) _*1 (lex-verb? _*2)))
 
+    ;; Weird possessives bug for words ending in "s".
+    '(/ |foot2|
+        (quote s))
+
     ;; Removing periods from ULFs.
     *ttt-remove-periods*
 
