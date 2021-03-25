@@ -80,7 +80,7 @@
       ((sym (if (atom aux) aux (second aux)))
        (sympair (multiple-value-list (split-by-suffix sym)))
        (wrd (first sympair))
-       (lemma 
+       (lemma
          (cond
            ((member wrd '(|'s| |'S|)) 'be)
            (t
@@ -241,7 +241,7 @@
 (defun possible-relativizer? (ulf)
   "A pronoun or non-pronoun which may be a mis-identified relativizer."
   (when (atom ulf)
-       (let ((wrd (split-by-suffix ulf))) 
+       (let ((wrd (split-by-suffix ulf)))
                 (member wrd *english-relativizers*))))
 
 ;; Checks each part of the ULF if any parts without the suffix are members of
@@ -249,15 +249,15 @@
 ;; pronoun
 (defun switch-simple-possible-rel-to-pro (ulf)
     (cond
-       ((and (atom ulf) 
-             (member (split-by-suffix ulf) *english-relativizers*)) 
+       ((and (atom ulf)
+             (member (split-by-suffix ulf) *english-relativizers*))
         (convert-expr-to-type ulf 'pro))
-       ((and (listp ulf) 
-             (member (split-by-suffix (car ulf)) *english-relativizers*)) 
+       ((and (listp ulf)
+             (member (split-by-suffix (car ulf)) *english-relativizers*))
         (cons (convert-expr-to-type (car ulf) 'pro)
               (cdr ulf)))
-       ((and (listp ulf) 
-             (member (split-by-suffix (second ulf)) *english-relativizers*) 
+       ((and (listp ulf)
+             (member (split-by-suffix (second ulf)) *english-relativizers*)
              (eql (car ulf) 'sub))
         (cons (first ulf)
               (cons (convert-expr-to-type (second ulf) 'pro)
@@ -339,9 +339,9 @@
 
 (defparameter *punct-list*
     '(\: \' \. \, \- \_ \{ \} \[ \] \~
-      \; ;; The semicolon was messing up the editor highlighting 
+      \; ;; The semicolon was messing up the editor highlighting
          ;; so it was put in this form
-     )) 
+     ))
 
 (defun punct? (x)
   (in-intern (x new-x :standardize-ulf) (if (member new-x *punct-list*) t nil)))
@@ -361,8 +361,8 @@
 ;; Rules used for performing domain-specific fixes.
 (defparameter *ttt-ulf-fixes*
   (list
-    ;'(/ ((lex-tense? have.v) _*1 ((perf lex-verb?) _*2)) ((lex-tense? perf) _*1 (lex-verb? _*2))) 
-    
+    ;'(/ ((lex-tense? have.v) _*1 ((perf lex-verb?) _*2)) ((lex-tense? perf) _*1 (lex-verb? _*2)))
+
     ;; Removing periods from ULFs.
     *ttt-remove-periods*
 
@@ -434,6 +434,13 @@
          !))
     ;; (A.* (FEW.* ...)) -> (a_few.d ...)
     *a-few-fix*
+
+    ;; Double determiners
+    ;; all the men
+    ;; -> (all.d (the.d (plur man.n)))
+    ;; -> (all.d ({of}.p (the.d (plur man.n))))
+    '(/ ((!1 det?) ((!2 det?) (!3 noun? pp?)))
+        (!1 ({of}.p (!2 !3))))
 
     ;; Introduce N+PREDS
     ;; ((k/Q X) PRED) -> (k/Q (N+PREDS X PRED))
@@ -549,6 +556,12 @@
     ;; (N SENT[with possible relativizer pronoun]) -> (N+PREDS N SENT[pro->rel])
     '(/ (noun? possible-relative-clause?)
         (n+preds noun? (relativize-sent! possible-relative-clause?)))
+    ;; (quantified-N SENT[with possible relativier pronoun])
+    ;; -> (det (n+preds n SENT[pro->rel]))
+    '(/ ((det? noun?) possible-relative-clause?)
+        (det? (n+preds noun? (relativize-sent! possible-relative-clause?))))
+    '(/ (((!1 det?) (lex-p? ((!2 det?) noun?))) possible-relative-clause?)
+        (!1 (lex-p? (!2 (n+preds noun? possible-relative-clause?)))))
 
     ;; Likely kinds
     ;; (NOUN TENSED-VERB) -> ((k NOUN) TENSED-VERB)
