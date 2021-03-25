@@ -346,6 +346,76 @@
 (defun punct? (x)
   (in-intern (x new-x :standardize-ulf) (if (member new-x *punct-list*) t nil)))
 
+(defun cc-mismatched-types? (ulf)
+  "Identifies coordinated conjunctions of ULFs with mismatched types."
+  (and (listp ulf)
+       ;; contains a coordinator
+       (not (null (remove-if-not #'lex-coord? ulf)))
+       ;; ensure unknowns are already converted to names
+       (null (remove-if-not #'lex-unknown? ulf))
+       (let ((args (remove-if #'lex-coord? ulf)))
+         ;; at least 1 arg
+         (and (> (length args) 1)
+              ;; no agreed type
+              (null (reduce #'intersection
+                            (mapcar #'phrasal-ulf-type? args)))))))
+
+(defun cdr-max (cons1 cons2)
+  (if (>= (cdr cons1) (cdr cons2))
+    cons1
+    cons2))
+
+(defun enforce-cc-types! (ulf)
+  "Enforce the majority type on coordinated conjunctions."
+  (let*
+    ((types (mapcar #'(lambda (expr)
+                        (phrasal-ulf-type? expr :callpkg :standardize-ulf))
+                    ulf))
+     (type-counts
+       (reduce
+         #'(lambda (count-alist newtypes)
+             (loop for ntype in newtypes do
+                   (if (assoc ntype count-alist)
+                     ;; increment
+                     (rplacd (assoc ntype count-alist)
+                             (1+ (cdr (assoc ntype count-alist))))
+                     ;; add new
+                     (setf count-alist (acons ntype 1 count-alist))))
+             count-alist)
+         types
+         :initial-value nil))
+     (majority-type-cons
+       (reduce #'cdr-max
+               (remove-if #'(lambda (pair) (eql 'coordinator (car pair)))
+                          type-counts)))
+     (majority-type (car majority-type-cons)))
+
+    ;; Enforce the majority type for non-coordinators.
+    (mapcar
+      #'(lambda (expr expr-types)
+          (cond
+            ((member 'coordinator expr-types)
+             expr)
+            ((member majority-type expr-types)
+             expr)
+            (t
+              (convert-to-type expr majority-type))))
+      ulf
+      types)))
+
+(defun convert-to-type (ulf new-type)
+  "Convert ulf to have new-type."
+  (cond
+    ;; Atoms turn to names.
+    ((and (atom ulf) (equal 'term new-type))
+     (add-bars! (split-by-suffix ulf)))
+    ;; Unhandled cases, raise error.
+    (t (error
+         (format nil
+                 "Unknown type conversion.~%  ulf: ~s~%  new-type: ~s~%~%"
+                 ulf new-type)))))
+
+
 ;; Fixing the possessives form
 
 ;; n+preds singular pred case
@@ -596,6 +666,10 @@
     ;;     ((lex-tense? (pasv lex-verb?)) _*))
     '(/ ((lex-tense? be.v) _*1 ((pasv lex-verb?) _*2))
         ((lex-tense? (pasv lex-verb?)) _*1 _*2))
+
+    ;; Make types of coordinated conjunctions match.
+    '(/ cc-mismatched-types?
+        (enforce-cc-types! cc-mismatched-types?))
 
     ;; Reify sentence arguments to verbs.
     ;; NB: sometimes this is actually two arguments with wrong bracketing, but
