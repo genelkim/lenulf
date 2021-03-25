@@ -415,6 +415,10 @@
                  "Unknown type conversion.~%  ulf: ~s~%  new-type: ~s~%~%"
                  ulf new-type)))))
 
+(defun det2adj! (det)
+  (if (atom det)
+    (replace-suffix! det 'a)
+    (second det)))
 
 ;; Fixing the possessives form
 
@@ -511,6 +515,12 @@
     ;; -> (all.d ({of}.p (the.d (plur man.n))))
     '(/ ((!1 det?) ((!2 det?) (!3 noun? pp?)))
         (!1 ({of}.p (!2 !3))))
+
+    ;; Modified quantifiers
+    '(/ (len-adv? det?)
+        ;; todo: infer whether it's nquan or fquan.
+        (nquan ((replace-suffix! len-adv? mod-a) ; todo: infer if mod-a or adv-s
+                (det2adj! det?))))
 
     ;; Introduce N+PREDS
     ;; ((k/Q X) PRED) -> (k/Q (N+PREDS X PRED))
