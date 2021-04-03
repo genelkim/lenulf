@@ -688,10 +688,6 @@
     '(/ ((lex-tense? be.v) _*1 ((pasv lex-verb?) _*2))
         ((lex-tense? (pasv lex-verb?)) _*1 _*2))
 
-    ;; Make types of coordinated conjunctions match.
-    '(/ cc-mismatched-types?
-        (enforce-cc-types! cc-mismatched-types?))
-
     ;; Reify sentence arguments to verbs.
     ;; NB: sometimes this is actually two arguments with wrong bracketing, but
     ;; we're gonna ignore that for now.
@@ -699,6 +695,7 @@
         (! _*1 (tht tensed-sent?) _*2))
     '(/ ((! verb? tensed-verb?) _*1 sent? _*2)
         (! _*1 (ke sent?) _*2))
+    
     ;; either-or
     ;; todo: just make the type system more robust to multiple CCs in multiple places.
     '(/ ((! either either.cc) _*1 (!2 or or.cc) _*3)
@@ -716,6 +713,10 @@
     ;; Turn them into modifiers.
     '(/ ((! verb? tensed-verb?) _*1 pp? _*2)
         (! _*1 (adv-a pp?) _*2))
+    
+    ;; Make types of coordinated conjunctions match.
+    '(/ cc-mismatched-types?
+        (enforce-cc-types! cc-mismatched-types?))
     ))
 
 (defun standardize-ulf (inulf &key pkg)
