@@ -350,7 +350,8 @@
   (cond
     ((funcall pred tree) t)
     ((atom tree) nil)
-    (t (mapcar #'(lambda (sub) (tree-contains? sub pred)) tree))))
+    (t (some #'(lambda (x) (eql x t))
+             (mapcar #'(lambda (sub) (tree-contains? sub pred)) tree)))))
 
 (defun cc-mismatched-types? (ulf)
   "Identifies coordinated conjunctions of ULFs with mismatched types."
@@ -367,7 +368,7 @@
                             (mapcar #'phrasal-ulf-type? args)))))))
 
 (defun cdr-max (cons1 cons2)
-  (if (>= (cdr cons1) (cdr cons2))
+  (if (> (cdr cons1) (cdr cons2))
     cons1
     cons2))
 
@@ -702,6 +703,19 @@
     ;; todo: just make the type system more robust to multiple CCs in multiple places.
     '(/ ((! either either.cc) _*1 (!2 or or.cc) _*3)
         (_*1 either_or.cc _*3))
+
+    ;; Merge multi-argument copula
+    '(/ ((lex-tense? be.v) (det? noun?) pp?)
+        ((lex-tense? be.v) (= (det? (n+preds noun? pp?)))))
+
+    ;; Assume "by" prepositions to passivized verbs are argument markers.
+    '(/ ((lex-tense? (pasv verb?)) _*1 (by.p _!) _*2)
+        ((lex-tense? (pasv verb?)) _*1 (by.p-arg _!) _*2))
+
+    ;; Assume that there are no prepositional phrase complements.
+    ;; Turn them into modifiers.
+    '(/ ((! verb? tensed-verb?) _*1 pp? _*2)
+        (! _*1 (adv-a pp?) _*2))
     ))
 
 (defun standardize-ulf (inulf &key pkg)
@@ -716,5 +730,5 @@
     (ttt:apply-rules *ttt-ulf-fixes* ulf
                      :max-n 1000
                      :deepest t
-                   :rule-order :fast-forward)))
+                     :rule-order :fast-forward)))
 
