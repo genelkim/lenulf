@@ -427,6 +427,11 @@
     (replace-suffix! det 'a)
     (second det)))
 
+(defun det2adv-s! (de)
+  (if (atom det)
+    (replace-suffix! det 'adv-s)
+    (list 'adv-s (second det))))
+
 ;; Fixing the possessives form
 
 ;; n+preds singular pred case
@@ -714,6 +719,10 @@
     '(/ ((! verb? tensed-verb?) _*1 pp? _*2)
         (! _*1 (adv-a pp?) _*2))
     
+    ;; Convert floating determiners to adv-s.
+    '(/ (_+ det? _*)
+        (_+ (det2adv-s! det?) _*))
+
     ;; Make types of coordinated conjunctions match.
     '(/ cc-mismatched-types?
         (enforce-cc-types! cc-mismatched-types?))
