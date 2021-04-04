@@ -427,7 +427,7 @@
     (replace-suffix! det 'a)
     (second det)))
 
-(defun det2adv-s! (de)
+(defun det2adv-s! (det)
   (if (atom det)
     (replace-suffix! det 'adv-s)
     (list 'adv-s (second det))))
