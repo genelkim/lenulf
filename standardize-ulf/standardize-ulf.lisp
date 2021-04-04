@@ -158,7 +158,7 @@
     (and (lex-unknown? sym)
          (member lemma *determiners*))))
 
-(defun bad-a-few? (expr)
+(defun bad-a-few-joined? (expr)
   "Matches '(A.* (FEW.* ...))"
   (and (listp expr)
        (= 2 (length expr))
@@ -167,18 +167,30 @@
        (listp (second expr))
        (symbolp (first (second expr)))
        (eql 'few (nth-value 0 (ulf:split-by-suffix (first (second expr)))))))
-(defun fix-a-few! (expr)
-  (let* ((asym (ulf:split-by-suffix (first expr)))
-         (fewsym (ulf:split-by-suffix (first (second expr))))
-         (pred (cdr (second expr)))
-         (afewsym (ulf:add-suffix
+(defun fix-a-few-joined! (expr)
+  (cons
+    (fix-a-few! (first expr) ; a
+                (first (second expr))) ; few
+    (cdr (second expr)))) ; predicate
+(defun fix-a-few! (aexpr fewexpr)
+  (let* ((asym (ulf:split-by-suffix aexpr))
+         (fewsym (ulf:split-by-suffix fewexpr)))
+    (ulf:add-suffix
                     (fuse-into-atom (list asym '_ fewsym) :pkg :standardize-ulf)
                     'd
                     :pkg :standardize-ulf)))
-    (cons afewsym pred)))
 
-(defparameter *a-few-fix*
-  '(/ bad-a-few? (fix-a-few! bad-a-few?)))
+(defparameter *a-few-joined-fix*
+  '(/ bad-a-few-joined? (fix-a-few-joined! bad-a-few-joined?)))
+(defparameter *a-few-flat-fix1*
+  '(/ (_+1 a-x? few-x? _*2)
+      (_+1 (fix-a-few! a-x? few-x?) _*2)))
+(defparameter *a-few-flat-fix2*
+  '(/ (_*1 a-x? few-x? _+2)
+      (_*1 (fix-a-few! a-x? few-x?) _+2)))
+(defparameter *a-few-flat-fix3*
+  '(/ (a-x? few-x?)
+      (fix-a-few! a-x? few-x?)))
 
 (defun remove-vp-tense! (vp)
   "Removes the tense from the head verb of the ULF verb phrase."
@@ -432,6 +444,27 @@
     (replace-suffix! det 'adv-s)
     (list 'adv-s (second det))))
 
+(defun at-x? (ulf)
+  (and (atom ulf)
+       (eql 'at (split-by-suffix ulf))))
+(defun at-most/least? (ulf)
+  (and (atom ulf)
+       (member (split-by-suffix ulf) '(least most))))
+(defun a-x? (ulf)
+  (and (atom ulf)
+       (eql 'a (split-by-suffix ulf))))
+(defun few-x? (ulf)
+  (and (atom ulf)
+       (eql 'few (split-by-suffix ulf))))
+(defun merge-symbols! (x y suf)
+  (ulf:add-suffix
+    (fuse-into-atom (list (split-by-suffix x)
+                          '_
+                          (split-by-suffix y))
+                    :pkg :standardize-ulf)
+    suf
+    :pkg :standardize-ulf))
+
 ;; Fixing the possessives form
 
 ;; n+preds singular pred case
@@ -523,7 +556,19 @@
         ((replace-suffix! unknown-det? d)
          !))
     ;; (A.* (FEW.* ...)) -> (a_few.d ...)
-    *a-few-fix*
+    *a-few-joined-fix*
+    ;; (... A.* FEW.* ...)) -> (... a_few.d ...)
+    *a-few-flat-fix1*
+    *a-few-flat-fix2*
+    *a-few-flat-fix3*
+    ;; (at.x most.x/least.x quant.x)
+    ;; -> (nquan (at_most.mod-a quant.a))
+    '(/ (at-x? at-most/least? (! adj-det? pro-det? det? unknown-det?))
+        (nquan ((merge-symbols! at-x? at-most/least? mod-a)
+                (replace-suffix! ! a))))
+    '(/ ((at-x? at-most/least?) (! adj-det? pro-det? det? unknown-det?))
+        (nquan ((merge-symbols! at-x? at-most/least? mod-a)
+                (replace-suffix! ! a))))
 
     ;; Double determiners
     ;; all the men
@@ -617,6 +662,9 @@
         (_+ (replace-suffix! lex-prep? adv-a)))
 
     ;; DETERMINERS
+    ;; (<D> x <V>) -> (<D> x <V>)
+    '(/ (det? _! tensed-verb?)
+        ((det? _!) tensed-verb?))
     ;; (<D> x ...) -> (<D> (x ...))
     '(/ (det? _! _+) (det? (_! _+)))
 
@@ -700,7 +748,7 @@
         (! _*1 (tht tensed-sent?) _*2))
     '(/ ((! verb? tensed-verb?) _*1 sent? _*2)
         (! _*1 (ke sent?) _*2))
-    
+
     ;; either-or
     ;; todo: just make the type system more robust to multiple CCs in multiple places.
     '(/ ((! either either.cc) _*1 (!2 or or.cc) _*3)
@@ -718,7 +766,7 @@
     ;; Turn them into modifiers.
     '(/ ((! verb? tensed-verb?) _*1 pp? _*2)
         (! _*1 (adv-a pp?) _*2))
-    
+
     ;; Convert floating determiners to adv-s.
     '(/ (_+ det? _*)
         (_+ (det2adv-s! det?) _*))
