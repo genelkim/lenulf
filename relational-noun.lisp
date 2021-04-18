@@ -61,14 +61,13 @@
         ((< 3 (length sym)) (mapcar #'remove-n-preds sym))
         (t
             (let ((fst (remove-n-preds (car sym)))
-                (scd (remove-n-preds (cadr sym)))
                 (thrd (remove-n-preds (caddr sym))))
                 (cond
                     ((and 
-                        (is-npreds? fst) (
-                        null thrd)) 
-                     (remove fst)
-                    (t (cons fst (remove-n-preds (cdr sym))))))))))
+                        (is-npreds? fst)
+                        (null thrd)) 
+                     (remove fst sym))
+                    (t (cons fst (remove-n-preds (cdr sym)))))))))
 
 ;; Function to fix the merged list by modifying noun & of. 
 (defun fix (lst)
@@ -86,11 +85,11 @@
 
 ;; Function that checks whether the list has OF.P
 (defun has-of? (lst)
-    (member lst 'OF.P)
+    (member 'OF lst)
 )
 
 ;; Function that checks whether the list has N+PREDS
 (defun is-npreds? (lst)
-    (member lst 'N+PREDS)
+    (member 'N+PREDS lst)
 )
 
