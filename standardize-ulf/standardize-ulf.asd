@@ -8,7 +8,8 @@
   :license "MIT"
   :depends-on (:ttt :cl-strings :cl-util :cl-ppcre :ulf-lib :ulf2english :py4cl)
   :components ((:file "package")
-               (:file "standardize-ulf"))
+               (:file "standardize-ulf")
+               (:file "relational-noun"))
   :around-compile (lambda (next)
                     (proclaim '(optimize (debug 3) (safety 3) (space 1) (speed 1)))
                     (funcall next)))

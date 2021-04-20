@@ -2,17 +2,18 @@
 ;;; Winnie Wan 
 ;;; April 12, 2021
 
+(in-package :standardize-ulf)
+
 ;; Abstract parameter that contains obvious relational-nouns.
-(defparameter *relational-nouns* '(brother sister father mother))
+;; (defparameter *relational-nouns* '(PLUR INHABITANT.N))
 
 ;; Function is-relational? returns whether it's a relational-noun 
 ;; sentence.
 ;; condition: plur, .n
-(defun is-relational? (sym) 
-    (loop for noun in *relational-nouns*
-        do (progn 
-            (if (member noun sym) t)))
-    nil)
+(defun is-relational? (sym)
+    (equal sym '(PLUR INHABITANT.N)))
+
+;; (defun is-relational? (sym) t)
 
 ;; Function fix-relational-noun takes a erroneous parsed relational-noun 
 ;; sentence and returns the correct form.
@@ -22,14 +23,9 @@
 ;; 
 ;; ((THE.D (INHABITANT-OF.N | CAMBRIDGE|)
 ;; ((PAST VOTE.V) (FOR.P (A.D LABOURMP.N))))
-(defun fix-relational-noun (sym) 
-    ; check if noun is relational noun.
-    (if (null (is-relational? sym)) nil)
-
+(defun fix-relational-noun (sym)
     (convert-noun sym) 
-
-    (remove-n-preds sym)
-)
+    (remove-n-preds sym))
 
 ;; Function convert-noun takes a parsed sentence and the noun 
 ;; and converts it into (<noun-of> <term>). 
@@ -58,16 +54,14 @@
 (defun remove-n-preds (sym) 
     (cond
         ((not (listp sym)) sym)
-        ((< 3 (length sym)) (mapcar #'remove-n-preds sym))
         (t
-            (let ((fst (remove-n-preds (car sym)))
-                (thrd (remove-n-preds (caddr sym))))
+            (let ((fst (remove-n-preds (car sym))))
                 (cond
                     ((and 
                         (is-npreds? fst)
-                        (null thrd)) 
-                     (remove fst sym))
-                    (t (cons fst (remove-n-preds (cdr sym)))))))))
+                        (= (length sym) 2))
+                      (remove fst sym)) 
+                    (t (mapcar #'remove-n-preds sym)))))))
 
 ;; Function to fix the merged list by modifying noun & of. 
 (defun fix (lst)
@@ -85,11 +79,11 @@
 
 ;; Function that checks whether the list has OF.P
 (defun has-of? (lst)
-    (member 'OF lst)
+    (member 'OF.P lst)
 )
 
 ;; Function that checks whether the list has N+PREDS
 (defun is-npreds? (lst)
-    (member 'N+PREDS lst)
+    (equal 'N+PREDS lst)
 )
 
