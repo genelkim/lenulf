@@ -38,3 +38,47 @@
     (not (null (possible-relative-clause? 
                  '(that.p ((past be.v) entertaining.a)))))))
 
+
+;; Example tests.
+
+(defun add-of (x)
+  (intern (concatenate 'string
+                       (symbol-name x)
+                       "-of")))
+
+(define-test example-tests
+  (:tag :examples :fun-examples)
+
+  (let ((ulf-part1 'chairman.n)
+        (ulf-part2 '(the.d department.n)))
+    
+    (assert-equal '(chairman-of.n (the.d department.n))
+                  (list (add-of ulf-part1)
+                        ulf-part2)
+                  ulf-part1
+                  ulf-part2
+                  (add-of ulf-part1)))
+
+  (assert-equal 1 2)
+  (assert-equal 1 1)
+  (assert-true t)
+  (assert-true nil)
+
+  (assert-equal 5 (+ 1 3))
+  ;;(assert-true (equal '(chairman-of.n (the.d department.n))
+  ;;                    (fix-relational-noun '(n+preds chairman.n (of.p (the.d department.n))))))
+
+
+  ;;(assert-equal '(chairman-of.n (the.d department.n))
+  ;;              (fix-relational-noun '(n+preds chairman.n (of.p (the.d department.n)))))
+
+  ;;(assert-error 'type-error (bad-function 'bad-input))
+
+  )
+
+(define-test relational-bad-n+preds
+  ..)
+
+(defune-test relational-bad-plur
+  ..)
+

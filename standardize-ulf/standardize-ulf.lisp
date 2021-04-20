@@ -758,6 +758,11 @@
     '(/ ((lex-tense? be.v) (det? noun?) pp?)
         ((lex-tense? be.v) (= (det? (n+preds noun? pp?)))))
 
+    ;; Assume that there are no prepositional phrase complements.
+    ;; "that" with a sentence turns into a proposition.
+    '(/ ((!1 verb? tensed-verb?) _*2 (that.p _!3) _*4)
+        (!1 _*2 (that _!3) _*4))
+    
     ;; Assume "by" prepositions to passivized verbs are argument markers.
     '(/ ((lex-tense? (pasv verb?)) _*1 (by.p _!) _*2)
         ((lex-tense? (pasv verb?)) _*1 (by.p-arg _!) _*2))

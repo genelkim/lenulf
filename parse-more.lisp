@@ -20,8 +20,8 @@
       (format t "Loading K&K parser...")
       (finish-output)
       (py4cl:python-exec "import benepar")
-      (py4cl:python-exec "benepar.download('benepar_en2')")
-      (py4cl:python-exec "benepar_parser = benepar.Parser('benepar_en2')")
+      (py4cl:python-exec "benepar.download('benepar_en3')")
+      (py4cl:python-exec "benepar_parser = benepar.Parser('benepar_en3')")
       (setf *k&k-setup-complete* t)
       (format t "Done!~%"))
     (lispify-parser-output
