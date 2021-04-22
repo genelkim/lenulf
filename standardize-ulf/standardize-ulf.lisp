@@ -422,12 +422,24 @@
       ulf
       types)))
 
+;; TODO: move to ulf-lib
+(defparameter *basic-types-to-suffix*
+  '((noun . n)
+    (adj . a)
+    (p-arg . p-arg)
+    (prep . p)
+    (verb . v)
+    (aux . aux-v)))
+
 (defun convert-to-type (ulf new-type)
   "Convert ulf to have new-type."
   (cond
     ;; Atoms turn to names.
     ((and (atom ulf) (equal 'term new-type))
      (add-bars! (split-by-suffix ulf)))
+    ;; Adjectives.
+    ((and (atom ulf) (assoc new-type *basic-types-to-suffix*))
+     (replace-suffix! ulf (cdr (assoc new-type *basic-types-to-suffix*))))
     ;; Unhandled cases, raise error.
     (t (error
          (format nil
