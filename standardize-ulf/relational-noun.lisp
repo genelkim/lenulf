@@ -24,8 +24,7 @@
 ;; ((THE.D (INHABITANT-OF.N | CAMBRIDGE|)
 ;; ((PAST VOTE.V) (FOR.P (A.D LABOURMP.N))))
 (defun fix-relational-noun (sym)
-    (convert-noun sym) 
-    (remove-n-preds sym))
+    (remove-n-preds (convert-noun sym)))
 
 ;; Function convert-noun takes a parsed sentence and the noun 
 ;; and converts it into (<noun-of> <term>). 
@@ -42,7 +41,7 @@
                     ((and 
                         (is-relational? fst) 
                         (has-of? scd))     
-                     (cons (fix (append fst scd)) (convert-noun (cddr sym))))            
+                     (cons (fix-noun (append fst scd)) (convert-noun (cddr sym))))            
                     (t (cons fst (convert-noun (cdr sym)))))))))
 
 ;; Function remove-n-preds takes a parsed sentence and checks whether 
@@ -64,9 +63,9 @@
                     (t (mapcar #'remove-n-preds sym)))))))
 
 ;; Function to fix the merged list by modifying noun & of. 
-(defun fix (lst)
+(defun fix-noun (lst)
     ;; remove of.p 
-    (remove (nth 2 lst) lst)
+    (delete (nth 2 lst) lst)
 
     ;; edit noun to have -of.n
     ;; split-by-suffix splits the '. and returns the value.
@@ -75,6 +74,8 @@
         (fuse-into-atom (list (split-by-suffix (nth 1 lst)) '-OF.N) 
         :pkg :standardize-ulf)
     )
+    
+    lst
 )
 
 ;; Function that checks whether the list has OF.P

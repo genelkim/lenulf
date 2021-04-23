@@ -70,9 +70,9 @@
   ; Tests function remove-n-preds that takes in the erroneous relational noun sentence 
   ; and determines whether you remove n+preds depending on the number of predicates. 
   ; If the sentence ahs 3 or more predicates, then remove n+preds. Else, nothing changes.
-  (assert-true (equal '((THE.D (PLUR (INHABITANT-OF.N (| CAMBRIDGE|)))) ((PAST VOTE.V) (FOR.P (A.D LABOURMP.N))))
+  (assert-true (equal '((THE.D ((PLUR INHABITANT-OF.N | CAMBRIDGE|)))((PAST VOTE.V) (FOR.P (A.D LABOURMP.N))))
                         (remove-n-preds '((THE.D (N+PREDS (PLUR INHABITANT-OF.N | CAMBRIDGE|))) ((PAST VOTE.V) (FOR.P (A.D LABOURMP.N)))))))
 
-  (assert-true (equal '((EVERY.D (CANADIAN.A RESIDENT.N)) ((PRES BE.V) (= (A.D (N+PREDS RESIDENT-OF.N (THE.D ((NORTH.A AMERICAN.A) CONTINENT.N)))))))
+  (assert-true (equal '((EVERY.D (CANADIAN.A RESIDENT.N))((PRES BE.V)(= (A.D (N+PREDS RESIDENT-OF.N (THE.D ((NORTH.A AMERICAN.A) CONTINENT.N)))))))
                         (remove-n-preds '((EVERY.D (CANADIAN.A RESIDENT.N)) ((PRES BE.V) (= (A.D (N+PREDS RESIDENT-OF.N (THE.D ((NORTH.A AMERICAN.A) CONTINENT.N)))))))))))
 
