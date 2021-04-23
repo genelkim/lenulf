@@ -763,8 +763,12 @@
 
     ;; either-or
     ;; todo: just make the type system more robust to multiple CCs in multiple places.
-    '(/ ((! either either.cc) _*1 (!2 or or.cc) _*3)
+    '(/ ((! either either.cc either.adv) _*1 (!2 or or.cc) _*3)
         (_*1 either_or.cc _*3))
+    '(/ (((! either either.cc either.adv) _!1) (!2 or or.cc) _*3)
+        (_!1 either_or.cc _*3))
+    '(/ (((! either either.cc either.adv) _+1) (!2 or or.cc) _*3)
+        ((_+1) either_or.cc _*3))
 
     ;; Merge multi-argument copula
     '(/ ((lex-tense? be.v) (det? noun?) pp?)
@@ -791,6 +795,10 @@
     ;; Make types of coordinated conjunctions match.
     '(/ cc-mismatched-types?
         (enforce-cc-types! cc-mismatched-types?))
+
+    ;; Basic it-extraposition.
+    '(/ (it.pro ((lex-tense? be.v) adj? term?))
+        (it-extra.pro (((lex-tense? be.v) adj?) term?)))
     ))
 
 (defun standardize-ulf (inulf &key pkg)
