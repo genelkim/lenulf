@@ -42,8 +42,7 @@ to `nil`.
 If you would rather stay in your current package, the following code results in
 the same input/output from your current package by using the global `*package*`
 variable. NB: `intern-symbols-recursive` is from a separate utility package
-[gute](https://github.com/genelkim/gute) (previously called
-[cl-util](https://github.com/genelkim/cl-util)).
+[gute](https://github.com/genelkim/gute).
 ```
 * (ql:quickload :gute)
 * (ql:quickload :lenulf)
@@ -166,7 +165,7 @@ The function `standardize-ulf` is placed in a separate package since it has addi
 dependencies that are not necessary for the parser alone. The following dependencies
 are not currently available automatically through quicklisp and must be installed in
 the local-projects directory.
-- [cl-util](https://github.com/genelkim/cl-util)
+- [gute](https://github.com/genelkim/gute)
 - [ttt](https://github.com/genelkim/ttt)
 - [ulf-lib](https://github.com/genelkim/ulf-lib)
 - [ulf2english](https://github.com/genelkim/ulf2english)
