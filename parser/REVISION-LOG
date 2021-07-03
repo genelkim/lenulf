@@ -1,0 +1,42 @@
+
+IN REVERSE CHRONOLOGICAL ORDER
+
+################################################################################
+June 29/21
+
+-  added a rule for conjoined SBARs denoting wh-nominals; 
+-  made a small change in PP gap insertion in the lexical constituent
+   of an ADJP to allow misformed ADJPs (e.g., containing lexical VBN (passive))
+-  fixed a mistyped version of dot-predicate .it/they/them/this/that in
+   the preprocessing rules, & inserted a format statement in the definition
+   of 'isa' warning about trying to use an undefined dot-predicate
+
+=========================================================================
+June 27/21
+
+- added an (ans-to (sub ...)) rule wh-nominals within a PP (and a
+  slight modification or predicate .PP to allow the same interpretation
+  in WHPP contexts
+==========================================================================
+June 26/21
+
+- two rules for raising "whereas" from verb adjunct position (in BLLIP
+  parses) to sentential connective position; not sure if "whereas" is .CC
+  or .PS
+- removed duplicate rules
+- fixed a bad 'rep' insertion
+==========================================================================
+June 25/21
+
+- fixed various gap insertion glitches
+- changed "where" in "where <be> <np> at?" from WRB to WP (to get a *h gap)
+- changed ULFs of booleans to have no type suffix
+- modified word indexing so as not to index added operators
+- changed -NONE- to -SYMB- in rule output templates for added symbols
+- prefixed Ka to form gerunds after a preposition
+- inserted a rule to handle headless NPs of type (Det ADJ)
+- inserted rules for splitting (any/some/every/no)body into Det + person
+  (consider "anybody who disagrees ..." -- pronoun won't work)
+- other fixes involving 'sub', 'rep' (not handled properly yet)
+_____________________________________________________________________________
+

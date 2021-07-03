@@ -1,0 +1,96 @@
+These are thoughts from 2020, not incorporated into the current version (6/19/21)
+===========================================================================
+Apr 7/20
+
+I've long been a bit unhappy about deleted integrated quotes, and using LFs
+of mentioned quotes, in (\" <lf> \") bracketing; we really should retain the 
+original string, while also providing the LF. So, I'd suggest a two-component
+item in both cases. As a simple example of the need for explicit mentioned 
+quotes, consider "Two plural forms of "lemma" are "lemmas" and "lemmata"". 
+We can't code both "lemmas" and "lemmata" as (\" (plur lemma.n) \").
+Something is lost in dropping integrated quotes as well, as in "I drew my
+impression of a "purple people eater"" -- (purple.a ((plur person.n) eater.n));
+or "Bob suffers from "bacteria hysteria" -- ((plur bacterium.n) (hysteria.n)).
+More generally, integrated quotes do carry information, namely that the quoted
+phrase is somehow unusual in form or meaning.
+
+I've also become dubious about the treatment of brackets as (\( ... \)) etc.
+-- I'd prefer single prefix operators to say "the following is in brackets", 
+just as we use single prefix operators for type-shifters, in keeping with "curried"
+conventions. Also I'm not quite sure we need (qt-attr (\" ... (... *qt ...) ...\")),
+clever as that construct is. Assuming that we have a string 'concat' function 
+(which arguably is a requirement in EL for reasoning about string-terms), it
+seems that 'sub' should suffice.
+
+I tentatively suggest the following, which also turns out to help with 
+post-positioned gap-fillers:
+
+  (q "..." <lf>) mentioned quotes
+  (iq "..." <lf>) integral quotes
+
+  (() ... ) expression(s) in round brackets
+  ([] ... ) expression(s) in square brackets
+  ({} ... ) expression(s) in curly brackets
+
+
+Examples:
+
+  ""Love" is a four-letter word"
+  ((q "Love" (k love.n)) ((pred be.v (a.d ((four.a letter.n) word.n)))))
+
+  "New "holes" were discovered"
+  ((new.a (iq "holes" (plur hole.n))) ((past be.v) (pasv discover.v)))
+
+  ""That'll do", he said"
+  (sub (q "That'll do" (that.pro ((pres \'ll.aux-s) do.v))) 
+       (he.pro ((past say.v) *h)))
+
+  ""No", he said, "not now"
+  (sub (q "No," no.yn \,) 
+       (he.pre ((past say.v) (conc *h 
+                              (q "not now" (not ({ref}.pro now.adv-e {ref}.vp)))))))
+  
+  'conc' applied to (q ...) constucts would be understood as concatenating the 
+   string arguments and listing the ULF arguments -- we want
+        (he.pre ((past say.v) (q "No, not now") 
+                                 (no.yn \, (not ({ref}.pro now.adv-e {ref}.vp)))))
+
+  "Rover (my dog) is sick"
+  ((np+preds |Rover| (() (= (my.d dog.n)))) ((pres be.v) sick.a))
+
+  "Rover [my dog] is sick"
+  ((np+preds |Rover| ([] (= (my.d dog.n)))) ((pres be.v) sick.a))
+
+One more issue, not yet addressed in the ULF guidelines, concerns gaps whose
+fillers are on the right. For this I'm inclined to use 'postsub', with "hole"
+symbol" '**h':
+
+  "Bob bought, and then sold, the car"
+  (|Bob| (postsub (((past buy.v) **h) and (then.adv-e ((past sell.v) **h)))
+                  (the.d car.n)))
+
+An example where both 'sub' and 'postsub' are needed:
+
+  "To Alice, Bob leased, and then sold, the car"
+  (sub (to.p-arg |Alice|) (postsub (|Bob| (((past lease.v) **h *h) and.cc
+                                          (then.adv-e ((past sell.v) **h *h))))
+                                   (the.d car.n)))
+
+There's also an interesting interaction between bracketing and 'postsub':
+
+  "Then Alice (and Bob as well) left"
+
+  First attempt (without 'postsub'):
+  (Then.adv-e (|Alice| (() and.cc |Bob| as-well.adv-v)) (past leave.v))
+                      
+  But ((|Alice| and.cc |Bob| as-well.adv-v) is a bad coordination. Second
+  attempt (without 'postsub'):
+  (Then.adv-e ((|Alice| (() and.cc |Bob|)) as-well.adv-v (past leave.v))
+
+  But this yanks "as well" out of the brackets, and incorrectly associates  
+  it with "Alice and Bob". The meaning should be "Alice left, and Bob left 
+  as well". So I think the correct analysis is:
+
+  (Then.adv-e (postsub ((|Alice| **h) (() and.cc (|Bob| as-well.adv-v **h))) 
+                       (past leave.v))
+

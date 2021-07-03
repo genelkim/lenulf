@@ -60,6 +60,16 @@
              ; (with inserted underscores)
              (return (make-multiword "_" (cdr pos-word))) )
 
+       ; Only one word follows the given POS tag. However, we also allow for
+       ; implicit multiwords separated by underscores, by separating the word
+       ; at the underscores and calling 'stem' recursively on the multiwored
+       ; input (with the given POS tag)
+       (if (and (symbolp word) (find #\_ (setq str (string word))))
+           (return (stem (cons tag 
+                            (read-from-string
+                             (concatenate 'string "("
+                               (substitute #\Space #\_ str) ")")))) ))
+
        ; At this point we have no multi-words
        (if (not (member tag '(NNS NNPS VBD VBG VBN VBEN VBP VBZ VB-CF
                               AUXD AUXG AUXEN AUXP AUXZ AUX-CF)))
@@ -85,6 +95,8 @@
                        (knives 'KNIFE)
                        (sheaves 'SHEAF)
                        (shelves 'SHELF)
+                       (wolves 'WOLF)
+                       (elves 'ELF)
                        (mice 'MOUSE)
                        (geese 'GOOSE)
                        (lice 'LOUSE)
@@ -253,8 +265,8 @@
 
        ; POS tag is one of VBD VBG VBN VBEN VBP VBZ VB-CF 
        ;                   AUXD AUXG AUXEN AUXP AUXZ;
-       (if (member tag '(VBP AUXP))
-           (if (member word '(are \'re am \'m))
+       (if (member tag '(VBZ AUXZ VBP AUXP))
+           (if (member word '(is \'s are \'re am \'m))
                (return-from stem 'BE) ))
        (if (member tag '(VBP AUXP)) (return-from stem word)) 
                        ; actually some modals are tense-ambiguous;
@@ -267,7 +279,8 @@
        (setq result
              (case word
                    ; verbs with multiple stored inflections
-                   ((be been being is \' s was are \'re were) 'BE) 
+                   ((be been being is \'s was are \'re were) 'BE) 
+                   ; overlaps with above '(is \'s are \'re am \'m) (harmless)
                    ((beat beaten beating) 'BEAT)
                    ((biases biased biasing) 'BIAS)
                    ((bite bitten bit biting bites) 'BITE)

@@ -3,7 +3,6 @@
 ;; Run Charniak parser
 ;; Jonathan Gordon, 2011-12-19
 ;; parse-all and sep-sentences added by LKS
-;; support for the Berkeley parser was added by Gene Louis Kim
 
 (in-package :lenulf)
 
@@ -19,7 +18,6 @@
 ;;      ^^ now krr, at least until nl is enlarged; but the reranking
 ;;         parser is still in nl
 (defparameter *pdata* "/p/nl/tools/reranking-parser/first-stage/DATA/EN/")
-
 
 (defun parse-all (str)
 ; Here we allow str to consist of multiple sentences separated by
@@ -43,7 +41,7 @@
                          (return nil)) ; exit loop
                 (if (null chars) (return nil)))
           (push (coerce (reverse sent) 'string) sents)
-          (if (null chars)
+          (if (null chars) 
               (return-from sep-sentences (reverse sents))))
  )); end of sep-sentences
 
@@ -79,20 +77,19 @@
 (defun preproc-for-parse (str)
   (format nil "<s> ~a </s>" str))
 
+(defun split-str (str sep)
+	(cond
+		((null (search sep str))
+		 (list str))
+		(t (append
+				 (list (subseq str 0 (search sep str)))
+				 (split-str (subseq str (+ 1 (search sep str)) (length str)) sep)))))
+
 (defun exec-from-command (command)
 	(car (split-str command " ")))
 
 (defun args-from-command (command)
 	(cdr (split-str command " ")))
-
-(defun split-str (str sep)
-	(cond
-		((null (search sep str))
-		 (list str))
-
-		(t (append
-				 (list (subseq str 0 (search sep str)))
-				 (split-str (subseq str (+ 1 (search sep str)) (length str)) sep)))))
 
 ;; Adapted from 'port.lisp' from 'asdf-install'.
 ;; Comment by LKS: The loop syntax here is an extension of the basic

@@ -24,7 +24,7 @@
 ;; `define` defines a function while remembering the source. The function
 ;; `modify` modifies the source code for the function defined by the `define`
 ;; macro.
-;; `rewrite` overwrite the function with a new source.
+;; `rewrite` overwrites the function with a new source.
 (defmacro define (&rest source)
   `(progn (setf (get ',(first source) :source) (list* 'defun ',source))
      (defun ,@source)))

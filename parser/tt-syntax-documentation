@@ -9,7 +9,9 @@ readable expression) and a
 
   (fill-template <template> <match-result>)
 
-function to derive a transduced result.
+function to derive a transduced result. Failure of (match <pattern> <tree>)
+is signalled by result :NIL (not NIL), because (match nil nil) succeeds
+with result NIL. (This is convenient in recursive matching.)
 
 A transduction rule consists of a pair
 
@@ -20,7 +22,7 @@ The function
   (apply-rule <rule> <expr>)
 
 applies a transduction rule to an expression. If the match fails, the
-result is the unaltered expression.
+result of applying the rule IS THE UNALTERED EXPRESSION (NOT NIL).
 
 The function 
 
@@ -34,17 +36,21 @@ but the top-down strategy is currently applied uniformly in ULF derivation.
 Pattern matching
 ````````````````
 In (match <pattern> <tree>), the pattern can be an arbitrary tree (expression),
-but without match variables, this will only match the exact-same tree. Match
-failure is signalled by value :nil, rather than nil, since nil can be a
-successful match result when matching nil to nil. Match results are essentially
-the same as the matched expression, except that a matched sequence of elements
-is represented as (:seq <el1> <el2> ...); (:seq) thus represents the empty
-sequence (causing nothing to be substituted into the template if it is
-referenced in the template (using position indices -- see below).
+but symbols starting with !, ?, *, +, or . (followed by 1 or more char's) are 
+interpreted as predicate applications (once, at most once, 0 or more times,
+at least one, and (again) once -- but dot predicates are evaluated via 'isa').
+Intuitively, match predicates can be simultaneously thought of as variables.
 
-Match variables DO NOT GET BOUND to the expressions or sequences of expressions
-they match, so they can be repeated freely in the same pattern. The match 
-variables are limited to the following:
+Without match predicates, a pattern will only match the exact-same tree. 
+Match results are essentially the same as the matched expression, except 
+that a matched sequence of elements is represented as (:seq <el1> <el2> ...);
+(:seq) thus represents the empty sequence (causing nothing to be substituted 
+into the template if it is referenced in the template (using position indices 
+-- see below).
+
+Match predicates DO NOT GET BOUND to the expressions or sequences of expressions
+they match, so they can be repeated freely in the same pattern. Predifined match 
+predicates include the following:
 
   !atom, ?atom, *atom, +atom, 
   !list, ?list, *list, +list,
@@ -54,7 +60,8 @@ variables are limited to the following:
 successive atoms, 1 or more successive atoms, one list, 0 or 1 lists, ...,
 one Lisp expressions, ..., 1 or more successive Lisp expressions),
 
-and any number of "dot-atoms", like 
+The match predicates (feature predicates) also include  any number of 
+"dot-atoms", like 
 
   .VB, .NNP, .AUX, .XP, ...
 
@@ -66,14 +73,6 @@ using a function
 
 e.g., (ISA 'VBD '.VB) should be non-NIL in the above example. 
 
-  [Possible future extensions: 
-  - It would be entirely possible to extend TT to allow features of arbitrary 
-    expressions, but no real need for this arose for ULF derivation;
-  - a more major change would be to allow, say,
-     !.ABC, ?.ABC, *.ABC, +.ABC, (for any ABC)
-    for matching one itme with feature .ABC, 0 or 1 such items, etc.; but
-    this also hasn't proved essential so far. The simpler the language, the
-    better.]
 
 Matches are rightmost
 `````````````````````
@@ -108,26 +107,43 @@ Templates can be arbitrary expressions, EXCEPT that
      (A (C D) (F E) (:seq G)).
   
   Position index 0 refers to the expression matched as a whole, if the pattern
-  matched it. NB: If we want to use numbers like 3 or 2.3 in a template, w/o
+  matched it. NB: If we want to use numbers like 3 or 2.3 IN A TEMPLATE, w/o
   having them interpreted as position indices, they should be represented as
-  |2|, |2.3|, etc., and postprocessed to turn them back into numbers.
+  |2|, |2.3|, etc., and postprocessed to turn them back into numbers. We
+  can also use 1.0, 2.0, 3.0, ... as real numbers in templates, as they don't
+  have a meaning as position indices (whereas e.g., 1.1, 1.2, 2.1, etc., are
+  interpreted as position indices when occurring in output templates).
 
-- atoms beginning with '!', exclusive of '!', '!atom', '!list', !expr,
-  are interpreted as user-defined functions; e.g., an expression like
-    (!my-function 'NN (QUOTE 3.2))
+- atoms ending in '!', exclusive of '!', are interpreted as user-defined 
+  Lisp functions; e.g., an expression like
+    (my-function! 'NN (QUOTE 3.2))
   in a template would be interpreted as the result of applying function
-  '!my-function to NN as first argument and the quoted form of whatever 
+  'my-function!' to NN as first argument and the quoted form of whatever 
   expression or sequence of expressions matched the pattern at position 
   3.2 as the second argument. 
 
-NB: If we want to use atoms starting with '!' (other than '!' itself), 
-  or any of the 12 variables or any dot-atoms as actual outputs, we need
-  to express them in some other way, e.g., ~?atom,  ~!my-output-atom, etc.,
-  and postprocess to get the desired atoms.
+NB: If we want to use atoms ending in '!' (other than '!' itself), 
+  as actual outputs, we need to express them in some other way, e.g.,
+  atom!~,  my-output-atom!~, etc., and postprocess to get back the desired 
+  atoms.
 
 Relation to TTT and the LISSA/ETA matcher
 `````````````````````````````````````````
-The position indexing in templates  generalizes the method of identifying 
+The matcher herein instead does rightmost matches, i.e., the ?/*/+ variables
+prefer to match just 0/0/1 expression respectively. E.g.,
+  (match '(?atom ?atom) '(a))
+yields ((:SEQ) A), rather than (A (:SEQ)). (Recall (:SEQ) represents the empty
+sequence of expressions; cf., a nonempty sequence like (:SEQ A (B C) D).)
+
+What is better? If we normally expect the soft variables to remain empty,
+then righmost matching is better; conversely, if we normally expect them
+to be filled, a leftmost match is better.
+
+Integers in TT patterns (as opposed to output templates) just stand for 
+themselves, not word sequences. Integers & integers joinded by dots in 
+output templates index positions, as already explained.
+
+The position indexing in templates generalizes the method of identifying 
 matched words or word sequences in the ETA matcher/transducer. Because no 
 extra brackets are introduced (except for functions), and because we can
 "navigate" to embedded list elements (at definite locations) w/o duplicating
@@ -136,7 +152,13 @@ OTOH, we don't have lists of alternatives like (* A B C) (i.e., 0 or more
 repetitions of A, B, or C), which are convenient in TTT. In a limited way,
 we can handle alternatives in TT using dot-atoms; e.g., we could define 
 feature .ABC to be a feature of just A, B, or C, so .ABC in TT would mean 
-the same as (! A B C) in TTT.
+the same as (! A B C) in TTT. In TT, we also allow predicates that can
+express any alternatives (or preclusions) we like. These predicates start
+with '!' followed by at least one character, including at least one non-
+numeral character. But once defined with 'defpred', they can also be used
+wit an initial '?', '*', or '+', meaning that the number of successive 
+expressions that can "bind" (conceptually) to the predicate are: at most 1,
+0 or more, and at least 1, respectively.
 
 The dot-features are similar to LISSA/ETA features, but we don't assume that
 *any* atom could be a feature, just ones starting with a dot. This reminds
@@ -148,4 +170,10 @@ LISSA/ETA has global negation, and TTT allows local negation. But ULF
 derivation from syntax trees rarely produced any pressure for allowing
 local or global pattern negation.
 
+The next version of TT will allow *0, ?1, ?2, ?3, ... as match predicates,
+meaning: 0 or more expressions, at most 1 expression, at most 2 expressions,
+etc. It will also allow isa-chaining of (dot-)features (as in ETA), and
+probably predicate negation for dot-predicates and predicats defined by
+'defpred', e.g., !~[np] (not a noun phrase like (NP (NN milk))), .~NP (not
+the atom 'NP' or its variants (like 'WHNP'); etc.
 
