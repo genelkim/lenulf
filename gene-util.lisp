@@ -19,31 +19,3 @@
     (t (mapcar #'(lambda (x) (remove-token-indices x :delim delim))
                idxulf))))
 
-;; Function redefinition from https://stackoverflow.com/a/1220229
-;; This is used for the simple and extended versions of the package. The macro
-;; `define` defines a function while remembering the source. The function
-;; `modify` modifies the source code for the function defined by the `define`
-;; macro.
-;; `rewrite` overwrites the function with a new source.
-(defmacro define (&rest source)
-  `(progn (setf (get ',(first source) :source) (list* 'defun ',source))
-     (defun ,@source)))
-
-(defun modify (fname modifier)
-  (let ((source (get fname :source)))
-    (when source
-      (setf (get fname :source) (funcall modifier source))
-      (eval (get fname :source))
-      (compile fname))))
-
-(defmacro rewrite (&rest newsource)
-  `(let ((fname ',(first newsource)))
-;      (oldsource (get fname :source)))
-;    (format t "oldsource: ~s~%" oldsource)
-;    (format t "fname: ~s~%" fname)
-;    (format t "newsource: ~s~%" ',newsource)
-;    (error "Temp failure.")))
-     (setf (get fname :source) (list* 'defun ',newsource))
-     (eval (get fname :source))
-     (compile fname)))
-
