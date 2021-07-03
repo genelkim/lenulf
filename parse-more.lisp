@@ -14,7 +14,7 @@
 (defparameter *k&m-dict* (merge-pathnames "deps/model/dict"
                                           lenulf+/config:*base-directory*))
 
-(rewrite parse-kk (str)
+(defun parse-kk (str)
 ;; Calls the standard K&K parser through python.
     (when (not *k&k-setup-complete*)
       (format t "Loading K&K parser...")
@@ -27,7 +27,7 @@
     (lispify-parser-output
       (py4cl:python-eval (format nil "str(benepar_parser.parse(\"~a\"))" str))))
 
-(rewrite parse-km (str)
+(defun parse-km (str)
 ;; Calls the pretrained K&K parser for K&M through python. This is slightly
 ;; more complicated than the standard K&K parser since it isn't part of the
 ;; benepar package. Then post-processes it with the Lisp package for recovering
@@ -74,4 +74,10 @@
       (delete-file mid-file)
       (delete-file end-file)
       result))
+
+;; Add functions to parser call parameter.
+(setf *syntactic-parser-fn-alist*
+      (acons "K&K" #'parse-kk *syntactic-parser-fn-alist*))
+(setf *syntactic-parser-fn-alist*
+      (acons "K&M" #'parse-km *syntactic-parser-fn-alist*))
 

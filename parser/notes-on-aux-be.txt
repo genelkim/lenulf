@@ -1,0 +1,69 @@
+The following thoughts about auxiliary "be", etc., were prompted by a kind
+of misalignment between "standard" (Treebank) parses, which mark participial 
+complements of "be" on those complements via  'VBG' and 'VBN' (not distinguishing 
+passive and past participles), and ULF semantics, which take the 'prog' aspect 
+to be inherent in the auxiliary (analogously with perfect 'have' see below).
+
+The ideas here are the basis for the way auxiliaries are presently rendered
+into ULF.
+
+Originally, one reason for treating 'be' before progressive and passive
+participles differently was that in the former case, tense (if any) & 
+'prog' will rise to the S-level (together); in the latter case, tense 
+will rise to the S-level, but 'pasv' applies to the verb (it's roughly 
+a binary-relation inversion operator).
+
+So we've assumed interpretations like these:
+  "was seen" --> (past (pasv see.v))
+  "was seeing" --> ((past prog) see.v)
+  "was often seeing" --> ((past prog) often.adv-f see.v)
+  "was he seen" --> ((past be.aux-v) he.pro (pasv see.v)); "transparent" be.aux-v
+  "was he seeing" --> ((past prog) he.pro see.v)
+  "be seen" --> (pasv see.v)
+  "be he seen (or not)" --> (be.aux-v he.pro (pasv see.v))
+  "be he seeing (her or not)" --> (prog he.pro see.v)
+
+So this requires the 'prog' operator to be associated with the aux'y "be",
+while the 'pasv' operator is assocated with the main verb. This is awkward
+when the auxiliary and main verb are separated, and as noted is inconsistent 
+with Treebank annotations -- one of various factors making the mapping from
+parse trees to ULF/ELF tricky. (It might also trip up NN-based ULF parsing.)
+
+What if, instead, we associate the 'prog' operator with the -ing participle
+itself, and always make the aux'y "be" explicit (and semantically transparent)??
+  "was seeing" --> ((past be.aux-v) (prog see.v)); 'past', 'prog' rise separately
+  "was often seeing" --> ((past be.aux-v) often.adv-f (prog see.v)); ---"---
+  "was he seeing" --> ((past be.aux-v) he.pro (prog see.v)); ---- " -------
+  "be he seeing (her or not)" --> (be.aux-v he.pro (prog see.v))
+
+This is easier in terms of Treebank trees, which mark tense/aspect consistently
+with this. In all cases 'be.aux-v' is transparent (identity operator).
+
+Mind you, this is somewhat at odds with the treatment of 'perf': 
+We take auxiliary "have" to *be* the perfect operator (w/ tense, if tensed)
+in examples like 
+  "has left" --> ((pres perf) leave.v)
+so one expects
+  "is leaving" --> ((pres prog) leave.v)
+
+But we could instead make it
+  "has left" --> ((pres have.aux-v) (perf leave.v)), where have.aux-v is transparent
+
+which again would be consistent with Treebank annotations. It does call for
+some contextual processing, to distinguish past participles form passive
+participles. But I do that already -- it's the reason I'm reserving VBN and
+AUXN for passive participles, and amending to VBEN and AUXEN for past
+participles (complementing perfect "have").
+
+[I think I'll handle progressive and passive "be", as well as perfect "have",
+as tense (if finite) plus an identity operator. If we like we can later 
+eliminate the identity operators, leaving just the tense. Then expressions
+like the adverbial "Holding the umbrella, ...", "Having eaten, ...", and
+ADJP, e.g., in "the dancing robot", "the man taken into the ambulance",
+etc., won't depend on the presence of an auxiliary to supply the prog or
+perf (let alone pasv) operator that these constructs involve, at least
+derivationally.
+
+So this means identifying auxiliary uses of "be" & "have" not so identified 
+in the parses, and corresponding verb forms of their operands, from context. ]
+ 
