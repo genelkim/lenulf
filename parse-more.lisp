@@ -25,7 +25,8 @@
       (setf *k&k-setup-complete* t)
       (format t "Done!~%"))
     (lispify-parser-output
-      (py4cl:python-eval (format nil "str(benepar_parser.parse(\"~a\"))" str))))
+      (py4cl:python-eval (format nil "str(benepar_parser.parse(\"~a\"))"
+                                 (escape-chars str '(#\"))))))
 
 (defun parse-km (str)
 ;; Calls the pretrained K&K parser for K&M through python. This is slightly
@@ -55,7 +56,8 @@
       (format t "Done!~%"))
 
     ;; Parse sentence.
-    (py4cl:python-exec (format nil "tokens = word_tokenize(\"~a\")" str))
+    (py4cl:python-exec (format nil "tokens = word_tokenize(\"~a\")"
+                               (escape-chars str '(#\"))))
     (py4cl:python-exec "predicted, _ = parser.parse([('UNK', token) for token in tokens])")
     (let ((pyout (py4cl:python-eval "predicted.convert().linearize()"))
           (mid-file (format nil "~a.txt" (gensym)))
