@@ -25,11 +25,11 @@
 ; E.g., "He is lazy, a fool, and a thief" yields a ULF with commas. Drop them.
     '((+expr |,| *expr !coord~ +expr) (1 3 4 5)))
 
-(defrule2 *remove-equal-from-adj-pred*
-; E.g., "He is lazy, a fool, and a thief" yields the faulty conjunction
-; ((= LAZY.A~4) (= (A.D~6 FOOL.N~7)) AND~8 (= (A.D~10 THIEF.N~11))),
-; because in this case BLLIP makes the initial "lazy" an NP.
-   '((= !pred~) 2))
+;(defrule2 *remove-equal-from-adj-pred*
+;; E.g., "He is lazy, a fool, and a thief" yields the faulty conjunction
+;; ((= LAZY.A~4) (= (A.D~6 FOOL.N~7)) AND~8 (= (A.D~10 THIEF.N~11))),
+;; because in this case BLLIP makes the initial "lazy" an NP.
+;   '((= !pred~) 2))
 
 (defrule2 *remove-repeated-coord*
 ; E.g., in "He is lazy and a fool and a thief" we remove extra "and";
