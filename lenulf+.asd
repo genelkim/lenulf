@@ -17,12 +17,13 @@
                (:file "parser/pos+word-to-ulf")
                (:file "parser/preprocessing-rules")
                (:file "parser/stem")
-               (:file "parser/features")
+               (:file "parser/lexical-features")
+               (:file "parser/verb-transitivity-lists")
+               (:file "parser/isa")
                (:file "parser/postprocess-ulf-tree")
                (:file "parser/postprocessing-rules")
                (:file "parser/insert-gaps")
-               (:file "parser/subcat-pref")
-               (:file "parser/verb-transitivity-lists"))
+               (:file "parser/subcat-pref"))
   :around-compile (lambda (next)
                     ; For debugging/development.
                     ; NB: debug 3 caused a heap space error.

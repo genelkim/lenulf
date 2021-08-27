@@ -1,42 +1,49 @@
 
-IN REVERSE CHRONOLOGICAL ORDER
+IN REVERSE CHRONOLOGICAL ORDER  (since July 2021)
 
 ################################################################################
-June 29/21
+Aug 23-24/21
 
--  added a rule for conjoined SBARs denoting wh-nominals; 
--  made a small change in PP gap insertion in the lexical constituent
-   of an ADJP to allow misformed ADJPs (e.g., containing lexical VBN (passive))
--  fixed a mistyped version of dot-predicate .it/they/them/this/that in
-   the preprocessing rules, & inserted a format statement in the definition
-   of 'isa' warning about trying to use an undefined dot-predicate
+- Basic parenthesis handling added. Some bracketed NPs after NPs become
+  appositives (w/o brackest); outermost sentence brackets are deleted.
+  All others are kept, using (\( ... \)), as they can contribute
+  various types of meanings.
 
-=========================================================================
-June 27/21
+- Some occurrences of *pseudo-attach* in the Brown corpus are dealt
+  with; e.g., for "it"-extraposition, where 'it-extra.pro' is introduced.
 
-- added an (ans-to (sub ...)) rule wh-nominals within a PP (and a
-  slight modification or predicate .PP to allow the same interpretation
-  in WHPP contexts
-==========================================================================
-June 26/21
+- Various cases of temporal (supposed) nominals like "yesterday", 
+  "next week" are transformed into adverbials, to yield ULFs like
+  (adv-e ({during}.p (k yesterday.n))). It doesn't work uniformly yet.
 
-- two rules for raising "whereas" from verb adjunct position (in BLLIP
-  parses) to sentential connective position; not sure if "whereas" is .CC
-  or .PS
-- removed duplicate rules
-- fixed a bad 'rep' insertion
-==========================================================================
-June 25/21
+- Multiple fronted PPs and temporal NPs are grouped together into a single
+  adverbial, retaining separating commas -- because arguably such adverbials
+  fill a single gap in the sentence being premodified. So the commas
+  indicate concurrent application (like a conjunctive lambda-predicate,
+  e.g., (:L t ((t ({during}.p | Today|)) and (t (at.p (k noon.n)))))
 
-- fixed various gap insertion glitches
-- changed "where" in "where <be> <np> at?" from WRB to WP (to get a *h gap)
-- changed ULFs of booleans to have no type suffix
-- modified word indexing so as not to index added operators
-- changed -NONE- to -SYMB- in rule output templates for added symbols
-- prefixed Ka to form gerunds after a preposition
-- inserted a rule to handle headless NPs of type (Det ADJ)
-- inserted rules for splitting (any/some/every/no)body into Det + person
-  (consider "anybody who disagrees ..." -- pronoun won't work)
-- other fixes involving 'sub', 'rep' (not handled properly yet)
-_____________________________________________________________________________
+- additions/changes have been made to "preprocessing-rules.lisp",
+  "tt-match-predicates.lisp", "isa.lisp", and comments in 
+  "parse-tree-to-ulf.lisp"
+=====================================================================
+Aug 22/21
 
+Rules added in "preprocessing-rules.lisp" for introducing bracketing of 
+form (\" ... \") around probable mention-quotes, and deleting all others.
+Corresponding feature 'say' added to "isa.lisp" for various "saying verbs"
+(ones likely to be used before or after quoted utterances), and predicate
+![quote] added to "tt-match-predicates.lisp" to match (|``| ...) or (|''| ...)
+=======================================================================
+Aug 20/21
+
+Extensive revisions (in July & August) to allow for greater TT flexibility
+(see README and "tt-syntax-documentation")
+
+=======================================================================
+July 4/21
+
+- replaced parse.lisp and english-to-ulf.lisp with modifications by Gene
+to allow use of either Allegro or sbcl.
+
+- fixed absolute tt.lisp access path to be local.
+========================================================================

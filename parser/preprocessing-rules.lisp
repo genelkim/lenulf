@@ -69,12 +69,94 @@
 ; onto *preprocessing-rule-names* at the end; thus the rules will be applied
 ; in the order of appearance here.
 
-; SOME GLOBAL SENTENCE-RESHAPING RULES
-;`````````````````````````````````````
 (defrule *remove-s1-wrapper*
 ; (S1 ( ...)) is wrapped aroung BLLIP parses
     '((S1 !expr) 2))
 
+; QUOTATION RULES:
+; ````````````````
+; Keep apparent mention quotes, wrapping the quoted text
+; ``````````````````````````````````````````````````````
+(defrule *enclose-quoted-vobj*
+; E.g., "She said \, |``| do it \"." (Note: \" is parsed as (|''| |''|), 
+; \` is parsed as (|``| |`|, etc.) In ULF, we just use \", no other quotes
+   '((VP 1 (.VB .say) ?[comma] (|``| !atom) *expr (|''| !atom))
+     (VP 2 3 (NP (-SYMB- \") 6 (-SYMB- \")))))
+
+; " (This quote is to reset the text colorizing)
+
+(defrule *enclose-quoted-vobj-wrapped-by-s*
+; E.g., "He added \, |``| If this works \, I win \"." 
+;       (This sort of form can give an (S (|``| |``|) ... (|''| |''|)))
+   '((VP 1 (.VB .say) ?[comma] (S (|``| !atom) +expr (|''| !atom)))
+     (VP 2 3 (S (-SYMB- \") 5.3 (-SYMB- \")))))
+
+; " (This quote is to reset the text colorizing)
+
+(defrule *enclose-fronted-quoted-vobj*
+; E.g., " |``| I give up \" \, he said." (NB allow for \, in/outside "...")
+   '((S (S (|``| !atom) +expr ?[comma] (|''| !atom)) ?[comma] 
+        (S ![np] (VP 3 (.VB .say))))
+     (S (-SYMB- sub) (S (-SYMB- \") 2.3 (-SYMB- \"))
+                     (S 4.2 (VP 4.3.2 4.3.3 (NP (-SYMB- *h)))))))
+
+; " (This quote is to reset the text colorizing) 
+
+; Delete all other quotes
+; ```````````````````````
+(defrule *delete-quotes*
+; E.g., "The |``| hopeless \" campaign"
+    '((*expr ![quote] *expr) (1 3)))
+
+; BRACKET RULES
+; `````````````
+(defrule *del-outer-s-brackets*
+; E.g., "(This is a minor point.)"
+   '((?atom (-LRB- -LRB-) (S *expr) (\. !atom) (-RRB- -RRB-))
+     (S 3 4)))
+
+(defrule *make-bracketed-np-after-np-into-appositive*
+; E.g., "Smith (the school principal) has transformed the school."
+   '((!atom *expr ![np] (-LRB- -LRB-) ![np] (-RRB- -RRB-) *expr)
+     (1 2 (NP (-SYMB- np+preds) 3 (NP (-SYMB- =) 5)) 7)))
+
+; Apart from these two deletion types, it's hard to deal systematically
+; with brackets, and we'll just enclose single items in brackets, and
+; "package" multiple bracket contents, and enclose them. 
+;
+(defrule *package-and-enclose-single-bracketed-phrases*
+; E.g., "Bob (Alice's spouse) ..."
+   '((!atom *expr (-LRB- -LRB-) (!atom *expr) (-RRB- -RRB-) *expr)
+     (1 2 (4.1 (-SYMB- \() 4 (-SYMB- \))) 6)))
+;
+(defrule *package-and-enclose-multiple-bracketed-phrases*
+; E.g., consider
+;    "Smith (now the school principal) has transformed the school."
+; This really means something like "Smith, who is now the school
+; principal ...", but here we just wrap the ADVP and NP as an NP and
+; keep & enclose the brackets. Similarly,
+;    "The 6-3-3 (junior high school) system ..."
+; was parsed in Brown making 6-3-3 a CD and "junior high school" a
+; three-element JJ, JJ, NN sequence (no compound NN or NP formed).
+; We wrap the 3-term sequence as an NN (maybe NP would work better?)
+; and keep & enclose the brackets. Use the type of the last expression
+; in brackets as overall type.
+   '((!atom *expr (-LRB- -LRB-) +expr (!atom !expr) (-RRB- -RRB-) *expr)
+     (1 2 (5.1 (-SYMB- \() (5.1 4 5) (-SYMB- \))) 7)))
+
+; Delete all residual (round) brackets
+;`````````````````````````````````````
+(defrule *delete-left-brackets*
+   '((*expr (-LRB- !atom) *expr) (1 3)))
+
+(defrule *delete-right-brackets*
+   '((*expr (-RRB- !atom) *expr) (1 3)))
+
+; ** Rules could be added for bracketed constituents that "fit" grammatically,
+;    but that's tough in general.
+
+; SOME GLOBAL SENTENCE-RESHAPING RULES
+;`````````````````````````````````````
 (defrule *externalize-final-punctuation*
 ; While Brown adds final periods as sentence-sibling, BLLIP adds it as VP sibling.
 ; Make it a sentence sibling. The pattern looks for >= 2 expressions before the
@@ -113,6 +195,38 @@
 ; only postprocessing could figure out which PPs are adverbials, & what type.
    '((S (.XP-OR-S +expr) ?[comma] *expr (NP +expr) *expr (VP +expr) *expr)
      (S 2 3 4 (S 5 6 7 8))))
+
+(defrule *extract-falsely-np-incorporated-tomorrow*
+; E.g., "Tomorrow, Alice arrives." BLLIP makes an NP out of "Tomorrow, Alice"
+; (though not out of "Today, Alice" -- just because "Tomorrow" is rare in
+; training corpora! (Mind you, in rare cases the combination could be
+; correct: "Tomorrow, Friday, is another day."
+   '((S (NP (NP (NN tomorrow)) ?[comma] ![np] *expr) (VP +expr) 2)
+     (S 2.2 (S 2.4 2.5 3)))) ; the front NP will still be made into ADVP
+
+(defrule *repair-sentence-broken-by-initial-modifiers*
+; This is similar to *separate-s-premodifying-xp* (above), but with multiple
+; modifiers ahead of an <NP> and <VP> that should be a sentence.
+; E.g., "{Tomorrow}/{On Friday}, after lunch, we leave." 
+;       BLLIP forms (S <NP> , <PP> , <NP> <VP>)
+; N.B.: We group, rather than stack, the premodifiers, since theoretically
+;       (it can be argued) they fill a single gap at the end of the sentence.
+;       This is why we keep the commas, if any -- they signal a sort of
+;       conjunction.
+   '((S ![pp-or-time-np] ?[comma] ![pp-or-time-np] ?[comma] ; allow for 3 mods
+        ?[pp-or-time-np] ?[comma] ![np] ?expr (VP +expr) ?expr)
+     (S (-SYMB- sub) (ADVP (-SYMB- adv-e) (PP 2 3 4 5 6)) (S 8 9 10 11))))
+
+(defrule *group-episodic-sentence-premodifiers*
+; This is similar to the above rule, but assumes that the final <NP> & <VP>
+; were correctly combined into an S.
+; N.B.: We group, rather than stack, the premodifiers, since theoretically
+;       (it can be argued) they fill a single gap at the end of the sentence.
+;       This is why we keep the commas, if any -- they signal a sort of
+;       conjunction.
+   '((S ![pp-or-time-np] ?[comma] ![pp-or-time-np] ?[comma] ; allow for 3 mods
+        ?[pp-or-time-np] ?[comma] (S +expr))
+     (S (-SYMB- sub) (ADVP (-SYMB- adv-e) (PP 2 3 4 5 6)) 8)))
 
 (defrule *move-comma-embedded-s-premodifying-advp-to-front*
 ; E.g., "Next week, PERHAPS, the weather will improve."
@@ -252,11 +366,11 @@
 
 (defrule *change-next-etc-preceding-time-period-to-dt-next-etc*
 ; e.g. "Next March is Women's month."
-   '((NP (.NOT-DT .next/last) (.NN/NNP .TIME-PERIOD)) (NP (DT 2.2) 3)))
+   '((NP (!not-dt .next/last) (.NN/NNP .TIME-PERIOD)) (NP (DT 2.2) 3)))
          ;`````` guard against run-away recursion!        ```
 
 (defrule *change-s-embedded-pp-to-just-pp*
-; e.g., "That guy, I like." BLIPP makes (S (PP (IN THAT) (NP (NN GUY))))
+; e.g., "That guy, I like." BLIPP forms this: (S (PP (IN THAT) (NP (NN GUY))))
    '((S (PP *expr)) 2))
 
 (defrule *make-that-before-bare-np-a-determiner*
@@ -321,7 +435,7 @@
 
 (defrule *comb-a-lot*
 ; e.g., "He has changed a lot."
-   '((VP (.VB .non-be) *expr (NP (DT A) (NN LOT)) *expr)
+   '((VP (.VB !non-be) *expr (NP (DT A) (NN LOT)) *expr)
      (VP 2 3 (ADVP (RB a_lot)))))
 
 ; VERB + PARTICLE combinations
@@ -453,7 +567,7 @@
 
 (defrule *change-sentential-prepositions-to-ps*
 ; E.g., "ALTHOUGH the soup is cold, it's good." "If he leaves, so do I."
-   '((!atom (IN !atom) (S (NP (.NOT-NONE +expr) *expr) +expr)) (1 (PS 2.2) 3))) 
+   '((!atom (IN !atom) (S (NP (!not-none +expr) *expr) +expr)) (1 (PS 2.2) 3))) 
 
 (defrule *combine-even-though*
 ; E.g., "Even though the sun was shining, ..."
@@ -530,19 +644,40 @@
 ; E.g., "He left yesterday" -- add {during}.p, unless a preposition 
 ; already precedes it. Since we insert -SYMB-, guard against duplication!
 ; NB: WE don't usually want a match in subject position: "Today is a holiday"
-    '((!atom *expr (.NOT-PREP-OR-SYMB +expr) (NP (!atom .THIS-DAY)) *expr)
-      (1 2 3 (ADVP (-SYMB- {during}.p) 4) 5)))
+    '((!atom *expr (!not-prep-or-symb +expr) (NP (!atom .THIS-DAY)) *expr)
+      (1 2 3 (ADVP (-SYMB- adv-e) (PP (-SYMB- {during}.p) 4)) 5)))
 
 (defrule *add-prep-for-weekday*
 ; E.g., "He left Friday" -- in Brown, (NP (NNP |Friday|))
-    '((!atom *expr (.NOT-PREP-OR-SYMB +expr) (NP (NNP .WEEKDAY)) *expr)
-      (1 2 3 (ADVP (-SYMB- {during}.p) 4) 5)))
+    '((!atom *expr (!not-prep-or-symb +expr) (NP (NNP .WEEKDAY)) *expr)
+      (1 2 3 (ADVP (-SYMB- adv-e) (PP (-SYMB- {during}.p) 4)) 5)))
 
-(defrule *add-prep-for-definite-time-np*
+(defrule *add-prep-for-definite-embedded-time-np*
 ; E.g., "I know what you did last summer"; "I'll do it {next week}/{this evening}"
-    '((!atom *expr (.NOT-PREP-OR-SYMB +expr) 
+    '((!atom *expr (!not-prep-or-symb +expr) 
                                     (NP +expr (.NN/NNP .TIME-PERIOD)) *expr)
-      (1 2 3 (ADVP (-SYMB- {during}.p) 4) 5)))
+      (1 2 3 (ADVP (-SYMB- adv-e) (PP (-SYMB- {during}.p) 4)) 5)))
+
+(defrule *add-prep-for-topicalized-indicated-day*
+; E.g., "Tomorrow {,} Alice arrives."
+    '((.S (NP (!atom .THIS-DAY)) ?[comma] (.S +expr))
+      (1 (-SYMB- sub) (ADVP (-SYMB- adv-e) (PP (-SYMB- {during}.p) 2)) 4)))
+
+(defrule *add-prep-for-pp-embedded-indicated-day*
+; E.g., "Tomorrow, at noon, Alice arrives."
+; N.B.: "Tomorrow, at noon" were grouped into a single PP by rules
+;       *group-episodic-sentence-premodifiers* or *repair-sentence-
+;       broken-by-initial-modifiers*.
+   '((PP *[pp-or-np] ![time-np] *[pp-or-np]) (PP 2 (XP (-SYMB- {during}.p) 3) 4)))
+                                                   ;^^ to prevent looping
+
+(defrule *add-prep-for-definite-topicalized-time-np*
+; E.g., "{Next week}/{this evening} Alice arrives."
+; Note: The initial parse may jsut put the NPs for "next week" and "Alice"
+; side-by-side as dual subjects, but the rule for creating a subordiate 
+; S after the initial XP will change this to a topicalized NP 
+    '((.S (NP +expr (.NN/NNP .TIME-PERIOD)) ?[comma] (.S +expr))
+      (1 (-SYMB- sub) (ADVP (-SYMB- adv-e) (PP (-SYMB- {during}.p) 2)) 4)))
 
 ; ** WE MIGHT ADD RULES FOR MONTHS (JANUARY, ETC.), YEARS (1972, ETC.)
 ;    BUT THIS REQUIRES CAUTION, E.G., "JULY WAS HOT", AND "HER DAUGHTER,
@@ -572,8 +707,8 @@
 ; E.g., "[I like] the car that I bought". We add a level of NP structure, not
 ; because that's correct, but so that this is like the structure in the 
 ; previous rule (*change-in-to-wp-rel*), & will be treated the same way.
-   '((NP (.NOT-NONE +expr) *expr
-         (SBAR (IN that) (S *expr (NP (.NOT-NONE !expr) *expr) *expr 
+   '((NP (!not-none +expr) *expr
+         (SBAR (IN that) (S *expr (NP (!not-none !expr) *expr) *expr 
                                   (VP *expr (.VB !atom)) *expr)) *expr)
      (NP (NP 2 3) (SBAR (WHNP (WP-REL that)) 4.3) 5)))
                               
@@ -721,7 +856,7 @@
 
 (defrule *form-vbp-have*
 ; e.g., "I like the house you have." "You have it all."
-   '((.S (NP (.NOT-NONE +expr) *expr) *expr 
+   '((.S (NP (!not-none +expr) *expr) *expr 
          (VP *[non-aux-part] (!atom have) *expr))
      (1 2 3 (VP 4.2 (VBP have) 4.4))))
 
@@ -959,7 +1094,7 @@
 ; e.g., "I know what you did _.", "I know what you gave him _.",
 ;       "I know who you are _"; BUT NOT "I know who arrived"
 ;       But not "the man that/who I spoke of has left." 
-   '((VP +expr (.SBAR (.WHXP +expr) (S (NP (.NOT-NONE +expr)) *expr (VP +expr))))
+   '((VP +expr (.SBAR (.WHXP +expr) (S (NP (!not-none +expr)) *expr (VP +expr))))
      (VP 2 (3.1 (NP (-SYMB- ans-to) (S (-SYMB- sub) 3.2 3.3))))))
 
 (defrule *add-sub-operator-for-wh-s-nominal-conjoined-within-vp*
@@ -975,7 +1110,7 @@
 (defrule *add-sub-operator-for-whs-nominal-within-pp*
 ; e.g., "I'm aware of how hard she works*
    '((.PP ?expr (IN !atom) 
-         (.SBAR (.WHXP +expr) (S (NP (.NOT-NONE +expr)) *expr (VP +expr))))
+         (.SBAR (.WHXP +expr) (S (NP (!not-none +expr)) *expr (VP +expr))))
      (1 2 3 (4.1 (NP (-SYMB- ans-to) (S (-SYMB- sub) 4.2 4.3))))))
 
 ; THIS ONE IS REDUNDANT, ALREADY HANDLED BY *REIFY-WHNP-OBJECT*
@@ -1005,11 +1140,11 @@
 ;       with "implicit" relclauses, i.e., no explicit relative pronoun.
 
 ; In Brown, rel-clauses with gaps have forms (immediately following an NP)
-; (SBAR (-NONE- 0 {= tht}) (S (NP (.NOT-NONE ..) ...) (VP {with (-NONE- T)} ...)))
+; (SBAR (-NONE- 0 {= tht}) (S (NP (!not-none ..) ...) (VP {with (-NONE- T)} ...)))
 ;       ```````````````` omitted in BLLIP parses
 ; (SBAR (WHNP (WP-REL/WDT-REL ..)) (S (NP (-NONE- T)) ... (VP ...)))) ; NOT A GAP!
 ;                                    ```````````````omitted in BLLIP parses
-; (   -------- " -------  (S (NP (.NOT-NONE ..) ... (VP {with (-NONE- T) ...)
+; (   -------- " -------  (S (NP (!not-none ..) ... (VP {with (-NONE- T) ...)
 ; So there are really just two patterns, but the gap can be at level >=2 in VP
 
 (defrule *add-sub-operator-for-implicit-relclause-in-brown-parses*
@@ -1019,7 +1154,7 @@
 ; an earlier rule here to (-SYMB- *h). (Lexical interpretation rules will
 ; change any remaining (-NONE- T) to (-SYMB- *h), but this seems to be
 ; redundant.)
-   '((SBAR (-NONE- 0) (S (NP (.NOT-NONE +expr) *expr) *expr (VP +expr) *expr))
+   '((SBAR (-NONE- 0) (S (NP (!not-none +expr) *expr) *expr (VP +expr) *expr))
      (SBAR (WHNP (-SYMB- sub) (WHNP (-SYMB- tht.rel)) 3))))
 
 ; In BLLIP parses, there is no (-NONE- 0) for a missing initial rel-pron, and
@@ -1029,8 +1164,8 @@
 (defrule *add-sub-operator-for-implicit-relclause-in-bllip-parses*
 ; E.g., "the man I saw"; "The man I talked about has left;"
 ; insert 'sub' and 'tht.rel'; "implicit" = no rel-pron.
-    '((NP (NP (.NOT-NONE +expr) *expr) 
-          (SBAR (S (NP (.NOT-NONE +expr) *expr) *expr (VP +expr))) *expr)
+    '((NP (NP (!not-none +expr) *expr) 
+          (SBAR (S (NP (!not-none +expr) *expr) *expr (VP +expr))) *expr)
       (NP 2 (SBAR (-SYMB- sub) (WHNP (-SYMB- tht.rel)) 3.2) 4)))
                    
 ; TBC: DO RARER GAPS, AS IN "THE MORE HE SAW _", "HE SUDDENLY SPOTTED,
@@ -1176,7 +1311,7 @@
 ; instances of 'and'd adjectives where BLLIP fails to form a conjunction.
 ; (E.g., BLLIP forms a conjunction for "I like large and friendly dogs",
 ; and for "I saw large and black dogs" but not "I like large and black dogs")
-; e.g., "I saw a large, black dog" -- use \,.cc;
+; e.g., "I saw a large, black dog" -- use \,.cc ?
 ; e.g., "I like large and black dogs"
 ; NB: BLLIP yields coordinated adj's in all of the following examples:
 ;   "I think it was a red or maroon car"
@@ -1517,16 +1652,18 @@
 (defrule *form-appos-from-np-and-name*
 ; e.g., "his court-appointed attorney, Jack Walker", analyzed as successive
 ; NPs (separated by a comma and followed by one), should lead to ULF
-; (np+preds NP1' (= NP2'))
-   '((NP (NP +expr) (\, \,) (NP *expr (NNP +expr)) *expr)
+; (np+preds NP1' (= NP2')). Avoid cases where there's no determiner on the
+; first NP, as in "Detroit, Michigan".
+   '((NP (NP (.DT !expr) +expr) (\, \,) (NP *expr (NNP +expr)) *expr)
      (NP (-SYMB- np+preds) 2 (NP (-SYMB- =) 4) 5)) )
 
 (defrule *form-appos-from-np-and-np*
 ; e.g., "the post he sought, Speaker and power-broker"
 ; a riskier version of the previous rule -- no NNP requirement, but we're
 ; not allowing trailing material (after the 2nd NP) in this case
-   '((NP (NP +expr) (\, \,) (NP +expr))
+   '((NP (NP (.DT !expr) +expr) (\, \,) (NP +expr))
      (NP (-SYMB- np+preds) 2 (NP (-SYMB- =) 4))) )
+
 
 (defrule *change-vbn-to-vbd-as-s-headword* 
 ; An error correction rule, e.g., In "before his father left", "left" is 
@@ -1561,7 +1698,8 @@
 ;  SBAR-1, SBAR-2, ..., S-1, S-2, ...): in ULF we assume we can locate the
 ;  it-referent without an explicit syntactic device; but I decided not to
 ;  use .EXTRAP-S here - such S's can be determined from the 'it-extra.pro'
-     '((NP (PRP it) (!atom (-NONE- *pseudo-attach*))) (NP (PRP it-extra))) )
+     '((NP (PRP it) (!atom (-NONE- !pseudo-attach))) (NP (PRP it-extra))) )
+                                  ;`````````````` just matches *pseudo-attach*
 
 (defrule *del-x-wrapper*
 ; (X ...) seems to get wrapped around a phrase where the annotator thought
@@ -1600,7 +1738,7 @@
 ; (defrule *restruc-displaced-postmod*
 ; ; the postmodifier can be a PP, rel-clause (headed e.g., by (SBAR-2 ...)),
 ; ; participial VP, **others?
-;     '((S (NP (NP +expr) (!atom (-NONE- *pseudo-attach*))) +expr (\, \,)    
+;     '((S (NP (NP +expr) (!atom (-NONE- !pseudo-attach))) +expr (\, \,)    
 ;              (.DIS-POSTMOD +expr))
 ;       (S (-SYMB- rep) (1 ((-SYMB- np+preds) (NP 2.2.2) (-SYMB- *p)) 3) 5)) )
 
@@ -1613,7 +1751,7 @@
 ; ;  of the postmodified NP; we want a 2-part rep (replace) construct instead:
 ; ;  (e.g., scan for "rock" and "skinny" in p16.cmb); !atom is usually NP-1,
 ; ;  NP2,, etc., but also can be SBAR-2, etc.
-;     '((S (NP (NP +expr) (!atom (-NONE- *pseudo-attach*))) +expr (\, \,) 
+;     '((S (NP (NP +expr) (!atom (-NONE- !pseudo-attach))) +expr (\, \,) 
 ;              (.NP +expr))
 ;       (S (-SYMB- rep) (1 ((-SYMB- np+preds) (NP 2.2.2) (-SYMB- *p)) 3) 
 ;                     (NP (-SYMB- =) 5))) ); the equality makes the NP a pred
@@ -1627,7 +1765,7 @@
 ; This is a case where the determiner should scope over the NN along with
 ; the displaced postmodifier not just the NN
    '((VP +expr (NP (NP (DT !atom) (NN +atom)) 
-                (.DIS-POSTMOD (-NONE- *pseudo-attach*))) +expr (.DIS-POSTMOD +expr))
+                (.DIS-POSTMOD (-NONE- !pseudo-attach))) +expr (.DIS-POSTMOD +expr))
      (VP (-SYMB- rep) (VP 2 (NP (DT 3.2.2.2) (NN (-SYMB- n+preds) 3.2.3 
                                                          (-SYMB- *p))) 4) 5)) )
 
@@ -1648,7 +1786,7 @@
 
 (defrule *add-postmod-placeholder*
 ; Introduce np+preds and pred-placeholder *p for NP with displaced postmodifier;
-  '((NP (NP +expr) (!atom (-NONE- *pseudo-attach*)))
+  '((NP (NP +expr) (!atom (-NONE- !pseudo-attach)))
     (NP (NP (-SYMB- np+preds) 2.2 (-SYMB *p)))) )
 
 ; TBC -- thoroughly check the accuracy and coverage of the above rules for
@@ -1664,7 +1802,7 @@
 ; ;  In Brown, rightward-displaced postmodifiers are treated as siblings
 ; ;  of the postmodified NP; we want a 2-part rep (replace) construct instead:
 ; ;  (e.g., scan for "bleeding" in p16.cmb); 
-;     '((VP +expr (NP (NP +expr) (!atom (-NONE- *pseudo-attach*))) +expr (\, \,) 
+;     '((VP +expr (NP (NP +expr) (!atom (-NONE- !pseudo-attach))) +expr (\, \,) 
 ;              (.POSTMOD +expr))
 ;       ((-SYMB- rep) (1 ((-SYMB- np+preds) (NP 2.2.2) (-SYMB- *p)) 3) 
 ;                     ((-SYMB- =) 5))) );
@@ -1677,14 +1815,15 @@
 ; ;  In Brown, rightward-displaced appositives are treated as siblings
 ; ;  of the postmodified NP; we want a 2-part rep (replace) construct instead:
 ; ;  (e.g., scan for "bleeding" in p16.cmb); 
-;     '((VP +expr (NP (NP +expr) (!atom (-NONE- *pseudo-attach*))) +expr (\, \,) 
+;     '((VP +expr (NP (NP +expr) (!atom (-NONE- !pseudo-attach))) +expr (\, \,) 
 ;              (.NP +expr))
 ;       (VP (-SYMB- rep) (1 ((-SYMB- np+preds) (NP 2.2.2) (-SYMB- *p)) 3) 
 ;                     (NP (-SYMB- =) 5))) );
 
 
 ;  Delete *pseudo-attach* placeholders in other uses, such as correlating
-;  "as ... as ..." comparatives
+;  "as ... as ..." comparatives (use !pseudo-attach, because *pseudo-attach*
+;  iteself in a pattern is interpreted as a sequence predicate!
 ;  
 ;  TBC
 

@@ -32,7 +32,8 @@
 
 (defmacro defpred (name var body) ; Oct 18/20; briefly tested
 ;```````````````````````````````
-; name: e.g., !list, !atom, !np, ... (expected to start with '!');
+; name: e.g., !list, !atom, !np, ... (expected to start with '!', and the
+;       chars after '!' must be Lisp-readable as an atom; e.g., NOT !\,);
 ; var: variable to be used in the body of the 1-place pred being defined;
 ; add storage of variant names in hash table *implicit-pred* to the 'defun';
 ;
@@ -41,39 +42,57 @@
    (list 'store-pred-name-variants (list 'quote name)))) 
 
 
-(defun store-pred-name-variants (name)
+(defun store-pred-name-variants (!name)
 ;````````````````````````````````````
-; name: e.g., !atom, !list, !expr, ![np], ![tense+aux], ...
-; result: e.g., (![np] ?[np] *[np] +[np])
-; effect: At the same time, these 4 variants of the predicate (functioning
+; !name:  e.g., !atom, !list, !expr, ![np], ![tense+aux], ... , where the
+;         chars after '!' must be Lisp-readable as an atom (e.g., not !\,)
+;         NB: In principle, predicate names like !1, !2, !3, ... are allowed,
+;             but in that case, the +-variant will be |+1|, |+2|, |+3|, ...
+;             (while the other variants will be as expected, e.g., ?1, ?2,
+;             *1, *2, ...). That said, it may be convenient to define !0,
+;             !1, !2, etc., as predicate true of 0, 1, 2, ... in the target
+;             expressions, keeping in mind that 0, 1, 2, 3, ... have reserved
+;             meanings in the TT pattern language. (We don't need such preds
+;             for other numbers, like 3.14 or -17 -- they can be matched
+;             directly, as they have no reserved meaning.)
+; result: e.g., for !name = ![np] --> (![np] ?[np] *[np] +[np])
+;         
+; effect: At the same time, these variants of the predicate (functioning
 ;         as match variables) are used as keys into hash table *implicit-pred*,
-;         where one then gets back 'name' (e.g., ![np]); and in addition,
-;         the *-variant of the name is stored in another hash table, *-variant*,
-;         where using 'name' as key gives its *-variant. This is needed in 
-;         the 'match' function, where after matching a +-variant of a pred,
-;         we want to allow 0 or more additional instanced of the pred.
-;         (While the *-variant could be computed from the basic !-variant,
-;         which is the Lisp-defined function, a hash-table lookup should be
-;         more efficient.)
+;         where one then gets back '!name' (i.e., the main, Lisp-defined
+;         !-variant, e.g., ![np]); and in addition, the *-variant of the
+;         !name is stored in another hash table, *-variant*; think of this
+;         as the "continuation"-variant of !name, needed when matching the
+;         +-variant, after successfully applying the !-variant to one 
+;         expression (after which we look for 0 or more additional matches).
+;
+;         While the *-variant names could be computed from the main !-variant 
+;         names, a hash-table lookup should be more efficient.
 ;
  (let (str result)
-      (cond ((not (symbolp name))
-             (format t "~%**ERROR: 'pred-name-variants' wants symbol arg, ~
-              got ~a" name))
-            ((and (setq str (string name)) nil) nil); continue after setq
+      (cond ((not (symbolp !name))
+             (format t "~%**ERROR: 'store-pred-name-variants' wants symbol ~
+              arg, got ~a" !name))
+            ((and (setq str (string !name)) nil) nil); continue after setq
             ((not (char= (schar str 0) #\!))
-             (format t "~%**ERROR: 'pred-name-variants' wants !<name>, ~
-              got ~a" name))
+             (format t "~%**ERROR: 'store-pred-name-variants' wants !<name>, ~
+              got ~a" !name))
             (t (setq str (string-left-trim "!" str))
+               (when (intersection (coerce str 'list) 
+                                  '(#\, #\; #\Space #\( #\) #\:))
+                     (format t "~%**ERROR: 'store-pred-name-variants' got ~
+                         an unacceptable !-predicate '~a' as arg" !name)
+                     (return-from store-pred-name-variants nil))
                (dolist (punc '("+" "*" "?"))
                   (push (intern (concatenate 'string punc str)) result)
-                  ; for the *-variant of 'name', store that variant in 
-                  ; the *-variant* hash table, with 'name' as key
+                  ; for the *-variant of '!name', store that variant in 
+                  ; the *-variant* hash table, with '!name' as key
                   (if (string= punc "*")
-                      (setf (gethash name *-variant*) (car result))))
-               (setq result (cons name result))
+                      (setf (gethash !name *-variant*) (car result))))
+               (setq result (cons !name result))
+               ; Enable look-up of !name for keys !name, *name, ?name, +name:
                (dolist (variant result)
-                  (setf (gethash variant *implicit-pred*) name))
+                  (setf (gethash variant *implicit-pred*) !name))
                result))
  )); end of store-pred-name-variants
 
@@ -86,12 +105,20 @@
 ;     of phrases, like '(VP ...)). However, '!expr' and '!list' are
 ;     exceptions -- the former holds for any atom or expression, 
 ;     and the latter generally holds for lists, but also for 'nil'.
-; 
+;
+; First we define some reasonable number (= max-run) of !i predicates, 
+; where i = 1, 2, ..., max-run, meaning "exactly i expressions". Then
+; we'll also have ?i, *i predicate variables (but not +i, which is just
+; the same as i !).
+
 (defpred !expr x T) 
 (defpred !atom x (atom x)) 
 (defpred !list x (listp x))
-(defpred !\, x (eq x '\,)); NB: this will also define optional comma, ?\,
-                          ;     but this won't detect (\. \.)
+(defpred !comma x (eq x '\,)); NB: this will also define optional comma,
+                          ;    ?comma, but anyway in parses we need ?[comma]
+(defpred !pseudo-attach x (eq x '*pseudo-attach*)); needed since *pseudo-attach*
+                                                  ; itself in a patterns would
+                                                  ; be a sequence predicate
 (defpred ![comma] x (equal x '(\, \,)))
 (defpred !pre-nn-pos+word x (find (car x) '(DT CD JJ JJR JJS WDT)))
 (defpred ![nn-premod] x 
@@ -109,6 +136,7 @@
                                 (eq (car x) 'NP)
                                 (find (second (second x)) 
                                       '(I you we he she who whom))))
+(defpred !non-be x (not (find x '(be is \'s are am \'m was were being been \'re))))
 (defpred ![non-np-compl] x (and (listp x) 
                                 (find (car x) '(S VP PP ADVP ADJP))))
 (defpred !non-np x (or (atom x) 
@@ -118,6 +146,9 @@
                              (not (equal (second x) '(EX THERE)))))
 (defpred !non-vp x (or (atom x) (not (find (car x) '(VP S SBAR)))))
 (defpred ![non-vp] x (and (listp x) (not (eq (car x) 'VP))))
+(defpred !not-dt x (not (eq x 'DT)))
+(defpred !not-none x (not (eq x '-NONE-)))
+(defpred !not-prep-or-symb x (not (member x '(IN -SYMB-))))
 (defpred ![vp] x (and (listp x) (eq (car x) 'VP)))
 (defpred ![advp] x (and (listp x) 
                         (find (car x) '(ADVP WHADVP PP RB WRB RBR RBS NEG))))
@@ -132,12 +163,20 @@
 (defpred ![non-aux-part] x (or (atom x) (not (isa (car x) '.aux))))
 (defpred ![punc-or-coord] x
      (and (listp x) (find (second x) '(\, \; - -- \( { [ and or & but nor))))
+(defpred ![quote] x (and (listp x) (find (car x) '(|``| |''|)))); no other occur?
 (defpred ![a{n}] x (and (listp x) (member (car x) '(a an))))
 (defpred ![det-sing-alone] x (and (listp x) (find (second x) '(this that))))
          ; these can occur without a head noun
 (defpred ![det-plur-alone] x (and (listp x) (find (second x) 
          '(these those all many most few)))); can occur without a head noun
 (defpred ![non-det] x (or (atom x) (not (member (car x) '(DT PRP$)))))
+(defpred ![time-np] x (and (listp x) (eq (car x) 'NP) (listp (cadr x))
+                           (or (isa (second (second x)) 'this-day)
+                               (and (third x) 
+                                    (or (isa (second (third x)) 'weekday)
+                                        (isa (second (third x)) 'time-period))))))
+(defpred ![pp-or-np] x (and (listp x) (find (car x) '(PP NP))))
+(defpred ![pp-or-time-np] x (and (listp x) (or (eq (car x) 'PP) (![time-np] x))))
 (defpred !-ing x 
          (let (str n)
               (cond ((not (symbolp x)) nil)
@@ -194,115 +233,9 @@
 
 ; DOT-ATOMS: These are also predicates, for matching particular atoms
 ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-; These don't allow for iteration; 'isa' remains to be extended so that
-; a dot-predicate is satisfied iff there is an isa-path from the word 
-; being matched to the feature represented by the dot-atom. (Currently
-; the feature must be reached in one step, whereas we want to allow dot-
-; atoms themselves to have features that are other dot-atoms, allowing
-; chaining.)
+; These are currently defined in "isa.lisp" (along with some lists in
+; "lexical-features.lisp")
 
-(defun isa (atm feat)
-;```````````````````
-; Various "dot-atoms" are allowed as features that can be used to match
-; the corresponding atoms. The dot-atom repertoire can be freely expanded.
-;
- (case feat (.SQ (find atm '(SQ SINV)))
-            (.S (find atm '(S SQ SINV S1 SBAR SBARQ)))
-            (.SBAR (find atm '(SBAR SBARQ)))
-            (.VP/SQ (find atm '(VP SQ)))
-            (.VP/S (find atm '(VP S)))
-            (.XP (find atm '(S NP VP AP ADJP ADVP PP WHNP WHADJP WHPP WHADVP)))
-            (.XP-NON-VP (find atm '(S NP AP ADJP ADVP PP WHNP WHADJP WHPP WHADVP)))
-            (.XP-OR-S (find atm '(S NP VP AP ADJP ADVP PP S SQ S1 SBAR SBARQ WHNP 
-                             WHADJP WHPP WHADVP)))
-            (.NON-PP (find atm '(S NP VP AP ADJP ADVP S SQ S1 SBAR SBARQ WHNP
-                             WHADJP WHADVP)))
-            (.NOT-NONE (not (eq atm '-NONE-)))
-            (.NN (find atm '(NN NNS)))
-            (.NNP (find atm '(NNP NNPS)))
-            (.NN/NNP (find atm '(NN NNP))); e.g., "{last} March" can be NN or NNP
-            (.NOT-DT (not (eq atm 'DT)))
-            (.NP (find atm '(NP WHNP)))
-            (.N-PROPOS-OBJ (gethash atm n-propos-obj))
-            (.N-COMMUN-OBJ (gethash atm n-commun-obj))
-            (.N-COG-OBJ (or (gethash atm n-propos-obj)
-                            (gethash atm n-commun-obj)))
-            ; CAVEAT: Predicates like the next two, subsuming both lexical
-            ;         and phrasal elements, can lead to recursive run-away
-            ;         when rules that combine phrases are applied as often
-            ;         as possible!
-            (.ADJP (find atm '(ADJP JJ JJR JJS)))
-            (.ADVP (find atm '(ADVP WHADVP RB RBR RBS NEG PP)))
-            (.NON-ADVP (find atm '(NP VP AP ADJP PP SQ SBARQ WHNP WHADJP WHPP)))
-                ; XP, but not explicit 'ADVP'; aimed at topicalization. Assume
-                ; fronted SBARs are not considered topicalized: "Although he won,
-                ; he's dissatisfied"; allow "Why are you leaving, I ask" as 
-                ; topicalized, though probably will be misparsed aby BLLIP.
-            (.THIS-DAY (find atm '(yesterday today tomorrow)))
-            (.WEEKDAY (find atm '(|Monday| | Monday| Monday 
-              |Tuesday| | Tuesday| Tuesday |Wednesday| | Wednesday| Wednesday
-              |Thursday| | Thursday| Thursday |Friday| | Friday| Friday
-              |Saturday| | Saturday| Saturday |Sunday| | Sunday| Sunday)))
-            (.TIME-PERIOD (find atm '(day week month year morning evening night
-              January February March April May June July August September October
-              November December Christmas spring summer fall winter)))
-            (.next/last (find atm '(next last)))
-            (.WHNP (find atm '(WHNP WDT)))
-            (.WHXP (find atm '(WHNP WHADJP WHPP WHADVP)))
-            (.DT (find atm '(DT CD PRP$))); initial CD is often a DT
-            (.a/an (find atm '(a an)))
-            (.RB (find atm '(RB RBR RBS NEG))); ex. of NEG: (NEG (NOT))
-            (.NOT-PREP-OR-SYMB (not (member atm '(IN -SYMB-))))
-            (.NP-i (find atm '(NP-1 NP-2 NP-3 NP-4))); e.g., rightward displace't
-            (.CC (find atm '(CC \, \;))); for detecting end of an NP
-            (.and/or (find atm '(and \& or \'r)))
-            (.EXTRAP-S (find atm '(SBAR-1 SBAR-2 SBAR-3 SBAR-4 S-1 S2 S-3 S-4)))
-             ; these SBAR/S variants are used in Brown to correlate it-extra
-             ; with a corresponding clause; in ULF, we expect that it-extra
-             ; provides enough of a clue to locate the extraposed clause.
-            (.PP (find atm '(PP WHPP PP-1 PP-2 PP-3 PP-4)))
-            (.with (find atm '(with without))); "with" is special, allowing 
-                                              ; verbless S-complements
-            (.when (find atm '(when where whenever wherever why how)))
-                                        ; e.g., when/where there is peace ...
-            (.PRED (find atm '(ADJP PP))); (VP (VBG|VBN ...) ...) also, but ....
-            (.ADJP/NP/PP/SBAR/UCP/PRED 
-                   (find atm '(ADJP NP PP SBAR UCP PRED)));copular complements
-            (.POSTMOD (find atm '(ADJP PP SBAR))); (VP (VBG ...) ...) also, but
-                                                 ; allowing general VP seems risky
-                                                 ; Use separate rules for VBG &
-                                                 ; VBN postmodifiers
-            (.DIS-POSTMOD (find atm '(PP-1 PP-2 PP-3 PP-4 SBAR-1 SBAR-2 SBAR-3
-               SBAR-4 VP-1 VP-2 VP-3 VP-4 ADJP-1 ADJP-2 ADJP-3 ADJP-4))); more?
-            (.JJ (find atm '(JJ JJR JJS))); NB: .ADJP also inludes these
-            (.VB (find atm '(VB VBZ VBP VBD VBG VBN VBEN)))
-            (.VBG/VBN (find atm '(VBG VBN)))
-            (.VBG/AUXG (find atm '(VBG AUXG)))
-            (.AUX (find atm '(TO AUX AUXZ AUXD AUXP AUXF AUXG AUXEN AUX-CF MD)))
-            (.MD/TO (find atm '(MD TO)))
-            (.VB/AUX (find atm '(VB VBZ VBP VBD VBG VBN VBEN 
-                                 AUX AUXZ AUXD AUXP AUXG AUXEN AUX-CF MD)))
-            (.POSS-BASE-V (find atm '(VB VBZ VBP AUX AUXZ AUXP))); only VB & AUX
-                      ; (excluding MD) should actually be base forms, but this
-                      ; list allows for parsing errors
-            (.PASPART (find atm '(VBN VBEN VBD AUX AUXEN))); possible parser-
-                                ; assigned POS's for a past/passive participle
-            (.final-punc (find atm '(\. ? !)))
-            (.it/they/them/this/that (find atm '(it they them this that)))
-            (.have (find atm '(have \'ve has \'s having had \'d)))
-            (.have/ve (find atm '(have \'ve)))
-            (.be (find atm '(be is \'s are am \'m was were being been \'re)))
-            (.non-be (not (find atm 
-                           '(be is \'s are am \'m was were being been \'re))))
-            (.is/s/am/m (find atm '(is \'s am \'m))) 
-            (.was/were (find atm '(was were)))
-            (.are/re (find atm '(are \'re)))
-            (.been/being (find atm '(been being)))
-            (.be/become (find atm '(be is are am was were being been \'s \'re
-                                    become becomes became becoming)))
-            (.go (find atm '(go goes going gone went)))
-            (t (format t "~%## Warning: ~s is not a defined dot-atom!" feat))
- )); end of isa
 
 ; SOME (POTENTIALLY) USEFUL ULF-TREE PREDICATES
 ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -330,7 +263,7 @@
                                   ; with attached word indices)
     (defparameter *type-suffixes* (make-hash-table)))
 
-(if (not (fboundp 'match)) (load "/u/schubert/tt.lisp"))
+(if (not (fboundp 'match)) (load "tt.lisp"))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;                                                       ;;
@@ -349,6 +282,7 @@
 
 (defun recover-unindexed-atom (indexed-atom); briefly tested May 20/21
 ;``````````````````````````````````````````
+; Indexing ULF atoms means attaching ~i for some word index i.
 ; Retrieve the ULF atom of a (possibly) 'indexed-atom' from the *ulf-atoms*
 ; hash-table formed when a word-indexed atom is formed. E.g.,
 ;       (unindexed-atom 'from.p-arg~7) ==> from.p-arg.

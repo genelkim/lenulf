@@ -10,13 +10,14 @@
 (load "pos+word-to-ulf.lisp")        
 (load "preprocessing-rules.lisp")   
 (load "stem.lisp")
+(load "lexical-features.lisp")
+(load "verb-transitivity-lists.lisp")
 (load "tt.lisp")
-(load "features.lisp")
+(load "isa.lisp")
 (load "postprocess-ulf-tree.lisp")
 (load "postprocessing-rules.lisp")
 (load "insert-gaps.lisp")
 (load "subcat-pref.lisp")
-(load "verb-transitivity-lists.lisp")
 
 (defun trace-main () 
   (trace simple-tree pos+word-to-raw-ulf inflect-aux!

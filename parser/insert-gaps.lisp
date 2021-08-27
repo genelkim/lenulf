@@ -91,7 +91,7 @@
 ;    recursively process the embedded VP, incorporating the result in the
 ;    output for the given VP;
 ;
-;  - if the type is (VP ... (.VB <v[_np,~_vp]>) *<non-NP),
+;  - if the type is (VP ... (.VB <v[_np,~_vp]>) *<non-NP>),
 ;    (e.g., "[Who does Ed] like _?", "[What did Ed] do _ with the car?",
 ;    but, "[What does Ed like to do _?", "[Who did he] talk to _?"),
 ;    return (VP ... (.VB <trans-verb>) (NP (-SYMB- *h)) *<non-NP>).

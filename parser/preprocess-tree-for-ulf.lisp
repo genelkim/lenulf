@@ -35,8 +35,7 @@
           ; for uniform atomic initial list elements
           (setq tree1 (cons (caar tree1) tree1)))
 
-      (if *show-stages*
-        (format t "~%## Initial parse tree:    ~%~s~%" tree1))
+      (format t "~%## Initial parse tree:    ~%~s~%" tree1)
       (dolist (rule-name *preprocessing-rule-names*)
         (setq tree2 (apply-rule-top-down (eval rule-name) tree1))
         (if *show-stages*

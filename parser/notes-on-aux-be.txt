@@ -4,9 +4,6 @@ complements of "be" on those complements via  'VBG' and 'VBN' (not distinguishin
 passive and past participles), and ULF semantics, which take the 'prog' aspect 
 to be inherent in the auxiliary (analogously with perfect 'have' see below).
 
-The ideas here are the basis for the way auxiliaries are presently rendered
-into ULF.
-
 Originally, one reason for treating 'be' before progressive and passive
 participles differently was that in the former case, tense (if any) & 
 'prog' will rise to the S-level (together); in the latter case, tense 

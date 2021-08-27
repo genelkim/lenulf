@@ -1,0 +1,65 @@
+Re: ULF parser v1, v2
+
+From: An, Hannah
+Tue 7/6/2021 12:33 PM
+
+The easiest way to run K&K is to call the K&K parser in Lisp with Python calls. For this, you need to use Python 3.6+. To install the parser, run these commands to install Python dependencies:
+
+    $ pip3 install benepar[cpu]
+    $ pip3 install torch
+
+
+Then, try the following commands in Python to make sure you have K&K installed correctly.
+
+    >>> import benepar
+    >>> benepar.download('benepar_en3')
+    >>> parser = benepar.Parser("benepar_en3")
+    >>> input_sentence = benepar.InputSentence(words=['Fly', 'safely', '.'])
+    >>> parser.parse(input_sentence)
+
+
+The second line ('benepar.download') needs to be run only once. If you fail to run the parser and if the error message is complaining about missing a model, try this command:
+
+    $ python3 -m spacy download en_core_web_md
+
+Now, to replace BLLIP with K&K, in the parse.lisp file, add this:
+
+(defparameter *k&k-setup-complete* nil)
+
+^ This is for avoiding loading K&K more than once and saving time.
+
+Then the code below runs K&K in lisp through py4cl.
+
+(defun parse-kk (str)
+;; Calls the standard K&K parser through python.
+    (when (not *k&k-setup-complete*)
+      (format t "Loading K&K parser...")
+      (finish-output)
+      (py4cl:python-exec "import benepar")
+      (py4cl:python-exec "benepar.download('benepar_en3')")
+      (py4cl:python-exec "benepar_parser = benepar.Parser('benepar_en3')")
+      (setf *k&k-setup-complete* t)
+      (format t "Done!~%"))
+    (lispify-parser-output
+      (py4cl:python-eval (format nil "str(benepar_parser.parse(\"~a\"))" str))))
+
+This clean integration is actually from Gene, so let me or Gene know if you have any trouble running the K&K parser!
+
+Now, the sentences below are the ones that show a difference when I parse with ULF v2 with K&K. Everything else is parsed correctly as expected. 
+
+#3 “A submarine torpedo is designed to be launched from a submarine” 
+
+ “is designed” and “be launched” were parsed with BE.V in ULF v1, but in ULF v2, the BEs are parsed with BE.AUX. 
+
+#4 “Any cocobolo is a valuable timber tree of tropical South America.” 
+
+“South America” was missing pipes around it in ULF v1, but ULF v2 has it correctly. However, I noticed the parse after *CHANGE-INDEF-NP-TO-PRED-AFTER-BE-OR-BECOME* is missing the article “a” from “a valuable timber tree” like below. Is this an expected behavior of ULF v2? 
+
+(((ANY.D~1 COCOBOLO.N~2) 
+  ((PRES BE.V~3) 
+   (N+PREDS (VALUABLE.A~4 (TIMBER.N~5 TREE.N~6)) 
+    (OF.P~7 (TROPICAL.A~8 |SOUTH AMERICA.N~9|))))) 
+ |.|)
+
+Best,
+Hannah
