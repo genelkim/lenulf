@@ -73,6 +73,14 @@
 ; (S1 ( ...)) is wrapped aroung BLLIP parses
     '((S1 !expr) 2))
 
+(defrule *replace-initial-empty-list-in-s*
+; These occur in some preprocessed versions (e.g., David Ahn/ Phil Michalak)
+   '((() (S +expr)) 2))
+
+(defrule *remove-additional-empty-lists*
+; These occur in some preprocessed versions (e.g., David Ahn/ Phil Michalak)
+   '((+expr () *expr) (1 3)))
+
 ; QUOTATION RULES:
 ; ````````````````
 ; Keep apparent mention quotes, wrapping the quoted text
@@ -515,7 +523,7 @@
 (defrule *change-prep-clause-to-prep-ps-clause*
 ; E.g., "While/though/if he worked, nothing happened."
 ;       "He whistled while he worked."
-   '((SBAR (IN !atom) (S +expr)) (SBAR (PS 2.2) 3)))
+   '((SBAR (IN !not-that) (S +expr)) (SBAR (PS 2.2) 3)))
 
 (defrule *change-pre-sentential-when-clause-to-when-ps-clause*
 ; E.g., "WHEN it rains, it pours." "WHERE there is smoke, there is fire."
@@ -1511,7 +1519,7 @@
 (defrule *change-s-to-vp*
 ; Recast a putative S with a trace-subject (that's really a VP within 
 ; an S-REL -- an SBAR in the original parse) as a VP:
-       '((S (NP (-SYMB- *h)) !expr) 3) )
+       '((S (NP (-SYMB- !hole-var)) !expr) 3) )
   
 (defrule *del-sbarq-subj*
 ; Delete empty subject from wh-question (in Brown only), e.g., "Who left?"

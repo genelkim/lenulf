@@ -116,6 +116,8 @@
 (defpred !list x (listp x))
 (defpred !comma x (eq x '\,)); NB: this will also define optional comma,
                           ;    ?comma, but anyway in parses we need ?[comma]
+(defpred !hole-var x (eq x '*h)); this appears on the LHS of a rule (where *h
+                                ; would be interpreted as an interated predicate
 (defpred !pseudo-attach x (eq x '*pseudo-attach*)); needed since *pseudo-attach*
                                                   ; itself in a patterns would
                                                   ; be a sequence predicate
@@ -147,6 +149,7 @@
 (defpred !non-vp x (or (atom x) (not (find (car x) '(VP S SBAR)))))
 (defpred ![non-vp] x (and (listp x) (not (eq (car x) 'VP))))
 (defpred !not-dt x (not (eq x 'DT)))
+(defpred !not-that x (not (eq x 'that))); used to prevent (IN that) => (PS that)
 (defpred !not-none x (not (eq x '-NONE-)))
 (defpred !not-prep-or-symb x (not (member x '(IN -SYMB-))))
 (defpred ![vp] x (and (listp x) (eq (car x) 'VP)))

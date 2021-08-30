@@ -1162,8 +1162,8 @@
                  (or (atom x) ; bypass atoms and lexical elements
                      (ok (match '(!atom !atom) x))
                      (find-open-patt-inst '(:xp +atom) x))) result1))
-      (format t "~%@@@ result of mapping find-open-patt-inst to ~%    ~s" result1); DEBUG
-      (format t "~%is~%    ~s" check) ; DEBUG
+      ;(format t "~%@@@ result of mapping find-open-patt-inst to ~%    ~s" result1); DEBUG
+      ;(format t "~%is~%    ~s" check) ; DEBUG
       ; 'check' will contain an (:xp ...) instance from conjuncts
       ; that subsume such an instance, or NIL for ones that don't
       (when (not (find nil check)); do all conjuncts contain :xp?
@@ -1207,7 +1207,7 @@
                     #'(lambda (x) 
                         (and (listp x) (= (length x) 3) (eq (car x) :xp)))
                      result1))
-        (format t "~%@@@@ result = %    ~s~%@@@@ result1 = %    ~s" result result1)
+        ;(format t "~%@@@@ result = %    ~s~%@@@@ result1 = %    ~s" result result1)
                                                 ;```````````````DEBUG
             (return-from equalize-coordinated-gap-candidates
               (subst result1 result tree :test #'equal))
