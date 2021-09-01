@@ -852,24 +852,24 @@
             ; approximately right. ADJP-taking verb as only complement;
             ; E.g., "How old are you turning tomorrow?"
             ((ok (setq ma (match '(VP (.vb !atom) *[advp]) tree)))
-             (fill-template '(VP 2 (:xp (v_ap-pref! '2.2)) 3) ma))
+             (fill-template '(VP 2 (:xp (v_ap-pref! '2)) 3) ma))
            
             ; Verb of type v_np_ap; e.g., "... how angry that made him _":
             ((ok (setq ma (match '(VP (.vb !atom) ![np] *[advp]) tree)))
-             (fill-template '(VP 2 3 (:xp (v_np_ap-pref! '2.2)) 4) ma))
+             (fill-template '(VP 2 3 (:xp (v_np_ap-pref! '2)) 4) ma))
 
             ; Eager-construction with non-be verbs; e.g., "How eager 
             ; did he seem _ to leave?". The inf-VP is parsed as 
             ; (S (VP (AUX (TO TO)) (VP (VB LEAVE))))
             ((ok (setq ma (match '(VP (.vb !atom) *[advp] (S ![inf])) tree)))
-             (fill-template '(VP 2 (:xp (v_ap-pref! '2.2)) 3) ma))
+             (fill-template '(VP 2 (:xp (v_ap-pref! '2)) 3) ma))
 
             ; "How eager does he seem at the meeting for Mary to join the team?"
             ; The VP[seem] parse produced by BLLIP: 
             ; (VP (VB SEEM) (SBAR (IN FOR) (S (NP ...) (VP (AUX (TO TO)) ...))))
             ((ok (setq ma (match '(VP (.vb !atom) *[advp] 
                                      (SBAR (IN FOR) (S ![np] ![inf]))) tree)))
-              (fill-template '(VP 2 (:xp (v_ap-pref! '2.2)) 3 4) ma))
+              (fill-template '(VP 2 (:xp (v_ap-pref! '2)) 3 4) ma))
 
             ; No top-level gap candidates found, so tree1 is just tree
             (t tree)))
@@ -890,6 +890,36 @@
 ; of *h for the nontopicalized cases: 'delete-inferior-gap-candidates',
 ; [I've worked some more on this since writing the above.]
 
+(defun insert-vp-gap-candidates (tree)
+;````````````````````````````````````
+; [I decided to put in a rudimentary version to try to deal with certain
+; cases in the Brown corpus]
+; tree: a syntactic phrase structure in Treebank parser (e.g., BLLIP) format;
+;       it's expected to be the body of a 'sub' construct (indicating a filler-
+;       vp-gap dependency, but with the gap(s) possibly not yet identified)
+;
+; This marks just one possible VP gap in the body of a 'sub' context, using
+; degrees of preference 3 (i.e., marker (:xp 3)) at the end of a VP, but
+; bypassing lower-level 'sub' contexts, which cannot contain gaps corresponding 
+; to the current (VP ...) filler.
+; 
+; Brown example:
+; "Also being treated are Houston, Bleckley, Tift, Turner and Dodge counties, 
+; Blasingame said." The entire segment "Also ... counties" gets treated as
+; a VP to be inserted in "Blasingame said". So tree corresponds to the latter.
+;
+ (let (tree1)
+      (if (or (atom tree) (sub-construct tree)); bypass 'sub' constructs
+          (return-from insert-vp-gap-candidates tree))
+      (setq tree1
+            (apply-rule '((S *expr (NP +expr) *expr (VP *expr (.vb !atom)))
+                          (S 2 3 4 (VP 5.2 5.3 (:xp 3)))) tree))
+      (if (not (equal tree1 tree)); successful insertion of (:xp 3)
+          tree1
+          ; otherwise try treating the gap as an ADVP gap
+          (insert-advp-gap-candidates tree))
+ )); end of insert-vp-gap-candidates
+ 
 
 (defun retain-strongest-gap-candidate (tree); May 2/21
 ;```````````````````````````````````````````
@@ -1162,8 +1192,8 @@
                  (or (atom x) ; bypass atoms and lexical elements
                      (ok (match '(!atom !atom) x))
                      (find-open-patt-inst '(:xp +atom) x))) result1))
-      ;(format t "~%@@@ result of mapping find-open-patt-inst to ~%    ~s" result1); DEBUG
-      ;(format t "~%is~%    ~s" check) ; DEBUG
+;     (format t "~%@@@ result of mapping find-open-patt-inst to ~%    ~s" result1); DEBUG
+;     (format t "~%is~%    ~s" check) ; DEBUG
       ; 'check' will contain an (:xp ...) instance from conjuncts
       ; that subsume such an instance, or NIL for ones that don't
       (when (not (find nil check)); do all conjuncts contain :xp?
@@ -1207,7 +1237,7 @@
                     #'(lambda (x) 
                         (and (listp x) (= (length x) 3) (eq (car x) :xp)))
                      result1))
-        ;(format t "~%@@@@ result = %    ~s~%@@@@ result1 = %    ~s" result result1)
+;       (format t "~%@@@@ result = %    ~s~%@@@@ result1 = %    ~s" result result1)
                                                 ;```````````````DEBUG
             (return-from equalize-coordinated-gap-candidates
               (subst result1 result tree :test #'equal))

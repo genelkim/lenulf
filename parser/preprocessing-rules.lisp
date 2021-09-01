@@ -1580,19 +1580,19 @@
 ; e.g., "Behind [[this reply], and [its many variations],] is the ..."
    '((NP +expr (\, \,)) (NP 2)) )
 
-(defrule *change-indef-np-to-pred-after-be-or-become*
-; e.g., "Alice became a doctor" --> drop the "a".
-; NB: This rule and the next one need to come after combining pre- &
-;     postmodifers of a noun with the noun, so that the (DT a) won't 
-;     be embedded, as in (NP (NP (DT a) (NN man)) (PP (IN of) ...))
-; Unfortunately, we'd either need extra rules, or repeated top-level      
-; rule applications to remove "a" from *both* NPs in something like
-; "Alice became a doctor and a community organizer". Instead, the rules
-; below introduce '=' into such conjoined phrases. ** MAYBE THE PRESENT
-; RULE SHOULD BE OMITTED, SO THAT NP COMPLEMENTS OF BE/BECOME ARE HANDLED
-; UNIFORMLY??
-   '((VP ?expr (.VB .be/become) *expr (NP (DT .a/an) +expr) *expr)
-     (VP 2 3 4 (NP 5.3) 6)) )
+; (defrule *change-indef-np-to-pred-after-be-or-become*
+; ; e.g., "Alice became a doctor" --> drop the "a".
+; ; NB: This rule and the next one need to come after combining pre- &
+; ;     postmodifers of a noun with the noun, so that the (DT a) won't 
+; ;     be embedded, as in (NP (NP (DT a) (NN man)) (PP (IN of) ...))
+; ; Unfortunately, we'd either need extra rules, or repeated top-level      
+; ; rule applications to remove "a" from *both* NPs in something like
+; ; "Alice became a doctor and a community organizer". Instead, the rules
+; ; below introduce '=' into such conjoined phrases. ** MAYBE THE PRESENT
+; ; RULE SHOULD BE OMITTED, SO THAT NP COMPLEMENTS OF BE/BECOME ARE HANDLED
+; ; UNIFORMLY??
+;    '((VP ?expr (.VB .be/become) *expr (NP (DT .a/an) +expr) *expr)
+;      (VP 2 3 4 (NP 5.3) 6)) )
 
 (defrule *add-equals-to-post-cc-np-in-a-conjunction-after-be-or-become*
 ; e.g., "Alice became rich and a prominent philanthropist" --> introduce (= ...)

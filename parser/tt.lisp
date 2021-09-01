@@ -871,23 +871,65 @@
 (defun merge-names! (names); Oct 17/20
 ;`````````````````````````
 ; names: e.g., (| New| | York| | State|); (|New| |York| |State|), (NEW YORK STATE)
-; result: e.g., | New York State| (first 2 cases), |NEW YORK STATE| (3rd case)
+;        e.g., (|William| |F.| (-symb- |(|) |Bill| (-symb- |)|) |Buckley|)
+; result: e.g., | New York State| (first 2 examples), |NEW YORK STATE| (3rd).
 ;     I.e., if there is an initial blank or some lower case characters, 
 ;     we ensure there is an initial blank, and l.c. char's are retained;
 ;     o/w, we just concatenate. The former is aimed at Brown parses with names
 ;     in pipes, while the latter will lead to .name attachment in the ULF.
+; 
+;     When we have brackets, as in the 4th example, we need to eliminate the
+;     (-symb- ...) wrappers around the brackets, e.g., in order to get
+;     | William F. (Bill) Buckley|.
 ;
- (let* ((strings (mapcar #'string names))
-        (strings- (mapcar #'(lambda (s) (string-left-trim " " s)) strings))
-        strings+)
+ (let* (names- strings strings- strings+)
+       (if (not (find-if #'listp names)) (setq names- names)
+           (setq names- (merge-brackets-with-atoms names)))
+       (setq strings (mapcar #'string names-))
+       (setq strings- (mapcar #'(lambda (s) (string-left-trim " " s)) strings))
        (if (equal strings (mapcar #'string-upcase strings-)); no names in pipes?
            (setq strings+
                  (cons (car strings-)
                        (mapcar #'make-blank-prefixed-name-string! (cdr strings-))))
            (setq strings+ (mapcar #'make-blank-prefixed-name-string! strings-)))
        (intern (apply #'concatenate 'string strings+))
-
  )); end of merge-names!
+
+
+(defun merge-brackets-with-atoms (names)
+;```````````````````````````````````````
+; This if for cases where we're forming a single name from a list of
+; names where the list may include brackets, as in
+;    (|William| |F.| (-symb- |(|) |Bill| (-symb- |)|) |Buckley|)
+; In such a case we collapse the bracketed portion into a new atom first,
+; e.g., with the segment (-symb- |(|) |Bill| (-symb- |)|) becoming |Bill|.
+;
+ (let (collect atoms atoms+ names- bracketed-atoms)
+      (cond ((not (find-if #'listp names)) names)
+            (t (dolist (x names) 
+                  (if (and (listp x) (eq (second x) '|(|)) 
+                      (prog2 (setq collect T) (push '@place-holder@ names-)))
+                  (if (and (listp x) (eq (second x) '|)|)) (setq collect nil))
+                  (if (and (listp x) (not (find (second x) '(|(| |)|))))
+                      (if collect (push (second x) atoms) 
+                                  (push (second x) names-)))
+                  (if (and (atom x) collect) (push x atoms))
+                  (if (and (atom x) (not collect)) (push x names-)))
+               (setq names- (reverse names-))
+               (cond ((null (cdr atoms)) ; just one atom in brackets
+                      (setq bracketed-atoms
+                            (intern 
+                              (concatenate 'string "(" (string (car atoms)) ")"))))
+                     (t (dotimes (i (- (length atoms) 1))
+                            (push (pop atoms) atoms+)
+                            (push '| | atoms+))
+                        (push (car atoms) atoms+)
+                        (setq strings (mapcar #'string atoms+))
+                        (setq strings (append '("(") strings '(")")))
+                        (setq bracketed-atoms 
+                              (intern (apply #'concatenate 'string strings)))))
+               (subst bracketed-atoms '@place-holder@ names-)))
+ )); end of merge-brackets-with-atoms
 
 
 (defun make-blank-prefixed-name-string! (str); Oct 17/20
