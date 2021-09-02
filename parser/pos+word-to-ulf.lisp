@@ -73,7 +73,9 @@
        (setq stem-str 
              (if (numberp stem) 
                  (format nil "~s" stem) 
-                 (case stem (\' "foot2") (|''| "inch") (t (string stem)))))
+                 (case stem (\' (case pos (pos "'s") (t "foot2") ))
+                                     ;```````````` e.g., Willis' --> (POS \')
+                            (|''| "inch") (t (string stem)))))
        ; Previously this used  (stringify stem "_", but this changes constants
        ; like | Mr. Smith| to "_Mr._Smith"
 

@@ -127,7 +127,8 @@
 (defun simple-tree (tree)
 ;```````````````````````
 ; Is the tree shape (<atomic-cat> (<atomic-cat> <word>))?
- (and (listp tree) (cdr tree) (null (cddr tree)) (listp (second tree)) 
+ (and (listp tree) (atom (car tree)) (cdr tree) (null (cddr tree)) 
+      (listp (second tree)) (atom (car (second tree))) 
       (atom (second (second tree)))))
 
 

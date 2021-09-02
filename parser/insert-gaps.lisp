@@ -151,15 +151,16 @@
 (defun globally-insert-gaps (tree)
 ;``````````````````````````````````
  ; if there are no (sub ...) constructs in tree (hence no gaps), return tree
- (when *show-stages*
-     (format t "~%~%@@ Parse tree prior to gap-insertion:")
-     (format t   "~%   ``````````````````````````````````~%~s" tree)
-     (format t "~%~%@@ Insert missing *h wherever there are 'sub' constructs")
-     (format t "~%   `````````````````````````````````````````````````````"))
- (if (not (contains-sub-construct tree))
-     tree; to avoid unneccesary tree reconstruction
-           (globally-insert-gaps1 tree)
-  )); end of globally-insert-gaps
+ (let ()
+   (when *show-stages*
+       (format t "~%~%@@ Parse tree prior to gap-insertion:")
+       (format t   "~%   ``````````````````````````````````~%~s" tree)
+       (format t "~%~%@@ Insert missing *h wherever there are 'sub' constructs")
+       (format t "~%   `````````````````````````````````````````````````````"))
+   (if (not (contains-sub-construct tree))
+       tree; to avoid unneccesary tree reconstruction
+       (globally-insert-gaps1 tree))
+    )); end of globally-insert-gaps
 
 (defun contains-sub-construct (tree); briefly tested
 ;``````````````````````````````````
