@@ -60,6 +60,9 @@
              ; (with inserted underscores)
              (return (make-multiword "_" (cdr pos-word))) )
 
+       ; Special case: word n't
+       (if (member word '(not \n\'t)) (return-from stem 'not))
+
        ; Only one word follows the given POS tag. However, we also allow for
        ; implicit multiwords separated by underscores, by separating the word
        ; at the underscores and calling 'stem' recursively on the multiwored
@@ -266,8 +269,16 @@
        ; POS tag is one of VBD VBG VBN VBEN VBP VBZ VB-CF 
        ;                   AUXD AUXG AUXEN AUXP AUXZ;
        (if (member tag '(VBZ AUXZ VBP AUXP))
-           (if (member word '(is \'s are \'re am \'m))
+           (if (member word '(is \'s s are \'re re am \'m m)); sometimes no "'"
                (return-from stem 'BE) ))
+       (if (and (member tag '(AUXZ AUXP)) (eq word '\'ll))
+           (return-from stem 'WILL))
+       (if (and (member tag '(AUXZ AUXP)) (eq word '\'d))
+           (return-from stem 'WOULD)); a guess! It could be "had"
+       (if (and (eq tag 'AUXD) (eq word '\'d))
+           (return-from stem 'HAVE)); a guess! It could be "would"
+       (if (and (eq tag 'AUX-CF) (member word '(had \'d)))
+           (return-from stem 'HAD)); subjunctive stays as "had"
        (if (member tag '(VBP AUXP)) (return-from stem word)) 
                        ; actually some modals are tense-ambiguous;
                        ; e.g., "would" in "He said he would do it"

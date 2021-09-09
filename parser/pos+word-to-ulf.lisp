@@ -183,8 +183,9 @@
 
 ;      (format t "~%For ~s, type-tag = ~s, op = ~s" pos+word type-tag op); DEBUG
 
-       (if (find pos+word '((IN that) (CC and) (CC or) (RB not) (RB n\'t) 
-                            (PS that)) :test 'equal)
+       (if (find pos+word '((CC and) (CC or)) :test 'equal)
+           (setq type-tag 'CC))
+       (if (find pos+word '((IN that) (RB not) (RB n\'t) (PS that)) :test 'equal)
            (setq type-tag nil)); "that" complementizer, booleans: no tag
        (setq log-atom-str ; NB: -NONE- and -SYMB- constituents don't get an index
              (if type-tag

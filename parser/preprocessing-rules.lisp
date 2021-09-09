@@ -186,6 +186,25 @@
 ; E.g., "I have no doubt (in my mind) you know the answer"
    '((NP *expr (.NN +atom) ?expr (SBAR (S (NP +expr) +expr) ?expr))
      (ADJP 2 3 4 (SBAR (-SYMB- tht) 5))))
+;
+; In Brown, the silent complemetizer in the above cases is represented
+; as (-NONE- 0), so we need variants of the rules above:
+;
+(defrule *insert-silent-complementizer-after-verb-in-brown*
+; E.g., "I think I see it" --> "I think [tht] I see it"; 
+;       "I'm happy she's here." "I have no doubt she's smart."
+   '((VP *expr (.VB !atom) ?expr (SBAR (-NONE- !zero) (S (NP +expr) +expr)))
+     (VP 2 3 4 (NP (-SYMB- tht) 5.3))))
+
+(defrule *insert-silent-complementizer-after-adj-in-brown*
+; E.g., "I'm sure [tht] you know the answer"; 
+   '((ADJP *expr (.JJ !atom) ?expr (SBAR (-NONE- !zero) (S (NP +expr) +expr)))
+     (ADJP 2 3 4 (SBAR (-SYMB- tht) 5.3))))
+
+(defrule *insert-silent-complementizer-after-nn-in-brown*
+; E.g., "I have no doubt (in my mind) you know the answer"
+   '((NP *expr (.NN +atom) ?expr (SBAR (-NONE- !zero) (S (NP +expr) +expr)))
+     (ADJP 2 3 4 (NP (-SYMB- tht) 5.3))))
 
 (defrule *comb-aux-vp* ; NEEDED FOR BROWN TREES, WHICH USE (S [NP] [AUX] (VP ...))
 ; E.g., "He has left the crime scene."
@@ -347,14 +366,38 @@
 ; No doubt BLLIP has other creative ways of parsing "it all", "them all", etc.
 
 (defrule *make-initial-please-an-adverb*
-; e.g., "Please go away" -- BLLIP makes "please" a verb
-   '((S ?non-np (VP (VB please) +expr) *expr) (S 2 (VP (RB please) (VP 3.3)) 4)))
+; e.g., "Please {,} go away" -- BLLIP makes "please" a verb
+   '((S ?non-np (VP (VB please) ?[comma] +expr) *expr) 
+     (S 2 (VP (RB please) (VP 3.4)) 4)))
+
+(defrule *insert-you-in-please-imperative*
+; e.g., "please {,} go away" -- now a VP by the previous rule
+; NB: If this is VP-embedded, we'll drop the {you}.pro again
+   '((S ?non-np (VP (RB please) ?[comma] (VP (VB !atom) *expr)) *expr)
+     (S 2 (S (NP (-SYMB- {you}.pro)) 3.2 3.4) 4))) 
 
 (defrule *separate-obj-pred-combination-after-imperative-v*
 ; e.g., "Make it very spicy"; "Let's dance"; "Please don't let him fail."
 ; BLLIP incorrectly makes an S out of an NP complement and any other complement.
    '((!atom *non-np (VP (.VB !atom) (S (NP +expr) +expr)) *expr)
      (1 2 (VP 3.2 3.3.2 3.3.3) 4)))
+
+(defrule *insert-you-in-simple-imperative*
+; e.g., "Make it very spicy" (in VP form after previous rule)
+; NB: If this is VP-embedded, we'll drop the {you}.pro again
+  '((!atom *non-np (VP (VB !atom) *expr) *expr)
+    (1 2 (S (NP (-SYMB- {you}.pro)) 3) 4)))
+
+(defrule *insert-you-in-brown-imperative*
+; e.g., "Make it very spicy" (Brown makes it an S with subject (NP (-NONE- *)))
+; NB: If this is VP-embedded, we'll drop the {you}.pro again
+  '((S (NP (-NONE- *)) (VP (VB !atom) *expr) *expr)
+    (S (NP (-SYMB- {you}.pro)) 3 4)))
+
+(defrule *remove-inserted-you-in-a-larger-vp*
+; e.g., "I want you to MAKE IT VERY SPICY"
+  '((VP (TO to) (S (NP (-SYMB- {you}.pro)) +expr) *expr)
+    (VP 2 3.3 4)))
 
 (defrule *reunite-prep-with-whnp-in-sbar*
 ; e.g., "I'm not sure with *[whom to discuss this]." NB: Wrong SBAR grouping
@@ -484,6 +527,34 @@
 ; uses a match to (-SYMB- !atom). Note that the gap insertion rules guard
 ; against *h-insertion where this is already present.
    '((-none- t) (-SYMB- *h)))
+
+(defrule *expand-clitic-not*
+  '((!atom n\'t) (1 not)))
+
+(defrule *repair-vp-with-aux-verb-before-obj*
+; E.g., BLLIP renders "do" in "I'd rather not do it" as (AUX do);
+; Guard against making the change for aux-subj inversion ("Did he leave?")
+   '((VP (.AUX !atom) *[advp] (NP +expr) *[non-vp])
+     (VP ((pos-as-main-verb! '2.2) 2.2) 3 4)))
+
+(defrule *expand-clitic-will*
+  '((!atom \'ll) (1 will)))
+
+(defrule *expand-clitic-had-before-better*
+; E.g., "I'd better leave";
+   '((+expr (!atom \'d) *[advp] (ADVP (RB better)) (VP +expr))
+     (1 (AUX-CF had) 3 4 5)))
+
+(defrule *expand-clitic-would-before-base-vp*
+; E.g., "I'd suggest you leave"
+   '((+expr (!atom \'d) *[advp] (VP (VB !atom) *expr))
+     (1 (AUXZ would) 3 4)))
+
+(defrule *expand-clitic-had-before-perfect*
+; E.g., "I'd already left."
+; We don't need to check for the perfect VP, because other instances of 'd
+; are covered by the previous two rules.
+   '((+expr (!atom \'d) *[advp] (VP +expr)) (1 (AUXD had) 3 4)))
 
 (defrule *change-poss-pro-to-dt*
 ; e.g., "My throat hurts": gives (NP (PRP$ MY) (NN THROAT)); we want DT
@@ -822,7 +893,8 @@
 (defrule *form-aux-have*
 ; e.g., "He may HAVE left"; questions are handled separately (see next rule)
 ; After MD or TO, and before a VP, "have" is (AUX have)
-   '((VP ?expr (.MD/TO !atom) ?expr (VP ?expr (!atom .have/ve) ?expr (VP +expr)))
+   '((VP ?expr (.MD/AUX/TO !atom) ?expr (VP ?expr (!atom .have/ve) 
+                                         ?expr (VP +expr)))
      (VP 2 3 4 (VP 5.2 (AUX 5.3.2) 5.4 5.5))))
 
 (defrule *form-aux-have-in-question*
@@ -972,7 +1044,7 @@
 ;       "I've got much to do"; the previous rule produces (VBZ do) in
 ;       these examples, but they are "revised" to (VB do) here
 ; After an MD or "to", "do" is (VB do)
-   '((!atom ?expr (.MD/TO !atom) *expr (VP (!atom do) *expr))
+   '((!atom ?expr (.MD/AUX/TO !atom) *expr (VP (!atom do) *expr))
      (1 2 3 4 (VP (VB do) 5.3))))
 
 (defrule *form-auxz-do*
@@ -1157,12 +1229,13 @@
 
 (defrule *add-sub-operator-for-implicit-relclause-in-brown-parses*
 ; E.g., "the man I saw"; "the man I saw you with", "The car you want me to see".
+; NB: Earlier rules converted (-NONE- 0) to (-SYMB- tht) for v-complements, etc.
 ; This is for Brown corpus parses; "implicit" means the relativizer ("tht") 
 ; is implicit; Brown parses usually contain (-NONE- T) already, changed by
 ; an earlier rule here to (-SYMB- *h). (Lexical interpretation rules will
 ; change any remaining (-NONE- T) to (-SYMB- *h), but this seems to be
 ; redundant.)
-   '((SBAR (-NONE- 0) (S (NP (!not-none +expr) *expr) *expr (VP +expr) *expr))
+   '((SBAR (-NONE- !zero) (S (NP (!not-none +expr) *expr) *expr (VP +expr) *expr))
      (SBAR (WHNP (-SYMB- sub) (WHNP (-SYMB- tht.rel)) 3))))
 
 ; In BLLIP parses, there is no (-NONE- 0) for a missing initial rel-pron, and
@@ -1421,7 +1494,7 @@
 
 (defrule *comb-what-np-sbar*
 ; E.g., "What a big house he has!" after the previous rule will have the form
-; ((NP (-SYMB- =) (NP (DT what-em) (NP ...))) (SBAR (-NONE 0) (S ...)))),
+; ((NP (-SYMB- =) (NP (DT what-em) (NP ...))) (SBAR (-NONE- 0) (S ...)))),
 ; whereas we want a sentence with an emphatic, extracted, fronted NP.
 ; Note that
    '((NP (NP (-SYMB- =) (NP (DT what-em) (NP (-SYMB- =) (NP +expr))))
@@ -1481,11 +1554,20 @@
    '((PP (IN .with) (S (NP +expr) (.PRED +expr) (\, \,) +expr))
      (ADVP (-SYMB- adv-a) (PP (PS 2.2) (S 3.2 (3.3.1 3.3 (|,&| |,&|) 3.5))))) )
 
-(defrule *del-inf-subj* ; dim (4 3)
+(defrule *del-null-subj-followed-by-to* ; dim (4 3)
+; E.g., "He began to speak." In Brown "to" is a sister of the main VP, but
+;       actually by the time we get to this rule, (TO to) is VP-embedded.
 ; Delete empty subject-NP of a to-infinitive, making the infinitive an NP:
     '((S (NP (-NONE- *)) (To to) *expr) (1 (NP 3 4))) )
-; NB: This rules assumes that AUX has not yet been combined with the VP,
+; NB: This rule assumes that AUX has not yet been combined with the VP,
 ;     so it must precede *comb-aux-vp* (the next rule)
+
+(defrule *del-null-subj-followed-by-inf-vp* ; dim (4 3)
+; E.g., "He began to speak." After earlier rules (& for BLLIP), we have  
+;       (... (NP (-NONE- *)) (VP (TO to) ...) 
+; Delete empty subject-NP of a to-infinitive, making the infinitive an NP:
+    '((S (NP (-NONE- *)) (VP *[advp] (TO to) *expr)) 
+      (S (NP (TO to) 3.2 3.4))) )
 
 (defrule *change-s-with-null-subj-to-gerund* ; dim (3 3)
 ; Recast an S with an empty subject & a progressive VP as a gerund --
@@ -1569,6 +1651,14 @@
 ; Vice President Gore" won't match here, because successive NNPs should
 ; already have been merged.
    '((NP *expr ![nn-premod] (.NNP +expr)) (NP 2 3 (NN 4.2))))
+
+(defrule *change-final-nnp-to-nn-after-initial-dt*
+; e.g., "the Examiner" should come out as (the.d | Examiner|.n)
+   '((NP (.DT !atom) *expr (NNP +expr)) (NP 2 3 (NN 4.2))))
+
+(defrule *change-final-nnps-to-nns-after-initial-dt*
+; e.g., "the Celts" should come out as (the.d (plur | Celt|.n))
+   '((NP (.DT !atom) *expr (NNPS +expr)) (NP 2 3 (NNS 4.2))))
 
 (defrule *change-nnp-to-nn-before-pp-of*
 ; e.g., "Speaker of the House" -- "Speaker" is a name-like *noun* here
@@ -1665,11 +1755,24 @@
    '((NP (NP (.DT !expr) +expr) (\, \,) (NP *expr (NNP +expr)) *expr)
      (NP (-SYMB- np+preds) 2 (NP (-SYMB- =) 4) 5)) )
 
-(defrule *form-appos-from-np-and-np*
+(defrule *form-appos-from-determinate-np-and-np*
 ; e.g., "the post he sought, Speaker and power-broker"
 ; a riskier version of the previous rule -- no NNP requirement, but we're
 ; not allowing trailing material (after the 2nd NP) in this case
    '((NP (NP (.DT !expr) +expr) (\, \,) (NP +expr))
+     (NP (-SYMB- np+preds) 2 (NP (-SYMB- =) 4))) )
+
+(defrule *form-appos-from-np-and-determinate-np*
+; e.g., "Robert Molesworth, a Whig leader"
+; again somewhat risky but we're requiring a determiner after the comma.
+   '((NP (NP +expr) (\, \,) (NP (.DT !expr) +expr))
+     (NP (-SYMB- np+preds) 2 (NP (-SYMB- =) 4))) )
+
+(defrule *form-appos-from-np-and-conjunctive-determinate-np*
+; e.g., "Robert Molesworth, a Whig leader and member of the Privy Council"
+; again somewhat risky but we're requiring an embedded determiner after 
+; the comma.
+   '((NP (NP +expr) (\, \,) (NP (NP (.DT !expr) +expr) +expr))
      (NP (-SYMB- np+preds) 2 (NP (-SYMB- =) 4))) )
 
 
@@ -1699,7 +1802,8 @@
 (defrule *change-empty-that-to-relativizer*
 ;  Replace empty relativizer so that its ULF will be tht.rel (the default
 ;  ULF for silent "that" is complementizer tht):
-     '((NP +expr (SBAR (-NONE- 0) (S +expr))) (1 2 (SBAR (-SYMB- tht.rel) 3.3))) )
+     '((NP +expr (SBAR (-NONE- !zero) (S +expr))) 
+       (1 2 (SBAR (-SYMB- tht.rel) 3.3))) )
   
 (defrule *mark-it-extra*
 ;  Change "it" to "it-extra" in it-extraposition (the .EXTRAP-S feature can be

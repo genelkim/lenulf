@@ -118,6 +118,7 @@
                           ;    ?comma, but anyway in parses we need ?[comma]
 (defpred !hole-var x (eq x '*h)); this appears on the LHS of a rule (where *h
                                 ; would be interpreted as an interated predicate
+(defpred !zero x (eq x 0)); Explicit 0 in a pattern means the same as *expr
 (defpred !pseudo-attach x (eq x '*pseudo-attach*)); needed since *pseudo-attach*
                                                   ; itself in a patterns would
                                                   ; be a sequence predicate
