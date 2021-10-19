@@ -284,6 +284,19 @@
       simple-res
       complex-res)))
 
+(defparameter *setup-complete* nil)
+(defun setup-pattern-en-env (pyfn)
+  "Sets up the python environment for pattern.en calls. 'pyfn' is the function
+  for interfacing with the Python environment (python-over-socket or
+  pyhton-over-py4cl)."
+  (funcall pyfn "from pattern.en import *" 'ulf2english::exec)
+  ;; For some reason these aren't defined in pattern.en
+  (funcall pyfn "IMPERFECTIVE='imperfective'" 'ulf2english::exec)
+  (funcall pyfn "PERFECTIVE='perfective'" 'ulf2english::exec)
+  (funcall pyfn "from nltk.stem import WordNetLemmatizer" 'ulf2english::exec)
+  (funcall pyfn "wnl = WordNetLemmatizer()" 'ulf2english::exec)
+  (setq *setup-complete* t))
+
 ;; Function that checks if the adjective given
 ;; ends in er.a (comparative form)
 ;; Note: Does not account for all comparative adjectives
@@ -299,17 +312,17 @@
   ;;           (sub-str (subseq initial-str (- length-str 4) length-str)))
   ;;           (if (and (> length-str 4) (string-equal sub-str "er.a")) 
   ;;               t nil)) nil)
-  (when (not ulf2english::*setup-complete*)
-    (ulf2english::setup-pattern-en-env #'ulf2english::python-over-py4cl))
+  (when (not *setup-complete*)
+   	(setup-pattern-en-env #'ulf2english::python-over-py4cl))
 
   (let* ( (changed-wrd
             (python-eval
                 (let ((*package* (find-package :standardize-ulf)))
-                (format nil "str(lemma(\"~s\"))" (split-by-suffix adj)))))
+                (format nil "str(comparative(wnl.lemmatize(~s, \"a\")))" 
+			(string-downcase (string (split-by-suffix adj)))))))
            (wrd (string (split-by-suffix adj))))
         (if (string-equal changed-wrd wrd)
             t changed-wrd)
-            
         )         
 )
 
@@ -856,8 +869,8 @@
   "Fixes the parsed ULF with domain-specific fixes which may not generalize
   outside of this package. Assumes the token-indexing has already been
   removed."
-  (when (not ulf2english::*setup-complete*)
-    (ulf2english::setup-pattern-en-env #'ulf2english::python-over-py4cl))
+  (when (not *setup-complete*)
+    (setup-pattern-en-env #'ulf2english::python-over-py4cl))
 
   (inout-intern (inulf ulf :standardize-ulf :callpkg pkg)
     ;; TODO: make max-n a multiplicative factor of the ulf size
