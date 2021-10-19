@@ -2,30 +2,25 @@
 ;; If repair rules pre-existing from "elf-from-sentences" are added, 
 ;; ttt and ttt rule files will have to be added from there as well.
 
-(in-package :cl-user)
-
-(load "package")
-(load "gene-util")
-(load "parser/english-to-ulf")
-(load "parser/parse")
-(load "parser/parse-tree-to-ulf")
-(load "parser/preprocess-tree-for-ulf")
-(load "parser/tt")
-(load "parser/tt-match-predicates.lisp")
-(load "parser/pos+word-to-ulf")
-(load "parser/preprocessing-rules")
-(load "parser/stem")
-(load "parser/features.lisp")
-(load "parser/postprocess-ulf-tree.lisp")
-(load "parser/postprocessing-rules.lisp")
-(load "parser/insert-gaps.lisp")
-(load "parser/subcat-pref.lisp")
-(load "parser/verb-transitivity-lists.lisp")
-
-(in-package :lenulf)
+(load "english-to-ulf.lisp")
+(load "parse.lisp")
+(load "parse-tree-to-ulf.lisp")
+(load "preprocess-tree-for-ulf.lisp")
+(load "tt-match-predicates.lisp")
+(load "pos+word-to-ulf.lisp")        
+(load "preprocessing-rules.lisp")   
+(load "stem.lisp")
+(load "lexical-features.lisp")
+(load "verb-transitivity-lists.lisp")
+(load "tt.lisp")
+(load "isa.lisp")
+(load "postprocess-ulf-tree.lisp")
+(load "postprocessing-rules.lisp")
+(load "insert-gaps.lisp")
+(load "subcat-pref.lisp")
 
 (defun trace-main () 
-  (trace simple-tree pos+word-to-raw-ulf aux-inflection 
+  (trace simple-tree pos+word-to-raw-ulf inflect-aux!
          preprocess-tree-for-ulf parse-tree-to-raw-ulf))
 
 (defun trace-rules ()
@@ -49,6 +44,8 @@
          (defun p (tree) (format t ~s (parse-tree-to-ulf tree)))" "~%~s")
  (format t "~%~%Suggested handy definition for English to ULF:~%
          (defun ulf (str) (format t ~s (english-to-ulf str)))" "~%~s")
+ (format t "~%~%To print an item x in full, define:~%
+         (defun show (x) (format t ~a~a~a x))" #\" "~s" #\")
  (format t "~%~%To avoid showing processing stages, do~%  ~
            (setq *show-stages* nil)")
  '     -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-)

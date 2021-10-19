@@ -1,0 +1,82 @@
+
+IN REVERSE CHRONOLOGICAL ORDER  (since July 2021)
+
+################################################################################
+Sep 1-2/21
+
+- Possessives without an 's' after apostrophe fixed, as in 
+  "Willis' direction"
+
+- disappearing sentences due to faulty 'simple-tree' fixed.
+
+- defined 'insert-vp-gap-candidates' & fixed a bad return-from in it
+
+- fixed faulty handling of complements of main verbs "be" and "become"
+  (scrapped the removal of indefinite determiners in cases like
+  "Bob is a student", & instead always using identity (like
+    (= (a.det student.n))
+
+- commented out unwanted debugging messages.
+
+- some rule repairs/additions that I don't remember
+
+=================================================================
+Aug 28/21
+
+- Added a couple of rules to eliminate any empty lists -- aimed at
+  how they occur in some preprocessed versions, like David Ahn's,
+  who seems to have simple deleted things like |``| or |''|, so that
+  e.g., (|``| |``|) becomes ( ).
+
+- Fixed a rule that illegally contained *h in the input pattern (where
+  it would be interpreted as iteration of predicate !h), by changing
+  this to !hole-var (hole veriable, true only of *h)
+
+- Fixed the rule for changing (IN <atom>) premodifying a sentence to
+  (PS <atom> so that it won't do that if the atom is 'taht'.
+===================================================================
+Aug 23-24/21
+
+- Basic parenthesis handling added. Some bracketed NPs after NPs become
+  appositives (w/o brackest); outermost sentence brackets are deleted.
+  All others are kept, using (\( ... \)), as they can contribute
+  various types of meanings.
+
+- Some occurrences of *pseudo-attach* in the Brown corpus are dealt
+  with; e.g., for "it"-extraposition, where 'it-extra.pro' is introduced.
+
+- Various cases of temporal (supposed) nominals like "yesterday", 
+  "next week" are transformed into adverbials, to yield ULFs like
+  (adv-e ({during}.p (k yesterday.n))). It doesn't work uniformly yet.
+
+- Multiple fronted PPs and temporal NPs are grouped together into a single
+  adverbial, retaining separating commas -- because arguably such adverbials
+  fill a single gap in the sentence being premodified. So the commas
+  indicate concurrent application (like a conjunctive lambda-predicate,
+  e.g., (:L t ((t ({during}.p | Today|)) and (t (at.p (k noon.n)))))
+
+- additions/changes have been made to "preprocessing-rules.lisp",
+  "tt-match-predicates.lisp", "isa.lisp", and comments in 
+  "parse-tree-to-ulf.lisp"
+=====================================================================
+Aug 22/21
+
+Rules added in "preprocessing-rules.lisp" for introducing bracketing of 
+form (\" ... \") around probable mention-quotes, and deleting all others.
+Corresponding feature 'say' added to "isa.lisp" for various "saying verbs"
+(ones likely to be used before or after quoted utterances), and predicate
+![quote] added to "tt-match-predicates.lisp" to match (|``| ...) or (|''| ...)
+=======================================================================
+Aug 20/21
+
+Extensive revisions (in July & August) to allow for greater TT flexibility
+(see README and "tt-syntax-documentation")
+
+=======================================================================
+July 4/21
+
+- replaced parse.lisp and english-to-ulf.lisp with modifications by Gene
+to allow use of either Allegro or sbcl.
+
+- fixed absolute tt.lisp access path to be local.
+========================================================================

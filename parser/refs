@@ -1,0 +1,84 @@
+[A POSSBLE SOURCE OF SOFT CONSTAINTS ON VERB HEAD PATTERNS FOR GENERATION]
+
+VerbAtlas 
+
+is now out: a new resource for Semantic Role Labeling and beyond!
+SIGSEM <SIGSEM@LIST.RUG.NL>
+on behalf of Roberto Navigli <000000ce42ea88fd-dmarc-request@LIST.RUG.NL>
+Tue 3/31/2020 5:32 AM
+
+VerbAtlas 1.0 - Semantic Role Labeling and beyond!
+
+We
+ are proud to announce that VerbAtlas
+
+ 1.0 (http://verbatlas.org)
+
+ is finally available for download at http://verbatlas.org/download.
+ Developed in the Sapienza NLP
+ group (http://nlp.uniroma1.it),
+ the multilingual Natural Language Processing research team at the Sapienza 
+University of Rome, VerbAtlas is a novel large-scale manually-crafted semantic 
+resource for wide-coverage, intelligible and scalable Semantic Role Labeling.
+
+ The goal of VerbAtlas is to manually cluster WordNet synsets that share similar 
+semantics into sets of semantically-coherent frames. The main features are:
+
+    466
+     semantically-coherent frames using 26 cross-frame VerbNet-inspired
+     semantic roles for their argument structure.
+
+    Available both for download and via RESTful API.
+
+    Full coverage of WordNet 3.0 verb synsets (13,000+).
+
+    Complete linkage to BabelNet 4.0, which supports 280+ languages 
+    (new version to come later this year!).
+
+    Manual mapping to PropBank of all CoNLL-2009 and CoNLL-2012 dataset 
+    occurrences (5000+ mappings).
+
+
+    Selectional preferences: the superconcept most probably associated with 
+    a semantic role in a frame (e.g. food for the patient role of the EAT frame).
+
+    Default/shadow
+     arguments: arguments logically implied or already incorporated into a verb.
+
+    Implicit arguments: arguments that are implicit in the argument structure 
+    of a verb.
+
+And much more! Please check out our EMNLP 2019 paper:
+
+A.  Di Fabio, S. Conia, R. Navigli “VerbAtlas: a Novel Large-Scale Verbal Semantic 
+Resource and Its Application to Semantic Role Labeling”, EMNLP-IJCNLP 2019, 
+pp. 627-637 
+
+and
+http://verbatlas.org
+
+ for more details!
+
+A state-of-the-art span-based SRL system which uses VerbAtlas and PropBank jointly is also available from the same website (just type a sentence!).
+
+VerbAtlas is an output of the MOUSSE ERC Consolidator Grant n. 726487 and the 
+ELEXIS project no.731015.  Babelscape proudly developed the online interface 
+and API, provides the infrastructure for maintaining the service and works on 
+the improvement of the resource. 
+
+Enjoy!
+
+The Sapienza NLP group
+
+-- 
+=====================================
+Roberto Navigli
+Dipartimento di Informatica
+Sapienza University of Rome
+Viale Regina Elena 295b (building G, second floor)
+00161 Roma Italy
+Phone: +39 0649255161 - Fax: +39 06 49918301
+Home Page: http://wwwusers.di.uniroma1.it/~navigli
+Sapienza NLP Group: http://nlp.uniroma1.it
+=====================================
+
