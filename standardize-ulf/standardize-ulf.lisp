@@ -322,7 +322,7 @@
 			(string-downcase (string (split-by-suffix adj)))))))
            (wrd (string (split-by-suffix adj))))
         (if (string-equal changed-wrd wrd)
-            t changed-wrd)
+            t nil)
         )         
 )
 
@@ -331,7 +331,7 @@
 ;;                       (than.p <term>)))
 ;; To: (<det> (rep ((<comparative adjective> *p) <noun>)
 ;;                 (than.p <term>)))
-(defun fix-comparatives (ulf)
+(defun fix-comparatives! (ulf)
     (let ((det (first ulf))
           (comp-adj (first (second (second ulf))))
           (noun (second (second (second ulf))))
@@ -863,6 +863,11 @@
     ;; Basic it-extraposition.
     '(/ (it.pro ((lex-tense? be.v) adj? term?))
         (it-extra.pro (((lex-tense? be.v) adj?) term?)))
+
+    ;; Fix comparatives form
+    '(/ (! (det? (n+preds (is-comp-adj? noun?) (than.p term?))))
+	(fix-comparatives! !))
+
     ))
 
 (defun standardize-ulf (inulf &key pkg)

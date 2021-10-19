@@ -15,6 +15,5 @@
 				   :standardize-ulf)))
      (token-removed (remove-token-indices rawparse))
      (fixed
-       (standardize-ulf token-removed :pkg :ulf-nlog))
-     (canon (canonicalize fixed)))
-    canon))
+       (standardize-ulf token-removed :pkg :standardize-ulf)))
+    fixed))
