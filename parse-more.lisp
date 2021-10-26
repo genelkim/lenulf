@@ -14,6 +14,17 @@
 (defparameter *k&m-dict* (merge-pathnames "deps/model/dict"
                                           lenulf+/config:*base-directory*))
 
+(defun escape-chars (str chars)
+  "Escapes given characters."
+  (let ((escaped-list
+          (reduce #'(lambda (acc cur)
+                      (cond
+                        ((member cur chars) (cons cur (cons #\\ acc)))
+                        (t (cons cur acc))))
+              (coerce str 'list)
+              :initial-value nil)))
+    (coerce (reverse escaped-list) 'string)))
+
 (defun parse-kk (str)
 ;; Calls the standard K&K parser through python.
     (when (not *k&k-setup-complete*)
