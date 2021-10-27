@@ -120,6 +120,16 @@
 ;
   (prog (ff f closed fff)
         (if (eq x feat) (return t))
+        ; The next 3 lines aren't needed for the 'match' function, which
+        ; looks in hash table *underlying-feat* to find the feature corres-
+        ; ponding to a dot-atom. However, in the syntax tree preprocessing 
+        ; rules, we use some predicates that directly call "isa", where the
+        ; second argument is a dotted atom. The next few lines remove the dot.
+        (if (dot-atom x) 
+            (setq x (intern (string-left-trim "." (string x)))))
+        (if (dot-atom feat) 
+            (setq feat (intern (string-left-trim "." (string feat)))))
+        (if (eq x feat) (return t))
         ; frequent case: feat is on the list retrieved from *isa-features* for x:
         (setq ff (gethash x *isa-features*))
         (if (find feat ff) (return t))
@@ -198,6 +208,7 @@
        January February March April May June July August September October
        November December Christmas spring summer fall winter)
      (next/last next last)
+     (of/to/by of to by); these are usually argument-suppliers
      (WHNP WDT)
      (WHXP WHNP WHADJP WHPP WHADVP)
      (DT DT CD PRP$); initial CD is often a DT
@@ -231,7 +242,7 @@
      (VBG/VBN VBG VBN)
      (VBG/AUXG VBG AUXG)
      (AUX TO AUXZ AUXD AUXP AUXF AUXG AUXEN AUX-CF MD)
-     (MD/TO MD TO)
+     (MD/AUX/TO MD AUX TO)
      (VB/AUX VB VBZ VBP VBD VBG VBN VBEN
                           AUX AUXZ AUXD AUXP AUXG AUXEN AUX-CF MD)
      (POSS-BASE-V VB VBZ VBP AUX AUXZ AUXP); only VB & AUX
@@ -244,6 +255,10 @@
      (have \'ve has \'s having had \'d)
      (have/ve have \'ve)
      (be is \'s are am \'m was were being been \'re)
+     (feel feels felt feeling)
+     (seem seems seemed)
+     (stay stays stayed staying)
+     (be/feel/seem/stay be feel seem stay)
      ; (non-be (not (find atm
      ;                '(be is \'s are am \'m was were being been \'re))
      ; replaced by !non-be

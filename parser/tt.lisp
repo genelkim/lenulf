@@ -302,7 +302,7 @@
 
             ((dot-atom pa); (note: by previous case, ex is not = pa)
              ; try to get feat from pa = .feat
-             (setq feat (gethash pa *underlying-feature*))
+             (setq feat (gethash pa *underlying-feat*))
              (if (null feat)
                  (prog2
                    (format t "~%## Warning: ~s has no underlying feature!" pa)
@@ -885,6 +885,7 @@
  (let* (names- strings strings- strings+)
        (if (not (find-if #'listp names)) (setq names- names)
            (setq names- (merge-brackets-with-atoms names)))
+       (if (find-if #'listp names-) (return-from merge-names! names-))
        (setq strings (mapcar #'string names-))
        (setq strings- (mapcar #'(lambda (s) (string-left-trim " " s)) strings))
        (if (equal strings (mapcar #'string-upcase strings-)); no names in pipes?
@@ -895,6 +896,17 @@
        (intern (apply #'concatenate 'string strings+))
  )); end of merge-names!
 
+(defun pos-as-main-verb! (aux-verb)
+;``````````````````````````````````
+; Find the likely main-verb POS of a verb misclassified as auxiliary
+; E.g., in (AUX do) in front of an NP-object) we really want POS 'VB'
+  (case aux-verb (do 'VB) (did 'VBD) (does 'VBZ) 
+                 ((be 'VB) (been 'VBN) (being 'VBG)
+                 (is \'s are \'re) 'VBZ) ((was were) 'VBD); risky: "He's got it"
+                 (have 'VBZ); risky: "will/want to/may/... have"
+                 (has 'VBZ) (had 'VBD) (having 'VBG)
+                 (t aux-verb)))
+
 
 (defun merge-brackets-with-atoms (names)
 ;```````````````````````````````````````
@@ -902,17 +914,24 @@
 ; names where the list may include brackets, as in
 ;    (|William| |F.| (-symb- |(|) |Bill| (-symb- |)|) |Buckley|)
 ; In such a case we collapse the bracketed portion into a new atom first,
-; e.g., with the segment (-symb- |(|) |Bill| (-symb- |)|) becoming |Bill|.
+; e.g., with the segment (-symb- |(|) |Bill| (-symb- |)|) becoming |(Bill)|.
+; If 'names' includes a complex element like the parse of "also called",
+; we coerce the word-yield into the name, e.g.,"| John_also_called_Skip_Wilson|
+; (earlier preprocessing can try to avoid such cases, creating the equivalent
+; of "John Wilson, also called Skip Wilson").
 ;
  (let (collect atoms atoms+ names- bracketed-atoms)
       (cond ((not (find-if #'listp names)) names)
             (t (dolist (x names) 
                   (if (and (listp x) (eq (second x) '|(|)) 
                       (prog2 (setq collect T) (push '@place-holder@ names-)))
+                      ; to insert a bracket-merged atom``````````` here
                   (if (and (listp x) (eq (second x) '|)|)) (setq collect nil))
                   (if (and (listp x) (not (find (second x) '(|(| |)|))))
-                      (if collect (push (second x) atoms) 
-                                  (push (second x) names-)))
+                      ; a sublist other than (<...> \() or (<...> \))?
+                      (if collect 
+                          (setq atoms (append (reverse (word-yield-of x)) atoms))
+                          (push (second x) names-)))
                   (if (and (atom x) collect) (push x atoms))
                   (if (and (atom x) (not collect)) (push x names-)))
                (setq names- (reverse names-))
@@ -930,6 +949,30 @@
                               (intern (apply #'concatenate 'string strings)))))
                (subst bracketed-atoms '@place-holder@ names-)))
  )); end of merge-brackets-with-atoms
+
+(defun word-yield-of (x)
+;``````````````````````
+; e.g., x = |Skip| --> (|Skip|) 
+; e.g., x = (NNP |Skip|) --> (|SKIP|)
+; e.g., x = (VP (ADVP (RB also)) (VBN called)) --> (|also| |called|)
+  (cond ((symbolp x) (list x))
+        ((numberp x) (list (intern (format nil "~s" x))))
+        ((stringp x) (list (intern x)))
+        ((atom x)
+         (format t 
+           "~%** Error: ~s is an invalid input to 'word-yield-of'" x)
+         nil)
+        ; x is a list
+        ((and (atom (car x)) (atom (second x))) ; lexical item
+         (if (find (car x) '(NNP NNPS)) (cdr x)
+             (list (intern (string-downcase 
+                                     (format nil "~s" (second x)))))))
+        ; the phrase sytax doesn't allow (<atom> <atom> <expr> ...)
+        ; so we may now have (<atom> <list> ...) or (<list> ...)
+        ((atom (car x))
+         (apply #'append (mapcar #'word-yield-of (cdr x))))
+        (t (apply #'append (mapcar #'word-yield-of x)))
+ ));end of word-yield-of
 
 
 (defun make-blank-prefixed-name-string! (str); Oct 17/20
@@ -1041,3 +1084,34 @@
  )); end of convert-aux-to-v!
 
 ; ** May need something similar for modals like (MD will), (MD would), ...
+
+; TBC -- this still needs to be handled
+;      whereas (PP (IN from) (NP (DT the) (NN file))) would become
+;        (PP (P-ARG from) (NP (DT the) (NN file)))
+
+(defun make-non-arg-pp-into-advp-after-v-np! ([pp] verb prep)
+; ``````````````````````````````````````````````````````````
+; [pp]: a prepositional phrase (PP ...)
+; verb: a (POS <verb>) pair, e.g., (VBZ saw))
+; prep: a preposition, e.g. 'in'
+; E.g., change 
+;      [pp] = (PP (IN without) (NP (NN permission))) to 
+;             (ADVP (-SYMB- adv-a) (PP (IN without) (NP (NN permission))))
+;      taken from context
+;        (VP (VBD deleted) (NP (PRP it)) (PP (IN without) (NP (NN permission))));
+;      (whereas (PP (IN from) (NP (DT the) (NN file))) would become
+;        (PP (P-ARG from) (NP (DT the) (NN file))) via other rules)
+;
+ (let ( )
+      (cond ((find prep '(to of by)) [pp]); assume {to of by} prep's supply
+             ; 'as' often supplies a pred, but that's separately handled as p-arg
+            ((gethash (list (stem verb) prep) *v_np_pp*) [pp]); [pp] supplies arg
+            ((find prep '(aboard above after along amid amidst among amongst
+                   at before behind below beside between betwixt beyond by 
+                   during in in_front_of inside near on on_board outside 
+                   till under underneath until upon within))
+             `(ADVP (-SYMB- adv-e) ,[pp]))
+            (t `(ADVP (-SYMB- adv-a) ,[pp])))
+ )); end of make-non-arg-pp-into-advp-after-v-np!
+  
+

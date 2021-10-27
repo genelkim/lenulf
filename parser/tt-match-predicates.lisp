@@ -118,9 +118,32 @@
                           ;    ?comma, but anyway in parses we need ?[comma]
 (defpred !hole-var x (eq x '*h)); this appears on the LHS of a rule (where *h
                                 ; would be interpreted as an interated predicate
+(defpred !zero x (eq x 0)); Explicit 0 in a pattern means the same as *expr
 (defpred !pseudo-attach x (eq x '*pseudo-attach*)); needed since *pseudo-attach*
                                                   ; itself in a patterns would
                                                   ; be a sequence predicate
+(defpred ![pred[as]-taking-verb] x
+         (and (atoms x) (gethash (stem x) *pred[as]-taking-verbs*)))
+(defpred ![np+pred[as]-taking-verb] x
+         (and (atoms x) (gethash (stem x) *np+pred[as]-taking-verbs*)))
+(defpred ![pp+pred[as]-taking-verb] x
+         (and (atoms x) (gethash (stem x) *pp+pred[as]-taking-verbs*)))
+(defpred ![not-complement-free-verb] x ; for forming a post-verb argument PP
+         (and (atoms x) (not (gethash (stem x) *complement-free-verbs*))
+                        (not (gethash (stem x) *pred[as]-taking-verbs*))))
+(defpred ![non-np+pred-taking-verb] x ; for forming a post-v+np adverbial from PP
+         (and (atoms x) (not (gethash (stem x) *np+pred-taking-verbs*))))
+(defpred ![non-pred-taking-verb] x  ; for forming a post-v adverbial from PP
+         (and (atoms x) (not (gethash (stem x) *pred-taking-verbs*))))
+(defpred ![non-inf-taking-verb] x   ; for forming a post-v ADVP from infinitive
+         (and (atoms x) (not (gethash (stem x) *inf-taking-verbs*))))
+(defpred ![non-np+inf-taking-verb] x  ; for forming a post-v+np ADVP from inf
+         (and (atoms x) (not (gethash (stem x) *np+inf-taking-verbs*))))
+(defpred ![strong-np-pp-taking-verb] x
+         (and (atoms x) (gethash (stem x) *strong-np-pp-taking-verbs*)))
+(defpred !common-arg-preposition x
+         (and (atom x) (find x '(with from in into out_of for on about upon 
+                                 down against onto)))); ** NEED TO CHECK!
 (defpred ![comma] x (equal x '(\, \,)))
 (defpred !pre-nn-pos+word x (find (car x) '(DT CD JJ JJR JJS WDT)))
 (defpred ![nn-premod] x 
@@ -153,7 +176,9 @@
 (defpred !not-none x (not (eq x '-NONE-)))
 (defpred !not-prep-or-symb x (not (member x '(IN -SYMB-))))
 (defpred ![vp] x (and (listp x) (eq (car x) 'VP)))
-(defpred ![advp] x (and (listp x) 
+(defpred ![advp] x (and (listp x)
+                        (find (car x) '(ADVP WHADVP RB WRB RBR RBS NEG))))
+(defpred ![advp/pp] x (and (listp x) 
                         (find (car x) '(ADVP WHADVP PP RB WRB RBR RBS NEG))))
                                                    ;^^ may lack adv operator
 (defpred ![pred] x (and (listp x) (find (car x) '(ADJP JJ JJR JJS PP))))
@@ -186,6 +211,11 @@
                     (t (setq str (string x) n (length str))
                        (if (< n 6) nil
                            (string-equal (subseq str (- n 3)) "ing"))))))
+
+(defun atoms (expr) (and (listp expr) (not (find-if #'listp expr))))
+;``````````````````````````````````````````````````````````````````
+; check if expr is a list of atoms; intended for admissible 'stem' inputs
+
 
 (defpred ![v_whs] x ; example of x: (VBD knew)
 ;`````````````````````````

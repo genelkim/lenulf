@@ -2,7 +2,41 @@
 IN REVERSE CHRONOLOGICAL ORDER  (since July 2021)
 
 ################################################################################
+Sep 23/21
+
+Various additions/revisions made to attempt distinuishing PP arguments,
+PP predicates, and PP adverbials in verb phrases. Also infinitives in
+verb phrases are made into (purpose) adverbials in certain cases .
+E.g., consider
+  "Bob feels UNDER THE WEATHER" (predicate)
+  "Bob slept UNDER A TENT" (adverbial)
+  "Bob talked TO ALICE" (argument)
+
+  "Bob wants TO GRADUATE" (argument -- a kind of action)
+  "Bob called Alice TO TELL HER THE GOOD NEWS" (purpose adverbial)
+
+This effort depended very much on the information in the Alvey lexicon,
+included here for the parts that were used
+
+Much testing and refinement remains to be done, but I thought I'd make
+this preliminary versio available.
+===================================================================
+Sep 3/21
+
+The following rules were added:
+
+(defrule *change-final-nnp-to-nn-after-initial-dt*
+; e.g., "the Examiner" should come out as (the.d | Examiner|.n)
+   '((NP (.DT !atom) *expr (NNP +expr)) (NP 2 3 (NN 4.2))))
+
+(defrule *change-final-nnps-to-nns-after-initial-dt*
+; e.g., "the Celts" should come out as (the.d (plur | Celt|.n))
+   '((NP (.DT !atom) *expr (NNPS +expr)) (NP 2 3 (NNS 4.2))))
+
+=================================================================
 Sep 1-2/21
+
+- Allowed s, m, re as forms of "be" (w/o initial apostrophe) in 'stem'
 
 - Possessives without an 's' after apostrophe fixed, as in 
   "Willis' direction"

@@ -4,7 +4,7 @@
 
 (in-package :lenulf)
 
-; Data are supplied in "verb-transitivity-lists.lisp"
+; Data are supplied in "transitivity-lists.lisp"
 ; The functions have been briefly tested (Feb 20/21)
 
 (defun v_np-pref! (pos+verb)
