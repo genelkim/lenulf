@@ -33,9 +33,3 @@
                     (proclaim '(optimize (debug 0) (safety 1) (space 1) (speed 3)))
                     (funcall next)))
 
-;; This is to store the path to the source code
-;; suggested here https://xach.livejournal.com/294639.html
-(defpackage #:lenulf+/config (:export #:*base-directory*))
-(defparameter lenulf+/config:*base-directory* 
-  (asdf:system-source-directory "lenulf+"))
-
