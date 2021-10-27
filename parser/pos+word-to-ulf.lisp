@@ -73,7 +73,9 @@
        (setq stem-str 
              (if (numberp stem) 
                  (format nil "~s" stem) 
-                 (case stem (\' "foot2") (|''| "inch") (t (string stem)))))
+                 (case stem (\' (case pos (pos "'s") (t "foot2") ))
+                                     ;```````````` e.g., Willis' --> (POS \')
+                            (|''| "inch") (t (string stem)))))
        ; Previously this used  (stringify stem "_", but this changes constants
        ; like | Mr. Smith| to "_Mr._Smith"
 
@@ -100,7 +102,9 @@
                          ; the pipes are missing, we add 'name
                (if (equal (string-upcase stem-str) stem-str) 'name nil))
              ((JJ JJR JJS) 'a)
-             (IN 'p); may become 'ps'
+             (IN 'p); may become 'p-arg' or 'ps'
+             (P-ARG 'p-arg)
+             (ADV-S 'adv-s)
              (PS 'ps); some preproc'g rules (e.g., "with[out]") change IN/WRB to PS 
              (PQ 'pq); e.g., "WHEN did it rain?"
              ((DT CD) 'd); may be changed to 'a'
@@ -181,8 +185,9 @@
 
 ;      (format t "~%For ~s, type-tag = ~s, op = ~s" pos+word type-tag op); DEBUG
 
-       (if (find pos+word '((IN that) (CC and) (CC or) (RB not) (RB n\'t) 
-                            (PS that)) :test 'equal)
+       (if (find pos+word '((CC and) (CC or)) :test 'equal)
+           (setq type-tag 'CC))
+       (if (find pos+word '((IN that) (RB not) (RB n\'t) (PS that)) :test 'equal)
            (setq type-tag nil)); "that" complementizer, booleans: no tag
        (setq log-atom-str ; NB: -NONE- and -SYMB- constituents don't get an index
              (if type-tag

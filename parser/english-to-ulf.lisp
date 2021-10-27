@@ -51,7 +51,7 @@
   ;   (if *show-stages*
   ;       (format t "~%~% (Possibly) adjusted input string: ~%   ~s~%~%"
   ;                 str))
-      (setq parse-tree (parse (escape-chars str '(#\,)) :parser parser)); Charniak parse
+      (setq parse-tree (parse str :parser parser)); Charniak parse
        ; which handles multi-sentence strings (with {. ! ?} punctuation)
       (if (unpunctuated-wh-question parse-tree)
           (setq parse-tree (parse (concatenate 'string str "?"))))
@@ -104,15 +104,4 @@
 ;~~~~~~~~~~~~~~~~~~~~~~~
  (and (listp xx) (= (length xx) 2) (atom (car xx)) (atom (second xx))
  )); end of pair-of-atoms
-
-(defun escape-chars (str chars)
-  "Escapes given characters."
-  (let ((escaped-list
-          (reduce #'(lambda (acc cur)
-                      (cond
-                        ((member cur chars) (cons cur (cons #\\ acc)))
-                        (t (cons cur acc))))
-              (coerce str 'list)
-              :initial-value nil)))
-    (coerce (reverse escaped-list) 'string)))
 

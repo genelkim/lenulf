@@ -20,7 +20,7 @@
     (prog2 (load "tt-match-predicates.lisp")
            (load "postprocessing-rules.lisp")))
 
-(if (not (fboundp 'match)) (load "/u/schubert/tt.lisp"))
+(if (not (fboundp 'match)) (load "tt.lisp"))
 
 (defun postprocess-ulf-tree (ulf); **STUB
 ;```````````````````````````````

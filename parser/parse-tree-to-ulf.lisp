@@ -101,14 +101,15 @@
 (defun parse-tree-to-raw-ulf (tree)
 ;`````````````````````````````````
   (cond ((null tree) nil); to allow empty cdr upon recursion
-        ((atom tree); unexpected
-         (format t "~%** Invalid input ~a to 'parse-tree-to-raw-ulf'" tree))
+        ((atom tree); unexpected, because no recursion descends to the atomic
+                    ; level, just to the (<atom> <atom>) level (exc. for nil)
+         (format t "~%** Invalid input ~s to 'parse-tree-to-raw-ulf'" tree))
         ((and (listp (car tree)) (null (cdr tree))); double bracketing (Brown)?
          (parse-tree-to-raw-ulf (car tree))); drop the outer brackets
         ((and (eq (car tree) 'S1) (null (cddr tree))); (S1 (...)) (BLLIP)?
          (parse-tree-to-raw-ulf (second tree))); drop the (S1 (...)) wrapper
-        ((simple-tree tree) 
-         (simple-tree-to-raw-ulf tree)); e.g., (AUX (VBD were))
+        ((simple-tree tree) ; of form (<atom> (<atom> <atom>))?
+         (simple-tree-to-raw-ulf tree)); e.g., (AUX (VBD were)) -> (past be.aux~3)
         ((eq (car tree) 'MD) ; BLLIP fails to wrap (AUX ...) around modals
          (pos+word-to-raw-ulf 
                 (list (inflect-aux! `(MD ,(cadr tree))) (cadr tree))))
@@ -126,7 +127,8 @@
 (defun simple-tree (tree)
 ;```````````````````````
 ; Is the tree shape (<atomic-cat> (<atomic-cat> <word>))?
- (and (listp tree) (cdr tree) (null (cddr tree)) (listp (second tree)) 
+ (and (listp tree) (atom (car tree)) (cdr tree) (null (cddr tree)) 
+      (listp (second tree)) (atom (car (second tree))) 
       (atom (second (second tree)))))
 
 

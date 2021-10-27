@@ -1,19 +1,29 @@
+                                              Last updated Aug 20/20
 High-level view of TT
 `````````````````````
 The TT pattern transduction language uses a 
 
   (match <pattern> <tree>)
 
-function to match a pattern to a syntax tree (or any other tree, i.e., Lisp-
+function to MATCH A PATTERN TO A SYNTAX TREE (or any other tree, i.e., Lisp-
 readable expression) and a
 
   (fill-template <template> <match-result>)
 
-function to derive a transduced result. Failure of (match <pattern> <tree>)
-is signalled by result :NIL (not NIL), because (match nil nil) succeeds
-with result NIL. (This is convenient in recursive matching.)
+function to derive a transduced result. The pattern may contain explicit
+expressions to be matched, as well as match variables and "wild cards"
+represented by integers (details below). If 'match' succeeds, it returns 
+a result that closely resembles the expression matched, except that it may
+contain sequences bracketed by (:seq ... ) (again, see below), and returns :nil
+if it fails (whereas nil is a form of success, e.g., in matching nil to nil).
+For concreteness, here are a couple of simple examples:
+  (match '(?expr a 3 e *list) '((x (y z)) a (b c) d e ()))
+        --> ((:SEQ (X (Y Z))) A (:SEQ (B C) D) E (:SEQ NIL))
+  (match '(.XP ![verb] *[advp])
+         '(VP (VB TALK) (PP (TO TO) (:XP 2)) (ADVP (RB BRIEFLY))))
+        --> (VP (VB TALK) (:SEQ (PP (TO TO) (:XP 2)) (ADVP (RB BRIEFLY)))
 
-A transduction rule consists of a pair
+A TRANSDUCTION RULE consists of a pair
 
   (<pattern> <template>).
 
@@ -22,66 +32,140 @@ The function
   (apply-rule <rule> <expr>)
 
 applies a transduction rule to an expression. If the match fails, the
-result of applying the rule IS THE UNALTERED EXPRESSION (NOT NIL).
+result is the unaltered expression. (It's assumed that successful rule
+applications always alter the expressions they're applied to.) In an
+output template integers like 1, 2, 3, ... refer to successive top-level
+elements of the input pattern, as instantiated by the match. For reference
+into nested expressions, indices like 2.3, 1.3.2 are used -- see below.
+Here is a simple example of a rule, for inserting a head into a headless NP,
+as in "These are starlings", with "These" parsed as (NP (DT THESE)). 
+(The Lisp-defined predicate ![det-plur-alone] is true for '(DT THESE)'.)
+  (defrule *expand-np-det-plur* '((NP ![det-plur-alone]) (NP 2 (NNS {ref}))))
+  (apply-rule *expand-np-det-plur* '(NP (DT THESE)))
+  --> (NP (DT THESE) (NNS {REF}))
 
 The function 
 
   (apply-rule-top-down <rule> <expr>)
 
-applies the rule to the expression, and then applies the rule recursively 
-to the top-level elements of the result of the initial rule application.
-Originally it seemed that some rules might best be applied bottom-up,
-but the top-down strategy is currently applied uniformly in ULF derivation.
+applies the rule to the expression at the top level as often as possible
+(till there's no further change), and then applies the rule recursively to 
+the top-level elements of the result of the initial rule application. 
+[In principle this can lead to infinite recursion, so watch out for
+non-halting problems in defining rules!] Originally it seemed that some 
+rules might best be applied bottom-up, but the top-down strategy is 
+currently applied uniformly in ULF derivation.
 
-Pattern matching
-````````````````
-In (match <pattern> <tree>), the pattern can be an arbitrary tree (expression),
-but symbols starting with !, ?, *, +, or . (followed by 1 or more char's) are 
-interpreted as predicate applications (once, at most once, 0 or more times,
-at least one, and (again) once -- but dot predicates are evaluated via 'isa').
-Intuitively, match predicates can be simultaneously thought of as variables.
+Details of pattern matching
+```````````````````````````
+In (match <pattern> <tree>), the pattern can be an arbitrary tree (Lisp
+expression), but non-negative integers, symbols starting with !, ?, *, 
+or + (followed by 1 or more alphanumeric characters), and symbols starting 
+with a dot (e.g., .verb), have special meanings. (The dot-atoms preclude
+numbers like .34, which are not symbols.)
 
-Without match predicates, a pattern will only match the exact-same tree. 
-Match results are essentially the same as the matched expression, except 
-that a matched sequence of elements is represented as (:seq <el1> <el2> ...);
-(:seq) thus represents the empty sequence (causing nothing to be substituted 
-into the template if it is referenced in the template (using position indices 
--- see below).
+Integer 0 means "a sequence of 0 or more expressions", and integers i > 0 mean
+"a sequence of 0 or more expressions, up to at most i". Thus for example, 
+2 matched to a subsequence in an expression might give (:seq) (the empty 
+sequence), or (:seq c) (a sequence consisting of just c), or (:seq b (c d)) 
+(a sequence consisting of successive expressions b and (c d)). 
 
-Match predicates DO NOT GET BOUND to the expressions or sequences of expressions
-they match, so they can be repeated freely in the same pattern. Predifined match 
-predicates include the following:
+Symbols starting with !, ?, *, or +, are interpreted as predicate applications 
+(exactly once, at most once, 0 or more times, or at least once, respectively).
+Those starting with ?, *, or + are thought of a sequence variables, and they 
+presuppose that the corresponding symbol starting with ! has been defined 
+as a Lisp predicate. The ?/*/+ variants of a !-predicate are automatically
+made available by using the defpred macro to define a !-predicate. (If instead
+a !-predicate is defined directly using defun, it can only be used in that
+!-form, not in the sequence-forms.) As a quick example, a pattern like
+  (![np] +[verb] 3) 
+might match 
+  ((NP (NNP Bob)) (MOD will) (VB call) (NP (NNP Alice)) (\. \.))
+with result
+  ((NP (NNP Bob)) (:seq (MOD will) (VB call)) (:seq (NP (NNP Alice)) (\. \.))),
+assuming that predicate ![np] is non-nil for argument (NP (NNP Bob)), and
+predicate ![verb] is non-nil for arguments (MOD will) and (VB call).
+Predicates !atom, !expr, !list are assumed to have a fixed definition and
+meaning (i.e., true of a Lisp atom, a Lisp expression, or a nonatomic Lisp
+expression respectively). Their corresponding ?/*/+ sequence variables are
+assumed to have been defined implicitly via defpred as well.
 
+It can be seen that in a pattern, {*expr, 0} are synonyms, and {?expr, 1}
+are synonyms. We might also introduce !x via defpred as a synonym for 
+!expr, thereby providing briefer versions !x, ?x, *x, and +x of !expr, 
+?expr, *expr, and +expr. (In reformulating ETA patterns using TT, 'nil'
+would be replaced by !expr or !atom -- all unit matches in ETA are against
+atoms -- or in view of the preceding comment we might use !x.)
+
+Symbols of form .<feat>, i.e., a symbol prefixed with a dot, match another
+symbol <atom> iff there is an isa-path from <atom> to <feat>. Following
+the feature usage in ETA, we assume that .<feat> is always true of <feat>,
+i.e., atoms have themselves as a feature. But note that in TT patterns
+we need to distinguish between feature predicates and words themselves.
+For example,
+  .profession
+might match all of {profession, doctor, plumber, farmer, ...} assuming that
+we declared something like (attachfeat '(profession doctor plumber ...)), but
+   profession
+will only match that same atom, profession.
+
+A semantic question that arises is whether 
+   (isa <atom> <feat>)
+implies that "Every <atom> is a <feat>". The answer is that some, but not all
+features are construed that way -- features are just intended to be "closely 
+related to" certain words, though in syntactic or logical-form matching
+we should probably be more careful. Note, for example in the above example
+of attachfeat, that it's not true that every doctor is a profession! If we
+has used "professional" instead or "profession", the every-quantification
+would have made more sense. If we want to be strict, we could disallow
+   (attachfeat '(profession doctor plumber ...)), 
+while allowing
+   (attachfeat '(professional doctor plumber ...)),
+and separately defining '!profession' via defpred, which then won't apply
+truly to 'profession' -- unless of course we define it that way. In the
+transduction rules for preprocessing constituent trees (before forming ULFs),
+all features are generalizations or "sister terms" of the atoms they are
+assigned to. For example, applying 'attachfeat' to
+   (ADJP JJ JJR JJS)
+causes .ADJP to match each of those 4 atoms. Similarly
+   (THIS-DAY yesterday today tomorrow)
+causes .THIS-DAY to match those 4 atoms (where the first is very unlikely
+to occur as a word).
+   (ADJP/NP/PP/SBAR/UCP/PRED ADJP NP PP SBAR UCP PRED)
+causes .ADJP/NP/PP/SBAR/UCP/PRED to match all 7 atoms -- though again, the
+first is extremely unlikely to occur as a word in a parse tree.
+
+Without wild cards or match predicates, a pattern will only match the 
+exact-same tree, and 'match' will return that tree. As already noted,
+match failure is signalled by value :nil, rather than nil, since nil can 
+be a successful match result when matching nil to nil, or matching a
+predicate like !expr to nil. Again as already explained, match results 
+are essentially the same as the matched expression, except that a matched 
+sequence of elements is represented as (:seq <el1> <el2> ...); (:seq) 
+thus represents the empty sequence, causing nothing to be substituted 
+into the template if it is referenced in the template (using position 
+indices -- see below). If all (:seq ...) wrappers are removed from a
+successful match result, the original matched expression is recovered.
+(The 'flatten' function in "tt.lisp" does that.)
+
+Match variables DO NOT GET BOUND to the expressions or sequences of expressions
+they match, so they can be repeated freely in the same pattern. Apart from
+wild cards 0, 1, 2, ..., the predefined match variables
   !atom, ?atom, *atom, +atom, 
   !list, ?list, *list, +list,
   !expr, ?expr, *expr, +expr,
+tend to be used a lot in patterns. But of course we also allow arbitrary 
+predicates, with an added initial !, ?, *, or +, and any number of 
+"dot-atoms", like .VB, .NNP, .AUX, .XP, ...
 
-(which respectively match exactly one Lisp atom, 0 or 1 atoms, 0 or more 
-successive atoms, 1 or more successive atoms, one list, 0 or 1 lists, ...,
-one Lisp expressions, ..., 1 or more successive Lisp expressions),
-
-The match predicates (feature predicates) also include  any number of 
-"dot-atoms", like 
-
-  .VB, .NNP, .AUX, .XP, ...
-
-which represent features of atoms; e.g., .VB might be a feature of each 
-of {VB, VBZ, VBD, VBG, VBN, VBEN}, and the user must implement these features
-using a function 
-
-  (ISA <atom> <feat>),
-
-e.g., (ISA 'VBD '.VB) should be non-NIL in the above example. 
-
-
-Matches are rightmost
+Matches are rightmost:
 `````````````````````
 The match function tries to associate the empty sequence, (:seq), with
-?-variables and *-variables, and only associates a nonempty sequence with
-them if the rest of the match fails.
+non-negative integers, ?-variables and *-variables, and only associates 
+a nonempty sequence with them if the rest of the match fails.
 
-It seems that rightmost matches are the better choice if ?-variables and
-*-variables are usually used for unlikely optional constituents, whereas
+It seems that rightmost matches are the better choice if integers, ?-variables
+and *-variables are usually used for unlikely optional constituents, whereas
 if such variables usually stand for constituents that are only occasionally
 absent, then leftmost matches would be better. For ULF derivations from 
 parse trees, the former situation seemed more likely -- we don't want to
@@ -107,73 +191,95 @@ Templates can be arbitrary expressions, EXCEPT that
      (A (C D) (F E) (:seq G)).
   
   Position index 0 refers to the expression matched as a whole, if the pattern
-  matched it. NB: If we want to use numbers like 3 or 2.3 IN A TEMPLATE, w/o
+  matched it. NB: If we want to use numbers like 3 or 2.3 in a template, w/o
   having them interpreted as position indices, they should be represented as
-  |2|, |2.3|, etc., and postprocessed to turn them back into numbers. We
-  can also use 1.0, 2.0, 3.0, ... as real numbers in templates, as they don't
-  have a meaning as position indices (whereas e.g., 1.1, 1.2, 2.1, etc., are
-  interpreted as position indices when occurring in output templates).
+  |2|, |2.3|, etc., and postprocessed to turn them back into numbers. However,
+  some numbers like 0.0, 1.0, 2.0, 3.0, etc., (and negative numbers) can
+  be used directly, as they're not interpreted as position indices.
 
-- atoms ending in '!', exclusive of '!', are interpreted as user-defined 
-  Lisp functions; e.g., an expression like
-    (my-function! 'NN (QUOTE 3.2))
+- Atoms ending in !,  exclusive of '!', are interpreted as user-defined 
+  functions; e.g., an expression like
+    (!my-function 'NN (QUOTE 3.2))
   in a template would be interpreted as the result of applying function
-  'my-function!' to NN as first argument and the quoted form of whatever 
+  '!my-function to NN as first argument and the quoted form of whatever 
   expression or sequence of expressions matched the pattern at position 
   3.2 as the second argument. 
 
-NB: If we want to use atoms ending in '!' (other than '!' itself), 
-  as actual outputs, we need to express them in some other way, e.g.,
-  atom!~,  my-output-atom!~, etc., and postprocess to get back the desired 
-  atoms.
+NB: If we want to use atoms starting with '!' (other than '!' itself), 
+  or any of the other variables or any dot-atoms as actual outputs, we need
+  to express them in some other way, e.g., ~?atom,  ~!my-output-atom, etc.,
+  and postprocess to get the desired atoms.
 
 Relation to TTT and the LISSA/ETA matcher
 `````````````````````````````````````````
-The matcher herein instead does rightmost matches, i.e., the ?/*/+ variables
-prefer to match just 0/0/1 expression respectively. E.g.,
-  (match '(?atom ?atom) '(a))
-yields ((:SEQ) A), rather than (A (:SEQ)). (Recall (:SEQ) represents the empty
-sequence of expressions; cf., a nonempty sequence like (:SEQ A (B C) D).)
+Unlike TTT, but like the ETA matcher, TT uses integer indices 0, 1, 2, ...
+in patterns as wild cards. TTT associates match-values with the names
+of match variables in patterns, where these variables can lie at any
+level of embedding. Unlike TTT, but like the ETA matcher, TT instead 
+uses integers in templates to indicate top-level positions of matched 
+pattern constituents. But TT also allows reference to embedded parts
+via i.j, i.j.k, etc., indices using integers i, j, k, ...
 
-What is better? If we normally expect the soft variables to remain empty,
-then righmost matching is better; conversely, if we normally expect them
-to be filled, a leftmost match is better.
+TTT patterns allow for alternatives in specifying matches, e.g.,
+(!1 PP ADVP RB) would allow !1 to acquire any of the 3 values, and
+(* A B C D) allows 0 or more repetitions of A, B, or C. In TT
+we handle alternatives with features, e.g., .ADVP might be a feature
+that PP, ADVP, & RB have (via 'isa'). Or we could use a Lisp-defined
+predicate !ADVP true of all three. A disadvantage of the TTT method
+is that it can become visually hard to disentangle which brackets refer
+to alternatives and which ones represent brackets required to be present
+in the input. 
 
-Integers in TT patterns (as opposed to output templates) just stand for 
-themselves, not word sequences. Integers & integers joinded by dots in 
-output templates index positions, as already explained.
+The dot-features are similar to LISSA/ETA features, and while any atom
+can be a feature in TT, testing for a feature requires prefixing a dot.
+For example, in the LISSA rules for interpreting a user inputs about
+their favorite class, the pattern 
+    (0 not 4 favorite 0) 
+would be fine as-is, since 'favorite' is not a feature, but
+    (0 academic-course 0)
+would be altered to 
+    (0 .academic-course 0),
+so that .academic-course will match the words that have this feature, like
+anthropology, history, social-science, etc. -- in fact, it matches some 
+words indirectly via other features, e.g., academic-course subsumes fun-course,
+which in turn subsumes media, film, fine-art, music, dance, and theater.
+So conversion from ETA to TT requires determining which atoms occur
+leftmost in 'attachfeat' statements, and prefixing them with a dot in
+all input patterns where they occur.
 
-The position indexing in templates generalizes the method of identifying 
-matched words or word sequences in the ETA matcher/transducer. Because no 
-extra brackets are introduced (except for functions), and because we can
-"navigate" to embedded list elements (at definite locations) w/o duplicating
-the embedding structure, the patterns are generally easier to write and read.
-OTOH, we don't have lists of alternatives like (* A B C) (i.e., 0 or more
-repetitions of A, B, or C), which are convenient in TTT. In a limited way,
-we can handle alternatives in TT using dot-atoms; e.g., we could define 
-feature .ABC to be a feature of just A, B, or C, so .ABC in TT would mean 
-the same as (! A B C) in TTT. In TT, we also allow predicates that can
-express any alternatives (or preclusions) we like. These predicates start
-with '!' followed by at least one character, including at least one non-
-numeral character. But once defined with 'defpred', they can also be used
-wit an initial '?', '*', or '+', meaning that the number of successive 
-expressions that can "bind" (conceptually) to the predicate are: at most 1,
-0 or more, and at least 1, respectively.
+We also don't have a systematic way of negating patterns or pattern
+elements in TT, whereas LISSA/ETA has global negation, and TTT allows 
+local negation. But ULF derivation from syntax trees rarely produced 
+any pressure for allowing local or global pattern negation, though some 
+simple negative predicates like !not-prep-or-symb proved useful.
+Concerning global negation, indicated in ETA via an initial '-' in a
+pattern, I'm not sure if this has been used at all in the LISSA or David
+of SOPHIE agents. (There were none in my start-up version of LISSA, 
+though I had previously used them in my DOOLITTLE variant of Weizenbaum's
+ELIZA, e.g., (- YOU 0) means "any input not starting with 'you'"; for this
+we could use a predicate !not-you, and pattern (!not-you 0) in TT, where
+we did (defpred !not-you x (not (eq x 'you))).)
 
-The dot-features are similar to LISSA/ETA features, but we don't assume that
-*any* atom could be a feature, just ones starting with a dot. This reminds
-us that 'ISA' needs to work for those dot-atoms. Unlike LISSA/ETA patterns,
-we don't have numbers as variables in patterns, and thus no way of saying
-"match up to 3 atoms"; however, we could use, e.g., ?atom ?atom ?atom with
-equivalent effect. We also don't have a way of negating a pattern, whereas
-LISSA/ETA has global negation, and TTT allows local negation. But ULF
-derivation from syntax trees rarely produced any pressure for allowing
-local or global pattern negation.
 
-The next version of TT will allow *0, ?1, ?2, ?3, ... as match predicates,
-meaning: 0 or more expressions, at most 1 expression, at most 2 expressions,
-etc. It will also allow isa-chaining of (dot-)features (as in ETA), and
-probably predicate negation for dot-predicates and predicats defined by
-'defpred', e.g., !~[np] (not a noun phrase like (NP (NN milk))), .~NP (not
-the atom 'NP' or its variants (like 'WHNP'); etc.
-
+  Possible future extensions: 
+  ``````````````````````````
+  - It would probably be possible to extend TT to allow features of arbitrary 
+    expressions, but no real need for this arose for ULF derivation, since
+    we already allow arbitrary expression predicates;
+  - a more major change would be to allow, say,
+     !.ABC, ?.ABC, *.ABC, +.ABC, (for any ABC)
+    for matching one item with feature .ABC, 0 or 1 such items, etc.; but
+    this also hasn't proved essential so far. The simpler the language, the
+    better.
+  - Allowing for negations systematically might be nice, e.g., we might
+    -.NP ("not an atom with feature NP"), -*atom ("any number of expressions
+    that are not atoms"), etc. (Alternatively, .-NP, *-atom, etc.). It's
+    unclear how hard/easy this would be.
+  - A useful extension would be to allow sequences of different lengths
+    to be matched by a single specific pattern symbol; e.g., we might want
+    a feature symbol .physics to match both 'cosmology' and 'fluid mechanics'.
+    At the present time, it seems we'd need to use a parsing-like process,
+    first replacing 'fluid mechanics' with single word 'fluid_mechanics',
+    and proceeding from there. This could be considered part of the initial
+    "tidying-up" process.
+  

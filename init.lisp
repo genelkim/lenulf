@@ -15,12 +15,14 @@
 (load "parser/pos+word-to-ulf")
 (load "parser/preprocessing-rules")
 (load "parser/stem")
-(load "parser/features.lisp")
+(load "parser/lexical-semantic-features.lisp"); very partial, not used yet
+(load "parser/transitivity-lists.lisp")
+(load "parser/isa.lisp")
 (load "parser/postprocess-ulf-tree.lisp")
 (load "parser/postprocessing-rules.lisp")
 (load "parser/insert-gaps.lisp")
 (load "parser/subcat-pref.lisp")
-(load "parser/verb-transitivity-lists.lisp")
+(load "parser/extract-data-from-alvey.lisp")
 
 (in-package :lenulf)
 

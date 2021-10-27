@@ -103,28 +103,74 @@
  )); end of indexed-element-of
 
 
+;; NEW (AUG 2021) VERSION
 (defun match (pa ex); match pattern pa to expression ex; May 4/20; tested
 ; `````````````````````````````````````````````````````
-; pa: a pattern, which is any atom or list structure where some atoms may
-;     be of form !<pred>, ?<pred>, *<pred>, or +<pred>, interpreted as
-;     match variables that can match one expression, 0 or 1 expression,
+; [THIS IS THE COPY REVISED TO ALLOW FOR INTEGERS 0, 1, 2, ... INDICATING
+; 0 OR MORE, 0 OR 1, 0 OR 1 OR 2, ... EXPRESSIONS IN SUCCESSION]
+;
+; pa: a pattern, which is any atom or list structure. 
+;     As a first special case, pa or some atoms in pa may be of form 
+;     !<pred>, ?<pred>, *<pred>, or +<pred>, interpreted as a match 
+;     variables that can match one expression, 0 or 1 expression,
 ;     0 or more expressions, or 1 or more expressions respectively, 
-;     with each matched expression satisfying <pred> (i.e., yielding 
-;     a non-nil value)
-; ex: any atom or list structure
+;     with each matched expression satisfying !<pred> (i.e., yielding 
+;     a non-nil value). Predicates !expr, !atom, and !list have fixed
+;     meanings, being true respecyively of any expression, a Lisp atom,
+;     or an expression satisfying Lisp predicate listp. 'Defpred'
+;     automatically creates their sequance variants *expr, ?expr,
+;     +expr, *atom, ?atom, +atom, and so on.
+;
+;     Second, pa or some atoms embedded in pa may be integers >= 0, 
+;     where 0, 1, 2, 3, ... respectively mean "zero or more expressions", 
+;     "at most one expression", "at most 2 expressions", at most 3 
+;     expressions", etc. Since *expr and ?expr are assumed to have fixed
+;     meanings "0 or more expressions" and "at most one expression", 
+;     therefore {0, *expr} are synonyms, and so are {1, ?expr}.
+;
+;     Third, pa or some atoms embedded in pa may be dotted atoms,
+;     such as .verb or .branch-of-math, i.e., starting with a dot and
+;     denoting features of atoms. Dot-atom features may themselves be
+;     assigned dot-atom features, and matching such features to an atom
+;     involves checking for a chain of 'isa' connections.
+;
+;     Fourth, pa may be or contain atoms not having any of the above
+;     special meanings, and these just match identical atoms in ex.
+;
+; ex: any atom or list structure; NB: if any atoms of ex are integers
+;     >= 0, or are of form !<chars>, ?<chars>, *<chars>, or +<chars>,
+;     they won't necessarily be matched by idential atoms in pa, because
+;     such atoms in pa are match variables, and what they match depends
+;     on how the corresponding predicates are defined. E.g.,
+;       (match '*h '*h)
+;     might well be :nil (match failure), if the !-predicate corresponding
+;     to sequence variable *h, namely !h, is nil for argument *h.
+;     Similarly, whereas (match 3.14 3.14) = 3.14 (match success),
+;       (match 3 3)
+;     will be (:seq 3) rather than 3, because as a pattern element, 3 is a
+;     sequence variable that matches any sequence of 3 or fewer expressions.
 ;
 ; Result: Failure is :nil, because we want (match nil nil) = nil (success).
-;     TBC: REVISE THE COMMENTS, AS NOW WE ALWAYS RETURN (:SEQ ...) FOR
-;     NON-!-VARS, I.E., SEQUENCE VARIABLES (STARTING WITH ?, *, OR +).
-
-;     for a successful (non-nil) result, the result will resemble the
-;     input expression 'ex' that was matched, except that sequences of 2
-;     or more constituents matched by a variable of type *<pred>, ?<pred>,
-;     or +<pred> will be encoded as (:seq <item1> <item2> ...). If 'ex'
-;     is the empty list and 'pa' matched it, the result will be ((:seq)),
-;     i.e., a list containing the empty sequence (thus implicitly nil,
-;     once (:seq <item1> <item2> ...) constructs have been "flattened"
-;     to leave just <item1> <item2> ... .)
+;     The (successful) match value for a sequence variable (an integer
+;     >= 0 or an atom of form ?<chars>, *<chars>, or +<chars>) always
+;     starts with (:seq ...) (for the empty sequence this is just (:seq)),
+;     whereas the (successful) match value for a !-variable is just the
+;     unique expression for which application of the !-variable, as an
+;     expression predicate, yielded a non-nil value. As noted already,
+;     for non-variable pattern atoms and for numbers other than 0, 1, 2, 
+;     3 , ..., matching succeeds only for those same atoms.
+;
+;     Thus for a successful (non-:nil) result, the result will resemble the
+;     input expression 'ex' that was matched, except that sequences of 0 or
+;     more constituents matched by variables of type *<pred>, ?<pred>, +<pred>
+;     or 0, 1, 2, 3, ... will be encoded as (:seq <item1> <item2> ...).
+;     If 'ex' is nil and 'pa' matched it, the result will be either nil
+;     (success, with pa itself nil or a predicate true of nil), or of form
+;     ((:seq) (:seq) ... (:seq)) if pa was a list of "soft" variables, i.e.,
+;     ones that can match the empty sequence -- viz., integers 0, 1, 2, ...,
+;     or match variables starting with * or ?. Note that if we "flatten"
+;     a successful match by eliminating (:seq ...) wrappers around sequences,
+;     we get back ex, the matched expression.
 ;
 ; The form of the result allows retrieval of values of matched pattern 
 ; elements by the positions of the pattern elements. E.g., 3 indexes 
@@ -132,21 +178,7 @@
 ; '3.2.2 (note: a symbol) indexes whatever matched the second element of
 ; the second element of the 3rd top-level element of the given pattern.
 ;
-; Patterns identical to given expressions, or parts of patterns indentical
-; to corresponding parts of given expressions, give back those same expressions
-; or parts of expressions. But match predicates can match any expressions or
-; sequences of expressions. Where they match an expression, the result will
-; have the same expression in it; where they match a sequence of 0 expressions
-; or 2 or more expressions, the result will contain (:seq ...), where '...'
-; lists the matched expressions.
-; 
-; Note: a predicate variable like ?foo, +foo or *bar won't produce a (:seq ...)
-;    construct if it matches exactly one expression -- just that expression
-;    is put in the result (as if the variable had been !foo). If it matches
-;    the empty list, we get (:seq), and if it matches multiple elements we
-;    get (:seq el1 el2 ...). 
-;
-; The match produced, if any, is the leftmost one; nil = failure.
+; The match produced, if any, is the leftmost one; as noted, :nil = failure.
 ;
 ; e.g., (match '(!expr *list (f g) ?atom !atom) 
 ;              '((a) (b c) (d e) (f g) h))
@@ -154,14 +186,21 @@
 ;                                  (:seq) is the place-holder for the empty
 ;                                  sequence; w/o it, we couldn't retrieve
 ;                                  matched pa elements by their positions
-; e.g., (match '(+expr !atom) 
-;              '((a b) c d))
-;       --> ((:SEQ (A B) C) D)
+; e.g., (match '(?expr a 3 e *list) 
+;              '((x (y z)) a (b c) d e ()))
+;       --> ((:SEQ (X (Y Z))) A (:SEQ (B C) D) E (:SEQ NIL))
+;
+; e.g., (match '(+expr !atom 0) 
+;              '((a b) c d e f g))
+;       --> ((:SEQ (A B)) C (:SEQ D E F G))
+;
 ; e.g., (match '(+expr !atom) 
 ;              '((a b) c))
 ;      --> ((:SEQ (A B)) C)  note the 1-element sequence
+;
 ; e.g., (match '(*expr +atom) '(a b c)) 
 ;      --> ((:SEQ) (:SEQ A B C)) 
+;
 ; e.g., (match '(!atom (a b *list c) ?atom) '(x (a b (u) (v w) c) d))
 ;      --> (X (A B (:SEQ (U) (V W)) C) (:SEQ D))
 ;
@@ -216,48 +255,78 @@
 ; In addition, user-defined match variables (see above) can be used in
 ; the same ways (!, ?, *, +).
 ;
- (let (p e m mm *v)
+ (let (p e feat m mm *v)
       (cond ((null pa) 
              (if (null ex) nil ; success with match-result nil 
                  :nil)); failure
             ((null ex)
-             ; a null expression ex can only be matched by non-null pa if 
-             ; either pa is a match variable that succeeds on (), thus
-             ; yielding nil for a !-variable and (:seq nil) for sequence
-             ; variables, or it is a list of "soft" variables (of type
-             ; ?<pred> or *<pred>) that will match empty sequences, 
-             ; with result ((:seq) (:seq) ...).
-             (if (and (match-var pa) (val pa ex)); NB: PRED EVALUATION:
-                                     ;`````````    for preds, nil = failure
-                 (if (eq pa (gethash pa *implicit-pred*)) nil '(:seq nil))
+             ; a null expression ex can be matched by non-null pa only if 
+             ; either pa is a hard match variable (predicate) that succeeds
+             ; on (), thus yielding successful match result nil, or it is
+             ; a list of  "soft" variables (of type; ?<pred>, *<pred>, or
+             ; <non-neg-int>) that will match empty sequences,  with result 
+             ; ((:seq) (:seq) ...).
+             ;
+             (if (and (integerp pa) (>= 0 pa)) 
+                 '(:seq nil)
+                 (if (and (match-var pa) (val pa nil)); NB: PRED EVALUATION:
+                                         ;```````````  for preds, nil => failure
+                     (if (eq pa (gethash pa *implicit-pred*)) nil '(:seq nil))
                      ;````````````````````````````````` true if pa is a !-var
                      ; match success, either nil (for !-var), or (:seq nil) o/w
-                 (if (listp pa)
-                     (if (member-if #'listp pa) :nil ; fail if there's a sublist
-                                                     ; NB: can't use 'find-if'
-                                                     ; because that gives nil
-                                                     ; for (nil)!
-                         (if (member-if #'hard-atom pa) :nil ; fail if there's a
-                                                    ; hard variable or non-var
-                             ; pa is a list of soft variables:
-                             (mapcar #'(lambda (x) '(:seq)) pa)))
-                     ; pa is an atom but not a match-var & not nil
-                     :nil))) ; failure
+                     (if (listp pa)
+                         (if (member-if #'listp pa) :nil ; fail if there's a
+                                                     ; sublist. NB: can't use
+                                                     ; 'find-if' because that
+                                                     ; gives nil for (nil)!
+                             (if (member-if #'hard-atom pa) :nil ; fail if there
+                                                ; is a hard variable or non-var;
+                                                ; NB: 0, 1, 2, ... are soft var's
+                                 ; pa is a list of soft variables:
+                                 (mapcar #'(lambda (x) '(:seq)) pa)))
+                         ; pa is an atom but not a match-var & not nil
+                         :nil)))) ; failure
 
-            ((equal pa ex) ex); Note: both are non-null here
-            ((and (dot-atom pa) (symbolp ex) (isa ex pa)) ex)
+            ; Both pa and ex are non-null here;
+            ((and (atom pa) (not (match-var pa)) (equal pa ex)) ex);
+             ; Note: An outlier would be e.g., pa = ex = .foo, yielding .foo.
+             ;       But if for example pa=ex=3, the match result will not
+             ;       be be 3, because 3 is a match variable; rather it will
+             ;       become (:seq 3) (see cases covered below); similarly
+             ;       if e.g., pa = ex = *this, the result will not be *this,
+             ;       but rather either (:seq *this), when predicate !this
+             ;       is true of argument *this, or nil otherwise. Likewise
+             ;       if pa = ex = !this, the result will be either !this,
+             ;       when predicate !this is true of argument !this, or nil
+             ;       otherwise
 
-            ; pa, ex are non-null and unequal (& pa is not a feature of ex):
+            ((dot-atom pa); (note: by previous case, ex is not = pa)
+             ; try to get feat from pa = .feat
+             (setq feat (gethash pa *underlying-feat*))
+             (if (null feat)
+                 (prog2
+                   (format t "~%## Warning: ~s has no underlying feature!" pa)
+                   :nil)
+                 (if (and (symbolp ex) (isa ex feat)) ex :nil)))
+
+            ; pa, ex are non-null, pa doesn't test a feature of ex, and if pa
+            ; = ex and they are atoms, then pa is a match variable & ex happens 
+            ; to "look like" a match variable but is just an expression (or part
+            ; of an expression) being matched; e.g., this might happen if we
+            ; define a predicate !h, so that *h in a pattern looks for 0 or 
+            ; more expressions satisfying this predicate, and one of those 
+            ; expressions is *h)
             ((atom pa)
              (if (and (match-var pa) (val pa ex))
                                      ;`````````NB: PRED EVALUATION, e.g., T or nil
                  (if (seq-var pa) (list :seq ex) ex)
                  :nil)); pa neither equals, nor is a feature of, nor matches ex
 
-            ; pa is a non-null list, and pa, ex are unequal
+            ; either pa is an atom not matching ex, or is a non-null list;
+            ; so, it can't match an atomic expression
             ((atom ex) :nil); failure
 
-            ; pa and ex are unequal lists. We now have 6 cases depending
+            ; pa and ex are lists. We now have 7 cases depending
             ; on p, the car of pa; we use e for the car of ex;
 
             ; set p and e -- and conjoin with nil, to make the condition false
@@ -274,17 +343,41 @@
                                    :nil)) ; failure
                  :nil)) ; failure
 
-            ; Initial element p is a non-nil atom;
-            ; ```````````````````````````````````
-            ; 2. For non-variable p, if it is equal to, or a feature of the
-            ; 1st element of ex, we recurse on the tails of pa and ex, o/w fail
+            ; In remaining cases 2-7, initial element p is a non-nil atom;
+            ; ````````````````````````````````````````````````````````````
+            ; 2. For non-variable p, if it is equal to, or successfully
+            ; tests a feature of the 1st element of ex, we recurse on the
+            ; tails of pa and ex, o/w fail
             ((not (match-var p))
-             (if (or (eq p e) (and (symbolp e) (dot-atom p) (isa e p)))
+             (if (or (eq p e) 
+                     (and (symbolp e) (dot-atom p) 
+                          (setq feat (gethash p *underlying-feat*))
+                          (isa e feat)))
                  (prog2 (setq mm (match (cdr pa) (cdr ex)))
                         (if (ok mm) (cons e mm) :nil))
                  :nil))
 
-            ; 3. For a !-variable p, we try an initial-element match, and if
+            ; 3. For integer p >= 0: If p = 0, do the match with p replaced
+            ; by *expr; for p = 1, do the match with p replaced by ?expr;
+            ; for an integer (numeric var) >= 2, we try an empty match,
+            ; and try to recurse using (cdr pa); if this fails, we try
+            ; matching (p-1 ...) to (cdr ex), combining (:seq e) with the 
+            ; match result for p-1 if successful; o/w fail
+            ((and (integerp p) (>= p 0))
+             (case p 
+               (0 (match (cons '*expr (cdr pa)) ex))
+               (1 (match (cons '?expr (cdr pa)) ex))
+               (t (setq mm (match (cdr pa) ex))
+                  (if (ok mm)
+                      (cons '(:seq) mm)
+                      ; recursion with empty match to p failed
+                      (progn (setq p (if (= p 2) '?expr (- p 1)))
+                             (setq mm (match (cons p (cdr pa)) (cdr ex)))
+                             (if (ok mm) 
+                                 (cons (cons :seq (cons e (cdar mm))) (cdr mm))
+                                 :nil))))))
+
+            ; 4. For a !-variable p, we try an initial-element match, and if
             ; successful, recurse on the tails of pa and ex;
             ((!-var p)
              (setq m (match p e))
@@ -292,7 +385,7 @@
                         (if (ok mm) (cons m mm) :nil))
                  :nil))
 
-            ; 4. For a ?-variable, we try prepending (:seq) to a recursive 
+            ; 5. For a ?-variable, we try prepending (:seq) to a recursive 
             ; match of the tail of pa to ex; if the recursion fails,
             ; we try an initial-element match, and if successful, recurse
             ; on the tails of pa & ex;
@@ -307,7 +400,7 @@
                                           (if (ok mm) (cons m mm) :nil))
                                    :nil)))))
 
-            ; 5. For a *-variable, we try prepending (:seq) to a recursive 
+            ; 6. For a *-variable, we try prepending (:seq) to a recursive 
             ; match of the tail of pa to ex; if the recursion fails,
             ; we try an initial-element match, and if successful, recurse
             ; on pa (unchanged) and the tail of ex;
@@ -332,7 +425,7 @@
                                           :nil))
                                    :nil)) ))); initial-element match failed
 
-            ; 6. For a +-variable, we try an initial-element match, and if
+            ; 7. For a +-variable, we try an initial-element match, and if
             ; successful, recurse on pa and (cdr ex) with the initial 
             ; +-variable of pa replaced by the corresponding *-variable
             ((+-var p)
@@ -351,7 +444,7 @@
             (t (format t "~%*** (match ~a ~a) ~%   ~
                            gave neither success nor failure!" pa ex)
                '***ERROR))
- )); end of match
+ )); end of match (NEW VERSION)
 
 
 (defun ok (x) (not (eq x :nil)))
@@ -370,22 +463,40 @@
    (t (gethash (gethash +var *implicit-pred*) *-variant*))
  )); end of *-variant-of-+-var
 
-
-(defun val (var expr)
+(defun val (var expr); revised Aug 15/21
 ;```````````````````
-; var:  a sequence variable formed from a predicate by prefixing one of {!,?,*,+};
-;       NB: {*h !,?,*,+} ARE NOT ALLOWED AS MATCH VARIABLES.
+; Determine whether the predicate correspnding to 'var' is true of 'expr'.
+; If 'var' is a multi-character atom starting with '!', then it's expected
+; to have a Lisp definition. If it starts with ?/*/+ then the corresponding
+; !-predicate is expected to be in hashtable *implicit-pred* under key 'var'.
+; If 'var' is a nonnegative integer then the corresponding predicate is !expr,
+; which is true of any expression.
+;
+; var:  expected to be a nonnegative integer or a match variable formed
+;       from an atom by prefixing one of {!,?,*,+}; NB: {!,?,*,+} ARE 
+;       NOT ALLOWED AS MATCH VARIABLES.
 ; expr: an expression to which the predicate is to be applied; the actual Lisp
 ;       predicate is expected to start with '!'.
-; E.g., find predicate name '!term' under any of keys '?term', '!term', '*term',
-;       '+term' in hash table '*implicit-pred*'; apply this predicate, !term,
-;       to the given expression, expr. (In defining pattern predicates, we store
-;       corresponding variables in the hash table.)
-  (let ((fname (gethash var *implicit-pred*)))
-       (when (null fname)
-          (format t "~%**ERROR: ~s HAS NOT BEEN DEFINED AS A PREDICATE" VAR)
+; E.g., find predicate name '![np]' under any of keys '![np]', '?[np]', '*[np]',
+;       '+[np]' in hash table '*implicit-pred*'; apply this predicate, ![np],
+;       to the given expression, expr. (In defining !-predicates, we provide
+;       hash table access to them via the corresponding !/*/?/+-variables
+;       used as keys.)
+  (let (fname)
+       ; For var = 0, 1, 2, ... the corresponding trivial predicate is !expr,
+       ; which is true for any expression
+       (if (and (integerp var) (>= var 0)) (return-from val t))
+       ; Check for illegal variable names
+       (when (or (find var '(! ? * +)) (not (symbolp var)))
+             (format t "~%**ERROR: ~s IS NOT ALLOWED AS A VARIABLE" var)
+             (return-from val nil))
+       (setq fname (if (!-var var) var (gethash var *implicit-pred*)))
+                   ;`````````````````` allow for !-pred with no ?/*/+ variants  
+       (when (or (null fname) (not (fboundp fname)))
+          (format t "~%**ERROR: ~s HAS NO CORRESPONDING PREDICATE DEFINITION" var)
           (return-from val nil))
-       (eval `(,fname ,(list 'quote expr))) ))
+       (eval `(,fname ,(list 'quote expr))) 
+  )); end of val
 
 
 (defun dot-atom (atm); dot-atom variables can only match atoms
@@ -398,26 +509,42 @@
     (and (symbolp var) (not (eq var '!)) (char= #\! (schar (string var) 0))))
 
 (defun *-var (var) 
-  ; NB: *h (the place-holder for gaps) is not allowed as a match variable
-    (and (symbolp var) (not (find var '(* *h))) 
-                       (char= #\* (schar (string var) 0))))
+    (and (symbolp var) (not (eq var '*)) (char= #\* (schar (string var) 0))))
 
 (defun +-var (var) 
    (and (symbolp var) (not (eq var '+)) (char= #\+ (schar (string var) 0))))
 
-(defun match-var (var) 
-; NB: *h (the place-holder for gaps) is not allowed as a match-variable!
-   (and (symbolp var) (not (find var '(! ? * *h +)))
-        (find (schar (string var) 0) '(#\! #\? #\* #\+))))
+(defun match-var (var); NB: dot-atoms (feat's) are not considered match-var's
+   (or (and (integerp var) (>= var 0)); integers >= 0 are match variables
+       (and (symbolp var) (not (find var '(! ? * +)))
+            (find (schar (string var) 0) '(#\! #\? #\* #\+)))))
 
 (defun seq-var (var)
-   (and (match-var var) (not (eq var (gethash var *implicit-pred*)))))
+   (or (and (integerp var) (>= var 0))
+       (and (match-var var) (not (eq var (gethash var *implicit-pred*))))))
 
-(defun soft-var (var)
-   (and (symbolp var) (not (find var '(? *)))
-        (find (schar (string var) 0) '(#\? #\*))))
+(defun soft-var (var); revised/tested 8/12/21
+;```````````````````
+; var: an atom, expected to be a match variable; 
+;      soft var's match the empty sequence;
+;      if var is a soft match variable, return var, o/w nil.
+; NB: var = 0 means 0 or more expressions, and 1, 2, 3, ... mean ≤1, ≤2, ≤3, ...
+;     expressions respectively. So 0, 1 are synonyms for *expr, ?expr respec'ly.
+; Variables beginning with ? or * (with additional characters following)
+; match the empty sequence, as do all nonnegative integers. Nothing else
+; matches the empty sequence. (So !/+/.-variables are not soft variables.)
+;
+ (cond ((and (integerp var) (>= var 0)) var)
+       (t (case var ; for speed
+                    ((*expr *atom ?expr ?atom *list ?list) var)
+                    ((!expr !atom +expr +atom !list +list ! ? * +) nil)
+                    (t (and (symbolp var) 
+                            (find (schar (string var) 0) '(#\? #\*)) var))))
+ )); end-of soft-var
+
 
 (defun hard-atom (atm) (and (atom atm) (not (soft-var atm))))
+; True for all atoms exclusive of soft match variables
 
 
 (defun find-patt-inst (patt expr); Oct 30/20
@@ -744,23 +871,108 @@
 (defun merge-names! (names); Oct 17/20
 ;`````````````````````````
 ; names: e.g., (| New| | York| | State|); (|New| |York| |State|), (NEW YORK STATE)
-; result: e.g., | New York State| (first 2 cases), |NEW YORK STATE| (3rd case)
+;        e.g., (|William| |F.| (-symb- |(|) |Bill| (-symb- |)|) |Buckley|)
+; result: e.g., | New York State| (first 2 examples), |NEW YORK STATE| (3rd).
 ;     I.e., if there is an initial blank or some lower case characters, 
 ;     we ensure there is an initial blank, and l.c. char's are retained;
 ;     o/w, we just concatenate. The former is aimed at Brown parses with names
 ;     in pipes, while the latter will lead to .name attachment in the ULF.
+; 
+;     When we have brackets, as in the 4th example, we need to eliminate the
+;     (-symb- ...) wrappers around the brackets, e.g., in order to get
+;     | William F. (Bill) Buckley|.
 ;
- (let* ((strings (mapcar #'string names))
-        (strings- (mapcar #'(lambda (s) (string-left-trim " " s)) strings))
-        strings+)
+ (let* (names- strings strings- strings+)
+       (if (not (find-if #'listp names)) (setq names- names)
+           (setq names- (merge-brackets-with-atoms names)))
+       (if (find-if #'listp names-) (return-from merge-names! names-))
+       (setq strings (mapcar #'string names-))
+       (setq strings- (mapcar #'(lambda (s) (string-left-trim " " s)) strings))
        (if (equal strings (mapcar #'string-upcase strings-)); no names in pipes?
            (setq strings+
                  (cons (car strings-)
                        (mapcar #'make-blank-prefixed-name-string! (cdr strings-))))
            (setq strings+ (mapcar #'make-blank-prefixed-name-string! strings-)))
        (intern (apply #'concatenate 'string strings+))
-
  )); end of merge-names!
+
+(defun pos-as-main-verb! (aux-verb)
+;``````````````````````````````````
+; Find the likely main-verb POS of a verb misclassified as auxiliary
+; E.g., in (AUX do) in front of an NP-object) we really want POS 'VB'
+  (case aux-verb (do 'VB) (did 'VBD) (does 'VBZ) 
+                 ((be 'VB) (been 'VBN) (being 'VBG)
+                 (is \'s are \'re) 'VBZ) ((was were) 'VBD); risky: "He's got it"
+                 (have 'VBZ); risky: "will/want to/may/... have"
+                 (has 'VBZ) (had 'VBD) (having 'VBG)
+                 (t aux-verb)))
+
+
+(defun merge-brackets-with-atoms (names)
+;```````````````````````````````````````
+; This if for cases where we're forming a single name from a list of
+; names where the list may include brackets, as in
+;    (|William| |F.| (-symb- |(|) |Bill| (-symb- |)|) |Buckley|)
+; In such a case we collapse the bracketed portion into a new atom first,
+; e.g., with the segment (-symb- |(|) |Bill| (-symb- |)|) becoming |(Bill)|.
+; If 'names' includes a complex element like the parse of "also called",
+; we coerce the word-yield into the name, e.g.,"| John_also_called_Skip_Wilson|
+; (earlier preprocessing can try to avoid such cases, creating the equivalent
+; of "John Wilson, also called Skip Wilson").
+;
+ (let (collect atoms atoms+ names- bracketed-atoms)
+      (cond ((not (find-if #'listp names)) names)
+            (t (dolist (x names) 
+                  (if (and (listp x) (eq (second x) '|(|)) 
+                      (prog2 (setq collect T) (push '@place-holder@ names-)))
+                      ; to insert a bracket-merged atom``````````` here
+                  (if (and (listp x) (eq (second x) '|)|)) (setq collect nil))
+                  (if (and (listp x) (not (find (second x) '(|(| |)|))))
+                      ; a sublist other than (<...> \() or (<...> \))?
+                      (if collect 
+                          (setq atoms (append (reverse (word-yield-of x)) atoms))
+                          (push (second x) names-)))
+                  (if (and (atom x) collect) (push x atoms))
+                  (if (and (atom x) (not collect)) (push x names-)))
+               (setq names- (reverse names-))
+               (cond ((null (cdr atoms)) ; just one atom in brackets
+                      (setq bracketed-atoms
+                            (intern 
+                              (concatenate 'string "(" (string (car atoms)) ")"))))
+                     (t (dotimes (i (- (length atoms) 1))
+                            (push (pop atoms) atoms+)
+                            (push '| | atoms+))
+                        (push (car atoms) atoms+)
+                        (setq strings (mapcar #'string atoms+))
+                        (setq strings (append '("(") strings '(")")))
+                        (setq bracketed-atoms 
+                              (intern (apply #'concatenate 'string strings)))))
+               (subst bracketed-atoms '@place-holder@ names-)))
+ )); end of merge-brackets-with-atoms
+
+(defun word-yield-of (x)
+;``````````````````````
+; e.g., x = |Skip| --> (|Skip|) 
+; e.g., x = (NNP |Skip|) --> (|SKIP|)
+; e.g., x = (VP (ADVP (RB also)) (VBN called)) --> (|also| |called|)
+  (cond ((symbolp x) (list x))
+        ((numberp x) (list (intern (format nil "~s" x))))
+        ((stringp x) (list (intern x)))
+        ((atom x)
+         (format t 
+           "~%** Error: ~s is an invalid input to 'word-yield-of'" x)
+         nil)
+        ; x is a list
+        ((and (atom (car x)) (atom (second x))) ; lexical item
+         (if (find (car x) '(NNP NNPS)) (cdr x)
+             (list (intern (string-downcase 
+                                     (format nil "~s" (second x)))))))
+        ; the phrase sytax doesn't allow (<atom> <atom> <expr> ...)
+        ; so we may now have (<atom> <list> ...) or (<list> ...)
+        ((atom (car x))
+         (apply #'append (mapcar #'word-yield-of (cdr x))))
+        (t (apply #'append (mapcar #'word-yield-of x)))
+ ));end of word-yield-of
 
 
 (defun make-blank-prefixed-name-string! (str); Oct 17/20
@@ -872,3 +1084,34 @@
  )); end of convert-aux-to-v!
 
 ; ** May need something similar for modals like (MD will), (MD would), ...
+
+; TBC -- this still needs to be handled
+;      whereas (PP (IN from) (NP (DT the) (NN file))) would become
+;        (PP (P-ARG from) (NP (DT the) (NN file)))
+
+(defun make-non-arg-pp-into-advp-after-v-np! ([pp] verb prep)
+; ``````````````````````````````````````````````````````````
+; [pp]: a prepositional phrase (PP ...)
+; verb: a (POS <verb>) pair, e.g., (VBZ saw))
+; prep: a preposition, e.g. 'in'
+; E.g., change 
+;      [pp] = (PP (IN without) (NP (NN permission))) to 
+;             (ADVP (-SYMB- adv-a) (PP (IN without) (NP (NN permission))))
+;      taken from context
+;        (VP (VBD deleted) (NP (PRP it)) (PP (IN without) (NP (NN permission))));
+;      (whereas (PP (IN from) (NP (DT the) (NN file))) would become
+;        (PP (P-ARG from) (NP (DT the) (NN file))) via other rules)
+;
+ (let ( )
+      (cond ((find prep '(to of by)) [pp]); assume {to of by} prep's supply
+             ; 'as' often supplies a pred, but that's separately handled as p-arg
+            ((gethash (list (stem verb) prep) *v_np_pp*) [pp]); [pp] supplies arg
+            ((find prep '(aboard above after along amid amidst among amongst
+                   at before behind below beside between betwixt beyond by 
+                   during in in_front_of inside near on on_board outside 
+                   till under underneath until upon within))
+             `(ADVP (-SYMB- adv-e) ,[pp]))
+            (t `(ADVP (-SYMB- adv-a) ,[pp])))
+ )); end of make-non-arg-pp-into-advp-after-v-np!
+  
+

@@ -91,7 +91,7 @@
 ;    recursively process the embedded VP, incorporating the result in the
 ;    output for the given VP;
 ;
-;  - if the type is (VP ... (.VB <v[_np,~_vp]>) *<non-NP),
+;  - if the type is (VP ... (.VB <v[_np,~_vp]>) *<non-NP>),
 ;    (e.g., "[Who does Ed] like _?", "[What did Ed] do _ with the car?",
 ;    but, "[What does Ed like to do _?", "[Who did he] talk to _?"),
 ;    return (VP ... (.VB <trans-verb>) (NP (-SYMB- *h)) *<non-NP>).
@@ -151,15 +151,16 @@
 (defun globally-insert-gaps (tree)
 ;``````````````````````````````````
  ; if there are no (sub ...) constructs in tree (hence no gaps), return tree
- (when *show-stages*
-     (format t "~%~%@@ Parse tree prior to gap-insertion:")
-     (format t   "~%   ``````````````````````````````````~%~s" tree)
-     (format t "~%~%@@ Insert missing *h wherever there are 'sub' constructs")
-     (format t "~%   `````````````````````````````````````````````````````"))
- (if (not (contains-sub-construct tree))
-     tree; to avoid unneccesary tree reconstruction
-           (globally-insert-gaps1 tree)
-  )); end of globally-insert-gaps
+ (let ()
+   (when *show-stages*
+       (format t "~%~%@@ Parse tree prior to gap-insertion:")
+       (format t   "~%   ``````````````````````````````````~%~s" tree)
+       (format t "~%~%@@ Insert missing *h wherever there are 'sub' constructs")
+       (format t "~%   `````````````````````````````````````````````````````"))
+   (if (not (contains-sub-construct tree))
+       tree; to avoid unneccesary tree reconstruction
+       (globally-insert-gaps1 tree))
+    )); end of globally-insert-gaps
 
 (defun contains-sub-construct (tree); briefly tested
 ;``````````````````````````````````
@@ -493,7 +494,7 @@
             ; 'v_np-pref!' is a function computing the strength of preference
             ; of a given verb for an NP object (0 for intransitive verb);
             ; NB: Particles have been attached to verbs when this code is run;
-            ((ok (setq ma (match '(VP (.VB !atom) ?[advp]) tree)))
+            ((ok (setq ma (match '(VP (.VB !atom) ?[advp/pp]) tree)))
              (fill-template '(VP 2 (:xp (v_np-pref! '2)) 3) ma))
 
             ; Reduced PP? (NB: the preference level of a preposition for an
@@ -596,7 +597,7 @@
 
             ; (SQ ...) with subject/be inversion
             ; e.g., "In what class is she _3?"
-            ((ok (setq ma (match '(.SQ (.VB .be) ?[advp] ![np] *[advp]) tree)))
+            ((ok (setq ma (match '(.SQ (.VB .be) ?[advp] ![np] *[advp/pp]) tree)))
              (fill-template '(1 2 3 4 (:xp 3.0) 5) ma))
 
             ; Question with NP after inverted subject NP -- attach PP to NN;
@@ -715,7 +716,7 @@
 
             ; Subject/be inversion; "Why is(n't) he happy?" "Where are you?"
             ((ok (setq ma (match '(.SQ (.VB .be) ?[advp] ![np] ?[pred] 
-                                                               *[advp]) tree)))
+                                                               *[advp/pp]) tree)))
              (fill-template '(1 2 3 4 5 (:xp 3.0) 6) ma))
 
             ; Verb with complements/adjunct(s)?
@@ -800,14 +801,14 @@
             ; With following PPs or ADVPs, we still have a strong gap
             ; possibility (for now, also make it 3.0); e.g., "I wonder
             ; how she is _ today"; "I wonder how fond he is _ of his cat."
-            ; (The ![advp] predicate covers bothe PPs and ADVPs)
-            ((ok (setq ma (match '(VP (!atom .BE) +[advp]) tree)))
+            ; (The ![advp/pp] predicate covers bothe PPs and ADVPs)
+            ((ok (setq ma (match '(VP (!atom .BE) +[advp/pp]) tree)))
              (fill-template '(VP 2 (:xp 3.0) 3) ma))
 
             ; Even with a following infinitive, we may have a gap 
             ; (infinitive-taking adjectives, e.g., "I know how eager he 
             ; is _ (now) to participate":
-            ((ok (setq ma (match '(VP (!atom .BE) ?[advp] (S ![inf])) tree)))
+            ((ok (setq ma (match '(VP (!atom .BE) ?[advp/pp] (S ![inf])) tree)))
              (fill-template '(VP 2 (:xp 3.0) 3) ma))
 
             ; Another possibility is a following for-sentence, e.g., 
@@ -815,7 +816,7 @@
             ; (However, "easy" constructions get parsed the same way, e.g.,
             ; "How easy is it _ for him to acknowledge his mistake?",
             ; whereas here "for him" should be a constituent...
-            ((ok (setq ma (match '(VP (!atom .BE) ?[advp] 
+            ((ok (setq ma (match '(VP (!atom .BE) ?[advp/pp] 
                                         (SBAR (IN FOR) (S +expr))) tree)))
              (fill-template '(VP 2 (:xp 3.0) 3 4) ma))
             
@@ -832,18 +833,18 @@
             ; With following PPs or ADVPs, we still have a strong gap
             ; possibility (for now, also make it 3.0); e.g., "How are
             ; you _ today after all that commotion?"
-            ((ok (setq ma (match '(SQ (!atom .be) ![np] +[advp]) tree)))
+            ((ok (setq ma (match '(SQ (!atom .be) ![np] +[advp/pp]) tree)))
              (fill-template '(SQ 2 3 (:xp 3.0) 4 5) ma))
 
             ; Even with a following infinitive, we may have a gap 
             ; (infinitive-taking adjectives), e.g., "How eager is he _
             ; to join the company?"
-            ((ok (setq ma (match '(SQ (!atom .be) ![np] ?[advp] ![inf]) tree)))
+            ((ok (setq ma (match '(SQ (!atom .be) ![np] ?[advp/pp] ![inf]) tree)))
              (fill-template '(SQ 2 3 (:xp 3.0) 4 5) ma))
 
             ; Again another possibility is a following for-sentence, e.g., 
             ; "I know how eager he was _ for Mary to acknowledge him"
-            ((ok (setq ma (match '(VP (!atom .BE) ![np] ?[advp] 
+            ((ok (setq ma (match '(VP (!atom .BE) ![np] ?[advp/pp] 
                                         (SBAR (IN FOR) (S +expr))) tree)))
              (fill-template '(VP 2 3 (:xp 3.0) 4 5) ma))
 
@@ -851,25 +852,25 @@
             ; listed examples  in the comments above to get this 
             ; approximately right. ADJP-taking verb as only complement;
             ; E.g., "How old are you turning tomorrow?"
-            ((ok (setq ma (match '(VP (.vb !atom) *[advp]) tree)))
-             (fill-template '(VP 2 (:xp (v_ap-pref! '2.2)) 3) ma))
+            ((ok (setq ma (match '(VP (.vb !atom) *[advp/pp]) tree)))
+             (fill-template '(VP 2 (:xp (v_ap-pref! '2)) 3) ma))
            
             ; Verb of type v_np_ap; e.g., "... how angry that made him _":
-            ((ok (setq ma (match '(VP (.vb !atom) ![np] *[advp]) tree)))
-             (fill-template '(VP 2 3 (:xp (v_np_ap-pref! '2.2)) 4) ma))
+            ((ok (setq ma (match '(VP (.vb !atom) ![np] *[advp/pp]) tree)))
+             (fill-template '(VP 2 3 (:xp (v_np_ap-pref! '2)) 4) ma))
 
             ; Eager-construction with non-be verbs; e.g., "How eager 
             ; did he seem _ to leave?". The inf-VP is parsed as 
             ; (S (VP (AUX (TO TO)) (VP (VB LEAVE))))
-            ((ok (setq ma (match '(VP (.vb !atom) *[advp] (S ![inf])) tree)))
-             (fill-template '(VP 2 (:xp (v_ap-pref! '2.2)) 3) ma))
+            ((ok (setq ma (match '(VP (.vb !atom) *[advp/pp] (S ![inf])) tree)))
+             (fill-template '(VP 2 (:xp (v_ap-pref! '2)) 3) ma))
 
             ; "How eager does he seem at the meeting for Mary to join the team?"
             ; The VP[seem] parse produced by BLLIP: 
             ; (VP (VB SEEM) (SBAR (IN FOR) (S (NP ...) (VP (AUX (TO TO)) ...))))
-            ((ok (setq ma (match '(VP (.vb !atom) *[advp] 
+            ((ok (setq ma (match '(VP (.vb !atom) *[advp/pp] 
                                      (SBAR (IN FOR) (S ![np] ![inf]))) tree)))
-              (fill-template '(VP 2 (:xp (v_ap-pref! '2.2)) 3 4) ma))
+              (fill-template '(VP 2 (:xp (v_ap-pref! '2)) 3 4) ma))
 
             ; No top-level gap candidates found, so tree1 is just tree
             (t tree)))
@@ -890,6 +891,36 @@
 ; of *h for the nontopicalized cases: 'delete-inferior-gap-candidates',
 ; [I've worked some more on this since writing the above.]
 
+(defun insert-vp-gap-candidates (tree)
+;````````````````````````````````````
+; [I decided to put in a rudimentary version to try to deal with certain
+; cases in the Brown corpus]
+; tree: a syntactic phrase structure in Treebank parser (e.g., BLLIP) format;
+;       it's expected to be the body of a 'sub' construct (indicating a filler-
+;       vp-gap dependency, but with the gap(s) possibly not yet identified)
+;
+; This marks just one possible VP gap in the body of a 'sub' context, using
+; degrees of preference 3 (i.e., marker (:xp 3)) at the end of a VP, but
+; bypassing lower-level 'sub' contexts, which cannot contain gaps corresponding 
+; to the current (VP ...) filler.
+; 
+; Brown example:
+; "Also being treated are Houston, Bleckley, Tift, Turner and Dodge counties, 
+; Blasingame said." The entire segment "Also ... counties" gets treated as
+; a VP to be inserted in "Blasingame said". So tree corresponds to the latter.
+;
+ (let (tree1)
+      (if (or (atom tree) (sub-construct tree)); bypass 'sub' constructs
+          (return-from insert-vp-gap-candidates tree))
+      (setq tree1
+            (apply-rule '((S *expr (NP +expr) *expr (VP *expr (.vb !atom)))
+                          (S 2 3 4 (VP 5.2 5.3 (:xp 3)))) tree))
+      (if (not (equal tree1 tree)); successful insertion of (:xp 3)
+          tree1
+          ; otherwise try treating the gap as an ADVP gap
+          (insert-advp-gap-candidates tree))
+ )); end of insert-vp-gap-candidates
+ 
 
 (defun retain-strongest-gap-candidate (tree); May 2/21
 ;```````````````````````````````````````````
@@ -1138,7 +1169,7 @@
       ; transduce the tree to equalize the gap candidates in the conjuncts;
       (setq result 
             (find-open-patt-inst 
-                '(.XP-OR-S +expr (CC !atom) ?[advp] (.XP-OR-S +expr)) tree))
+                '(.XP-OR-S +expr (CC !atom) ?[advp/pp] (.XP-OR-S +expr)) tree))
                            ;`````           ```````
                  ; maybe multiple conjuncts, maybe commas, errant advp, etc.
       (if (null result) (return-from equalize-coordinated-gap-candidates tree))
@@ -1162,8 +1193,8 @@
                  (or (atom x) ; bypass atoms and lexical elements
                      (ok (match '(!atom !atom) x))
                      (find-open-patt-inst '(:xp +atom) x))) result1))
-      (format t "~%@@@ result of mapping find-open-patt-inst to ~%    ~s" result1); DEBUG
-      (format t "~%is~%    ~s" check) ; DEBUG
+;     (format t "~%@@@ result of mapping find-open-patt-inst to ~%    ~s" result1); DEBUG
+;     (format t "~%is~%    ~s" check) ; DEBUG
       ; 'check' will contain an (:xp ...) instance from conjuncts
       ; that subsume such an instance, or NIL for ones that don't
       (when (not (find nil check)); do all conjuncts contain :xp?
@@ -1207,7 +1238,7 @@
                     #'(lambda (x) 
                         (and (listp x) (= (length x) 3) (eq (car x) :xp)))
                      result1))
-        (format t "~%@@@@ result = %    ~s~%@@@@ result1 = %    ~s" result result1)
+;       (format t "~%@@@@ result = %    ~s~%@@@@ result1 = %    ~s" result result1)
                                                 ;```````````````DEBUG
             (return-from equalize-coordinated-gap-candidates
               (subst result1 result tree :test #'equal))

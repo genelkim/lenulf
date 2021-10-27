@@ -7,12 +7,23 @@
 ;; Flag for loading the K&M parser if necessary.
 (defparameter *k&m-setup-complete* nil)
 (defparameter *k&m-path* (merge-pathnames "deps/self-attentive-parser/src/"
-                                          lenulf+/config:*base-directory*))
+                                          lenulf/config:*base-directory*))
 (defparameter *k&m-pretrained-model*
   (merge-pathnames "deps/model/model-BERT_dev=94.81.pt"
-                   lenulf+/config:*base-directory*))
+                   lenulf/config:*base-directory*))
 (defparameter *k&m-dict* (merge-pathnames "deps/model/dict"
-                                          lenulf+/config:*base-directory*))
+                                          lenulf/config:*base-directory*))
+
+(defun escape-chars (str chars)
+  "Escapes given characters."
+  (let ((escaped-list
+          (reduce #'(lambda (acc cur)
+                      (cond
+                        ((member cur chars) (cons cur (cons #\\ acc)))
+                        (t (cons cur acc))))
+              (coerce str 'list)
+              :initial-value nil)))
+    (coerce (reverse escaped-list) 'string)))
 
 (defun parse-kk (str)
 ;; Calls the standard K&K parser through python.
@@ -26,7 +37,7 @@
       (format t "Done!~%"))
     (lispify-parser-output
       (py4cl:python-eval (format nil "str(benepar_parser.parse(\"~a\"))"
-                                 (escape-chars str '(#\"))))))
+                                 (escape-chars str '(#\")))))) ; "
 
 (defun parse-km (str)
 ;; Calls the pretrained K&K parser for K&M through python. This is slightly
@@ -57,7 +68,7 @@
 
     ;; Parse sentence.
     (py4cl:python-exec (format nil "tokens = word_tokenize(\"~a\")"
-                               (escape-chars str '(#\"))))
+                               (escape-chars str '(#\")))) ;"
     (py4cl:python-exec "predicted, _ = parser.parse([('UNK', token) for token in tokens])")
     (let ((pyout (py4cl:python-eval "predicted.convert().linearize()"))
           (mid-file (format nil "~a.txt" (gensym)))
