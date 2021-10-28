@@ -6,7 +6,7 @@
   :version "0.0.1"
   :author "Gene Louis Kim <gkim21@cs.rochester.edu>"
   :license "MIT"
-  :depends-on (:ttt :cl-strings :cl-util :cl-ppcre :ulf-lib :ulf2english :py4cl)
+  :depends-on (:ttt :cl-strings :gute :cl-ppcre :ulf-lib :ulf2english :py4cl)
   :components ((:file "package")
                (:file "standardize-ulf")
                (:file "relational-noun"))
@@ -19,7 +19,7 @@
 	:description "Unit tests for the standardize-ulf package"
 	:author "Gene Louis Kim <gkim21@cs.rochester.edu>, Mandar Juvekar, Junis Ekmekciu, Viet Duong"
   :license "MIT"
-  :depends-on (:standardize-ulf :lisp-unit :cl-util)
+  :depends-on (:standardize-ulf :lisp-unit :gute)
   :pathname #P"test/"
   :components ((:file "package")
                (:file "standardize-ulf"))

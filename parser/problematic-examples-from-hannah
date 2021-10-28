@@ -1,0 +1,234 @@
+Hi Hannah, I've checked the revised ULF parser against your examples (without
+having "peeked ahead"). I've written in parses. The examples motivated a couple
+of further small revisions. -Len
+
+
+Fri 12/4/2020 2:36 PM
+Hi Len,
+
+This time, I looked at the results of your ULF parser. There were some problems that seemed hard to get a correct ULF parse solely from the constituency parse without human knowledge, and I tried to exclude those from the list below.
+
+1.  (DT That) as in "That's the snag"
+    gold: THAT.PRO
+    parsed: THAT.D
+
+    June 17/21: ((THAT.D~1 {REF1}.N~2) ((PRES BE.V~3) (= (THE.D~5 SNAG.N~6))))
+     
+2.  (PRP$ my) as in "my throat"
+    gold: MY.D
+    parsed: MY.PRO
+
+    June 17/21: ((MY.D~1 THROAT.N~2) (PRES HURT.V~3))
+         
+3.  Already mentioned in the previous email, but auxiliary (VBP do) as in "I don't care"
+    gold: DO.AUX-S
+    parsed: DO.V
+
+    June 17/21: ((I.PRO~1 ((PRES DO.AUX~2) |N'T.ADV~3| CARE.V~4)) \.)
+     
+4.  (ADJP (RB well) (VBN done)) as in "It's well done"
+    gold: (WELL.MOD-A DONE.A)
+    parsed: (WELL.ADV (PASV DO.V))
+
+    June 17/21: ((IT.PRO~1 ((PRES BE.V~2) (WELL.ADV~3 DONE.A~4))) \.)
+         But this required a new specialized rule -- it's tricky, considering
+         cases like "He's not done the homework", "What's he done?", and the
+         fact that BLLIP doesn't distinguish clitic 's for "has" and for "is".
+
+5.  "have gotten" (VBP 've) (VP (VBD got)
+    gold: (PRES PERF) (GET.V
+    parsed: (PRES |'VE.V|) ((PAST GET.V)
+
+    June 17/21: ((I.PRO~1 (|'VE.AUX~2| ((PERF GET.V~3) TIRED.A~4))) \.)
+                So I'm still missing the tense.
+     
+6.  "can't" (MD ca) (RB n't)
+    gold: (PRES CAN.AUX-V) NOT
+    parsed: (CA NOT
+
+    June 17/21:
+    ((I.PRO~1 ((PRES CAN.AUX~2) |N'T.ADV~3| ((PRES DO.V~4) IT.PRO~5))) \.)
+     
+7.  "must" (MD must)
+    gold: (PRES MUST.AUX-V)
+    parsed: (FIN MUST.AUX)
+
+    June 17/21: ((HE.PRO~1 ((PRES MUST.AUX~2) LEAVE.V~3)) \.)
+       However, the original 'FIN' is actually correct because "must" is
+       ambiguous between pres & past ("He realized that he must leave"; cf.,
+       *"He realized that he may leave" -- faulty because "may" is pres only)
+       
+8.  "would have done" (VP (MD would) (VP (VB have) (VP (VBN done)
+    gold: (PAST WILL.AUX-S) (PERF (DO.V
+    parsed: (FIN WOULD.AUX) (HAVE.AUX ((PERF DO.V)
+
+    June 17/21: Again, that's correct -- "would" is ambiguous between present
+       subjunctive ("He would have done it" and past tense of "will" ("He
+       promised that he would do it.")
+     
+9.  "would" as in "would willingly come" (VP (MD would) (ADVP (RB willingly)) (VP (VB come)))
+    gold: ((CF WILL.AUX-S) (WILLINGLY.ADV-A COME.V))
+    parsed: ((FIN WOULD.AUX) WILLINGLY.ADV COME.V)
+
+    June 17/21: Actually we allow adverbials to "float" between an auxiliary
+       and a VP; after all, without deeper knowledge, an ADVP could belong
+       either at the VP level or the sentence level. Cf. "I would probably
+       come, if invited."
+     
+10. "will" (MD 'll) as in "I'll pay"
+    gold: (PRES WILL.AUX-S)
+    parsed: |'LL|
+
+    June 17/21: We allow auxiliary \'ll as a synonym of will. Likewise for n\'t
+       and not, \'re and are, \'m for am, etc. Such clitics can provide pragmatic
+       cues, so there's no compelling reason to expand them.
+     
+11. "won't" (MD wo) (RB n't)
+    gold: (PRES WILL.AUX-S) NOT
+    parsed: (WO NOT
+
+    June 17/21: 
+      ((I.PRO~1 ((PRES WILL.AUX~2) |N'T.ADV~3| ((PRES DO.V~4) IT.PRO~5))) \.)
+      My version of the BLLIP parser produces the "will not", but ((PRES wo.aux)
+      n\'t.adv) should be acceptable too.
+     
+12. "need not" (VP (MD need) (RB not)
+    gold: ((PRES NEED.AUX-V) NOT
+    parsed: (NEED NOT
+
+    June 17/21: See above
+     
+13. "dare" (MD dare) as in "how dare you say such a thing?" (SBARQ (WHADVP (WRB How)) (SQ (MD dare) (NP (PRP you)) (VP ...
+    gold: ((SUB HOW.PQ ((PRES DARE.AUX-V) YOU.PRO ((SAY.V ...
+    parsed: (HOW.ADV (DARE YOU.PRO (SAY.V ...
+
+    June 17/21:
+    ((SUB HOW.PQ~2
+          ((PRES DARE.AUX~3) YOU.PRO~4 (SAY.V~5 (SUCH.D~6 THING.N~7) *H))) ?)
+    However, I've become very dubious about '.pq' -- there's nothing wrong
+    with using HOW.ADV is such cases, always meaning {in what way, by what means,
+    in what manner, in what condition}, and after all those expansions would 
+    look like this: (ADV-A (in.p (what.d way.n))), etc., rather than (PQ ...).
+    My bad, because I introduced '.pq'.
+        
+14. Complement clause (SBAR (IN THAT) "that" as in "People should understand that the world is changing"
+    gold: THAT
+    parsed: THAT.P
+
+    June 17/21:
+    (((K (PLUR PERSON.N~2))
+      ((FIN SHOULD.AUX~3)
+       (UNDERSTAND.V~4
+        (THAT~5
+         ((THE.D~6 WORLD.N~7) ((PRES BE.AUX~8) (PROG CHANGE.V~9))))))) \.)
+
+15. (NN anything)
+    gold: ANYTHING.PRO
+    parsed: (ANY.D THING.N)
+
+    June 17/21: (((ANY.D~1
+                   (N+PREDS THING.N~3
+                    (ANS-TO (SUB THAT.REL~6 (YOU.PRO~7 ((PRES DO.V~8) *H))))))
+                  ((PRES BE.V~10) WORTHWHILE.A~11)) \.)
+
+16. (.A .N)
+    e.g. (EARLY.A BIRD.N)
+    gold: ((MOD-N EARLY.A) BIRD.N)
+    parsed: (EARLY.A BIRD.N)
+
+    June 17/21: Well, I haven't changed that, because I remain conflicted
+    about the right suffix to use here.
+     
+    e.g. (NP (JJ big) (NNS cities))
+    gold: (K ((MOD-N BIG.A) (PLUR CITY.N)))
+    parsed: (K (BIG.A (PLUR CITY.N)))
+
+    June 17/21: Likewise
+     
+    e.g.  (NP (CD 2) (NNS hours))
+    gold: ((MOD-N |2.D|) (PLUR HOUR.N)) #NO, 'mod-n' operates on pred's, not det's.
+    parsed: (|2.D| (PLUR HOUR.N))       ````````````````````````````````````````
+
+    June 17/21: (((TWO.D~1 (PLUR HOUR.N~2)) ((PRES HAVE.AUX~3) (PERF PASS.V~4))) \.)
+    '2.D' is ok, though. As a numeral adjective this would be '2.a' or 'two.a'.
+    The numerals are ambiguous between adj, det, and name ("Two is a number")
+     
+17. (NNS) (CC and) (NNS), e.g. (NNS ups) (CC and) (NNS downs)
+    gold: (PLUR UP.N) AND.CC (PLUR DOWN.N)
+    parsed: (PLUR UP.N) AND (PLUR DOWN.N)
+
+    June 17/21: ((HE.PRO~1
+                  ((PAST HAVE.V~2)
+                   ((HIS.D~3 (PLUR UP.N~4)) AND~5 (K (PLUR DOWN.N~7))))) \.)
+    However, 'AND' and 'AND.CC' should be considered synonyms.
+
+18. (A) (CC and) (A), e.g. (ADJP (JJ quiet) (CC and) (JJ beautiful))
+    gold: (QUIET.A AND.CC BEAUTIFUL.A)
+    parsed: (QUIET.A AND BEAUTIFUL.A)
+
+    June 17/21:(((THE.D~1 LOCATION.N~2)
+                ((PAST BE.AUX~3) (QUIET.A~4 AND~5 BEAUTIFUL.A~6))) \.)
+     
+19. "know if" (VB know) (SBAR (IN if)
+    gold: (KNOW.V (WHETHER
+    parsed: (KNOW.V (IF.P
+
+    June 17/21: ((I.PRO~1 ((PRES DO.AUX~2) |N'T.ADV~3|
+                           (KNOW.V~4 (IF.PS~5 (HE.PRO~6 
+                                               ((PRES BE.V~7) SERIOUS.A~8)))))) \.)
+    I think figuring out whether IF.PS should become WHETHER needs to be done
+    using lexical knowledge: "I can't complain/know if you are happy"
+     
+20. "since" after perfect tense, e.g. (SBAR (IN since) as in "It's been ten years since we last met"
+    gold: SINCE.PS
+    parsed: SINCE.P
+
+    June 17/21:
+    ((IT.PRO~1
+      ((PRES BE.AUX~2)                        #This should be (PRES HAVE.AUX~2),
+       ((PERF BE.V~3) (= (TEN.D~5 (PLUR YEAR.N~6)))                # but 's is
+        (SINCE.PS~7 (WE.PRO~8 LAST.ADV~9 (PAST MEET.V~10)))))) \.) # ambiguous
+     
+21. "a lot" (NP (DT a) (NN lot)) as in "changed a lot"
+    gold: A_LOT.ADV-A
+    parsed: (A.D LOT.N)
+
+    June 17/21: It was still (A.D LOT.N), so I introduced a new rule, & got
+    ((HE.PRO~1 ((PRES HAVE.AUX~2) ((PERF CHANGE.V~3) A_LOT.ADV~4))) \.)
+
+22. "pretty large" (ADJP (RB pretty) (JJ large))
+    gold: (PRETTY.MOD-A LARGE.A)
+    parsed: (PRETTY.ADV LARGE.A)
+
+    June 17/21: Well, I'm not sure the "gold" is correct
+
+23. "such a thing" (SUCH.A A.D THING.N)
+    gold: (SUCH.D (= (A.D THING.N)))  
+    parsed: (SUCH.A A.D THING.N)
+
+    June 17/21: In 13 I had (SUCH.D THING.N), which is logically equivalent
+    to (SUCH.D (= (A.D THING.N)); However, the version with "=" is more   
+    pragmatically appropriate, so I've switched the rule to get the "gold" 
+    version. Cases like "That's quite the thing" seem similar but aren't 
+    properly handled at present.
+
+24. named entity, e.g. (NNP Maria)
+    gold: |Maria|
+    parsed: MARIA
+
+    June 17/21: (((THIS.D~1 {REF1}.N~2) ((PRES BE.V~3) (= MARIA.NAME~5))) \.)
+    'MARIA.NAME' is the version requested by Lane, though for multiword names
+    (which Lane didn't care about) I produce things like |SOUTH AFRICA.NAME~4|.
+
+25. date, e.g. (NP (NNP Sunday)))
+    gold: (K | Sunday.N|)
+    parsed: SUNDAY
+
+    June 17/21: ((HE.PRO~1 ((PRES RETURN.V~2) (ON.P~3 SUNDAY.NAME~4))) \.)
+                ((HE.PRO~1 ((PRES RETURN.V~2) (THIS.D~3 SUNDAY.N~4))) \.)
+                "He left Sunday":
+                ((HE.PRO~1 ((PAST LEAVE.V~2) ({DURING}.P SUNDAY.NAME~4))) \.)
+                Some cases aren't handled well
+
+Best,
+Hannah

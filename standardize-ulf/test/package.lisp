@@ -1,5 +1,5 @@
 (defpackage #:standardize-ulf/tests
-    (:use #:cl #:lisp-unit #:standardize-ulf #:cl-util)
+    (:use #:cl #:lisp-unit #:standardize-ulf #:gute)
       (:export #:run))
 
 (in-package :standardize-ulf/tests)
@@ -32,7 +32,7 @@
                              "Both the :tags and :tests keyword "
                              "arguments are given for standardize-ulf/tests:run. "
                              "Ignoring the :tags argument...")))
-        (util:in-intern (tests pkgtests :standardize-ulf/tests)
+        (in-intern (tests pkgtests :standardize-ulf/tests)
           (run-tests pkgtests :standardize-ulf/tests)))
       ;; Specified tags.
       (tags (run-tags tags :standardize-ulf/tests))

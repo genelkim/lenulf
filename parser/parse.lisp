@@ -3,7 +3,7 @@
 ;; Run Charniak parser
 ;; Jonathan Gordon, 2011-12-19
 ;; parse-all and sep-sentences added by LKS
-;; support for the Berkeley parser was added by Gene Louis Kim
+;; *syntactic-parser-fn-alist* extention to add other parsers added by GLK
 
 (in-package :lenulf)
 
@@ -20,6 +20,9 @@
 ;;         parser is still in nl
 (defparameter *pdata* "/p/nl/tools/reranking-parser/first-stage/DATA/EN/")
 
+;; An association list from syntactic parser name to parser function call.
+(defparameter *syntactic-parser-fn-alist*
+  '(("BLLIP" . parse-bllip)))
 
 (defun parse-all (str)
 ; Here we allow str to consist of multiple sentences separated by
@@ -43,56 +46,54 @@
                          (return nil)) ; exit loop
                 (if (null chars) (return nil)))
           (push (coerce (reverse sent) 'string) sents)
-          (if (null chars)
+          (if (null chars) 
               (return-from sep-sentences (reverse sents))))
  )); end of sep-sentences
 
 
+(defun parse-bllip (str)
+  ;; We create a new file via a 'let', to be used for the stream,
+  ;; and delete it at the end.
+  (let ((filename (format nil "~a.txt" (gensym)))
+        (result))
+    (with-open-file (to-parse filename :direction :output
+                                       :if-exists :supersede)
+      (format to-parse (preproc-for-parse str)))
+    (setf result (lispify-parser-output
+                  (output-from-cmd (format nil "~a ~a ~a"
+                                           *parser* *pdata* filename))))
+    (delete-file filename)
+    result))
+
 (defun parse (str &key (parser "BLLIP"))
 ;; Here str (a string) is assumed to be a single sentence
 ;; The keyword argument can be "bllip", "k&k", or "k&m" case-insensitive.
-;; NB: Only BLLIP is supported in :lenulf. :lenulf+
-  (cond
-    ;; BLLIP parser
-    ;; We create a new file via a 'let', to be used for the stream,
-    ;; and delete it at the end.
-    ((equal (string-upcase parser) "BLLIP")
-     (let ((filename (format nil "~a.txt" (gensym)))
-           (result))
-       (with-open-file (to-parse filename :direction :output
-                                          :if-exists :supersede)
-         (format to-parse (preproc-for-parse str)))
-       (setf result (lispify-parser-output
-                     (output-from-cmd (format nil "~a ~a ~a"
-                                              *parser* *pdata* filename))))
-       (delete-file filename)
-       result))
-    ;; K&K parser (basic Berkeley parser)
-    ((equal (string-upcase parser) "K&K")
-     (parse-kk str))
-    ;; K&M parser (Kato and Matsubara gap filling).
-    ((equal (string-upcase parser) "K&M")
-     (parse-km str))
-    (t (error "Unknown parser selection: ~a~%" parser))))
+  (flet ((str-compare (x y) (equal (string-upcase x)
+                                   (string-upcase y))))
+    (if (assoc parser *syntactic-parser-fn-alist*
+               :test #'str-compare)
+      (funcall (cdr (assoc parser *syntactic-parser-fn-alist*
+                           :test #'str-compare))
+               str)
+      (error "Unknown parser selection: ~a~%" parser))))
 
 ;; prefix sentence string with <s>, postfix with </s>
 (defun preproc-for-parse (str)
   (format nil "<s> ~a </s>" str))
+
+(defun split-str (str sep)
+	(cond
+		((null (search sep str))
+		 (list str))
+		(t (append
+				 (list (subseq str 0 (search sep str)))
+				 (split-str (subseq str (+ 1 (search sep str)) (length str)) sep)))))
 
 (defun exec-from-command (command)
 	(car (split-str command " ")))
 
 (defun args-from-command (command)
 	(cdr (split-str command " ")))
-
-(defun split-str (str sep)
-	(cond
-		((null (search sep str))
-		 (list str))
-
-		(t (append
-				 (list (subseq str 0 (search sep str)))
-				 (split-str (subseq str (+ 1 (search sep str)) (length str)) sep)))))
 
 ;; Adapted from 'port.lisp' from 'asdf-install'.
 ;; Comment by LKS: The loop syntax here is an extension of the basic
@@ -161,10 +162,4 @@
                   (push #\\ result) (push ch result) )
                  (T (push ch result)) ))
         (coerce (reverse result) 'string)))
-
-;; Modifiable placeholder functions for the K&K and K&M parsers.
-(define parse-kk (str)
-  (error "The K&K parser is not available through the :lenulf system. Please load the :lenulf+ system (with the same package name) for K&K parser support."))
-(define parse-km (str)
-  (error "The K&M parser is not available through the :lenulf system. Please load the :lenulf+ system (with the same package name) for K&M parser support."))
 

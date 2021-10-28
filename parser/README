@@ -1,0 +1,78 @@
+Version 3 of the English-to-ULF parser, and new version of TT; Aug 20/21
+=================================================================
+
+The main ULF-derivation programs are in "parse-tree-to-ulf.lisp"
+
+After doing
+  (load "init.lisp"),
+the 'parse-tree-to-ulf' and 'english-to-ulf' functions can be used.
+
+The easiest way to try the ULF parser is copy the definition of the
+'ulf' function (an abbreviation of 'english-to-ulf') that is offered 
+to the user when "init.lisp" is loaded, and to try things like 
+  (ulf "This is a test.")
+
+The constituent parser is still BLLIP rather than K&K (alas). Hannah's
+instructions for installing the K&K parser are in "kk-parser-installation".
+
+The parser is in verbose mode by default, showing the rules it tries;
+To quiet it down, use (setq *show-stages* nil).
+
+The lexical-level ULF derivation code is in 
+   pos+word-to-ulf.lisp
+This also requires loading of "stem.lisp" (a variant of previous versions)
+
+The tree transduction code is in "tt.lisp"
+
+TT-predicates are in "tt-match-predicates.lisp".
+
+Feature handling (using 'isa' paths) and the features currently used for
+preprocessing constituent trees are in "isa.lisp". There is also a sparsely
+populated "lexical-features.lisp" (formerly "features.lisp") file that is
+scarcely used. The features in "isa.lisp" and lexical information in
+"verb-transitivity-lists.lisp" and "subcat-pref.lisp" are more important.
+
+The tree preprocessing code is in 
+   "preprocess-tree-for-ulf.lisp".
+
+ULF postprocessing remains remains minimal and may never get expanded
+(processing at the parse tree level is generally easier, as the "types"
+like NP and VP are apparent, whereas in ULF they're not explicit except
+for the dot-suffixes at the atomic level).
+
+I have in mind a way of speeding up sequential rule application significantly,
+apart from compiling, but this hasn't been the highest priority.
+
+            -=-=-=-=-=-=-=-=-=-=-==-=-=-
+
+"tt-syntax-documentation" provides the syntactic essentials of TT.
+It also gives some simple examples for the main functions, like 'match'.
+
+But you don't need to know this to do ULF derivation. But here are
+some quick notes for potential users of TT. The new version of TT is
+usable for ETA, allowing fairly easy replacement of the ETA match
+language and code.
+
+The 'match' function finds rightmost matches (while TTT finds leftmost 
+matches), but that could fairly easily be changed. Rightmost matches 
+are better when "soft variables" (ones allowing binding to the empty 
+sequence, coded as (:seq)) are more likely to remain empty than being 
+filled.
+
+TT combines elements of TTT (e.g., using characters ?, !, *, + in predicates
+that respectively match at most one expression, exactly one, 0 or more,
+or at least one expression) and the ETA matching language, using numeric
+indices to identify constituents (elements or sequences) of an expression,
+to be used in assembling a transformed expression. TT goes further
+than the language in ETA, allowing not only 1, 2, 3, ... as indices of
+top-level list elements, but also 1.1, 1.2, ..., 2.1, 2.2, ... for 
+second-level parts, 1.1.1, 1.1.2, ..., 2.1.1, 2.1.2, ... etc. for 3rd-
+level elements, etc.
+
+TT has no sticky variables, so bindings at diffeent tree locations can't 
+be checked for identity (this would have to be done separately), but we can 
+still "get at" any arbitrarily deeply nested part of a match (via the above
+indices) and use these parts (expressions or expression sequences) any
+way we want in the reassembly templates.
+
+
