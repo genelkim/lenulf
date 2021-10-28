@@ -75,11 +75,12 @@
 
   )
 
-(define-test relational-bad-n+preds
-  ..)
-
-(defune-test relational-bad-plur
-  ..)
+; TODO: fill in.
+;;(define-test relational-bad-n+preds
+;;  ..)
+;;
+;;(defune-test relational-bad-plur
+;;  ..)
 
 ;; Relational Nouns.
 ;; Winnie Wan, 2021-03-23
