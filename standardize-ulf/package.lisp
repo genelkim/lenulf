@@ -3,9 +3,9 @@
 (in-package :cl-user)
 
 (defpackage :standardize-ulf
-  (:use :cl :cl-user :ttt :cl-strings :ulf-lib :cl-util :ulf2english)
+  (:use :cl :cl-user :ttt :cl-strings :ulf-lib :gute :ulf2english)
   (:import-from :py4cl :python-eval)
   (:shadow :insert)
-  (:shadowing-import-from :cl-util #:compose)
+  (:shadowing-import-from :gute #:compose)
   (:shadowing-import-from :cl-strings #:join)
   (:export :standardize-ulf))

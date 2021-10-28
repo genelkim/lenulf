@@ -60,6 +60,19 @@
              ; (with inserted underscores)
              (return (make-multiword "_" (cdr pos-word))) )
 
+       ; Special case: word n't
+       (if (member word '(not \n\'t)) (return-from stem 'not))
+
+       ; Only one word follows the given POS tag. However, we also allow for
+       ; implicit multiwords separated by underscores, by separating the word
+       ; at the underscores and calling 'stem' recursively on the multiwored
+       ; input (with the given POS tag)
+       (if (and (symbolp word) (find #\_ (setq str (string word))))
+           (return (stem (cons tag 
+                            (read-from-string
+                             (concatenate 'string "("
+                               (substitute #\Space #\_ str) ")")))) ))
+
        ; At this point we have no multi-words
        (if (not (member tag '(NNS NNPS VBD VBG VBN VBEN VBP VBZ VB-CF
                               AUXD AUXG AUXEN AUXP AUXZ AUX-CF)))
@@ -85,6 +98,8 @@
                        (knives 'KNIFE)
                        (sheaves 'SHEAF)
                        (shelves 'SHELF)
+                       (wolves 'WOLF)
+                       (elves 'ELF)
                        (mice 'MOUSE)
                        (geese 'GOOSE)
                        (lice 'LOUSE)
@@ -253,9 +268,17 @@
 
        ; POS tag is one of VBD VBG VBN VBEN VBP VBZ VB-CF 
        ;                   AUXD AUXG AUXEN AUXP AUXZ;
-       (if (member tag '(VBP AUXP))
-           (if (member word '(are \'re am \'m))
+       (if (member tag '(VBZ AUXZ VBP AUXP))
+           (if (member word '(is \'s s are \'re re am \'m m)); sometimes no "'"
                (return-from stem 'BE) ))
+       (if (and (member tag '(AUXZ AUXP)) (eq word '\'ll))
+           (return-from stem 'WILL))
+       (if (and (member tag '(AUXZ AUXP)) (eq word '\'d))
+           (return-from stem 'WOULD)); a guess! It could be "had"
+       (if (and (eq tag 'AUXD) (eq word '\'d))
+           (return-from stem 'HAVE)); a guess! It could be "would"
+       (if (and (eq tag 'AUX-CF) (member word '(had \'d)))
+           (return-from stem 'HAD)); subjunctive stays as "had"
        (if (member tag '(VBP AUXP)) (return-from stem word)) 
                        ; actually some modals are tense-ambiguous;
                        ; e.g., "would" in "He said he would do it"
@@ -267,7 +290,8 @@
        (setq result
              (case word
                    ; verbs with multiple stored inflections
-                   ((be been being is \' s was are \'re were) 'BE) 
+                   ((be been being is \'s was are \'re were) 'BE) 
+                   ; overlaps with above '(is \'s are \'re am \'m) (harmless)
                    ((beat beaten beating) 'BEAT)
                    ((biases biased biasing) 'BIAS)
                    ((bite bitten bit biting bites) 'BITE)
@@ -338,8 +362,16 @@
                    ((flew flown) 'FLY)
                    (flung 'FLING)
                    ((focused focussed) 'FOCUS)
-                   ((forebade forebidden) 'FOREBID)
+                   ((forbade forbidden forebade forebidden) 'FORBID)
+                   ((forbore forborne) 'FORBEAR)
+                   ((foresaw foreseen) 'FORSEE)
+                   (foretold 'FORETELL)
+                   ((foregone forgone) 'FOREGO)
+                   ((forgave forgiven) 'FORGIVE)
                    ((forgot forgotten) 'FORGET)
+                   ((foresook foresaken) 'FORSAKE)
+                   ((foreswore forswore foresworn forsworn) 'FORSWEAR)
+                   (foretold 'FORETELL)
                    (fought 'FIGHT)
                    ((froze frozen freezing freezes) 'FREEZE)
                    ((gossiped gossiping) 'GOSSIP)

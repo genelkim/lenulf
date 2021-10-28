@@ -1,0 +1,64 @@
+June 16/21
+
+Comparatives are currently not treated systematically. In future,
+I want to try this aproach to comparatives: 'more' (and similarly 
+'less') has 2 relevant interpretations, both adverb-like, but taking
+2 rightward arguments, one a predicate and the second either an entity 
+(version 1) or a sentence meaning with a *adv "gap" (version 2)).
+
+It looks to me like both versions could be readily expanded to degree
+comparisons.
+
+1. As an adverb that transforms a (typically adjectival) monadic
+   predicate into a binary comparison predicate; e.g.,
+
+     "Bob is taller than Alice"
+     [|Bob| ((pres be.v) ((more.adv tall.a (than |Alice|))))]
+     where than' = (:L x x); also be.v' = (:L pred pred).
+     Note the need to separate off the "more" (or "-er") from "taller".
+
+     "It's much bigger than a breadbox"
+     [it.pro ((pres be.v) ((mod-a (much.adv more.a)) big.a
+                           (than <a-gen.d breadbox.n>)))]
+     Or should "much" be external? (much.adv ((more.adv big.a (than ...)))? 
+     Probably. It's the same puzzling issue as discussed below (June 15/21).
+
+
+2. As an adverb-like macro that relates the degree of a predicate
+   to the (subdeleted) degree of another predicate occurring in
+   a than-sentence, which is often partially or totally elided. E.g.,
+   
+     "The mattress is wider than the door is high"
+    [<the mattress.n> ((pres be.v)
+          (more wide.a (than [<the door.n> ((pres be.v) (*adv high.a))])))]
+
+    "He runs faster than me"
+    [he.pro ((pres run.v) 
+             (adv-a (more fast.a 
+                     (than [I.pro ((pres run.v) (adv-a ((*adv fast.a))))]))))]
+
+    "I ate more cake than I should have."
+    [I.pro ((past eat.v) 
+            (k ((more much.a) cake.n 
+                (than [I.pro ((past should.aux-v) 
+                              (have.aux ((perf eat.v) 
+                                         (k ((*adv much.a) cake.n)))))))))]
+
+    "{For some reason} I feel more alive in the evening"
+    [I.pro ((pres feel.v) 
+            (more alive.a 
+                  (than [I.pro ((pres feel.v) (*adv alive.a) 
+                                (adv-e (at.p (k (other.a (plur time.n))))))]))
+            (adv-e (in.p <the evening.n>)))]
+
+    "Bob jogged further than five miles."
+    [|Bob| ((past jog.v) 
+             (adv-v (more far.a (than [(k (five.a (plur mile.n))) 
+                                       ((pres be.v) far.a)]))))]
+
+    "Bob sneezed more than Alice coughed."
+    [|Bob| ((past sneeze.v) 
+            (adv-f (more frequent.a 
+                    (than [|Alice| ((past cough.v) (adv-f (*adv frequent.a)))))))]
+   
+===================================================================

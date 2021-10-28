@@ -50,11 +50,6 @@
     (pres can.aux) -> (pres can.aux-v)
     |'s.aux| -> (pres be.v)
   "
-  ;; Set up the pattern en package link in ulf2english if not yet ready.
-  ;; TODO: move this to a more universal location.
-  (when (not ulf2english::*setup-complete*)
-    (ulf2english::setup-pattern-en-env #'ulf2english::python-over-py4cl))
-
   ;; No change if the format doesn't match the expected format.
   (when (not (or (len-aux? aux)
                  (and (listp aux) (= (length aux) 2)
@@ -85,7 +80,7 @@
       ((sym (if (atom aux) aux (second aux)))
        (sympair (multiple-value-list (split-by-suffix sym)))
        (wrd (first sympair))
-       (lemma 
+       (lemma
          (cond
            ((member wrd '(|'s| |'S|)) 'be)
            (t
@@ -163,7 +158,7 @@
     (and (lex-unknown? sym)
          (member lemma *determiners*))))
 
-(defun bad-a-few? (expr)
+(defun bad-a-few-joined? (expr)
   "Matches '(A.* (FEW.* ...))"
   (and (listp expr)
        (= 2 (length expr))
@@ -172,18 +167,30 @@
        (listp (second expr))
        (symbolp (first (second expr)))
        (eql 'few (nth-value 0 (ulf:split-by-suffix (first (second expr)))))))
-(defun fix-a-few! (expr)
-  (let* ((asym (ulf:split-by-suffix (first expr)))
-         (fewsym (ulf:split-by-suffix (first (second expr))))
-         (pred (cdr (second expr)))
-         (afewsym (ulf:add-suffix
+(defun fix-a-few-joined! (expr)
+  (cons
+    (fix-a-few! (first expr) ; a
+                (first (second expr))) ; few
+    (cdr (second expr)))) ; predicate
+(defun fix-a-few! (aexpr fewexpr)
+  (let* ((asym (ulf:split-by-suffix aexpr))
+         (fewsym (ulf:split-by-suffix fewexpr)))
+    (ulf:add-suffix
                     (fuse-into-atom (list asym '_ fewsym) :pkg :standardize-ulf)
                     'd
                     :pkg :standardize-ulf)))
-    (cons afewsym pred)))
 
-(defparameter *a-few-fix*
-  '(/ bad-a-few? (fix-a-few! bad-a-few?)))
+(defparameter *a-few-joined-fix*
+  '(/ bad-a-few-joined? (fix-a-few-joined! bad-a-few-joined?)))
+(defparameter *a-few-flat-fix1*
+  '(/ (_+1 a-x? few-x? _*2)
+      (_+1 (fix-a-few! a-x? few-x?) _*2)))
+(defparameter *a-few-flat-fix2*
+  '(/ (_*1 a-x? few-x? _+2)
+      (_*1 (fix-a-few! a-x? few-x?) _+2)))
+(defparameter *a-few-flat-fix3*
+  '(/ (a-x? few-x?)
+      (fix-a-few! a-x? few-x?)))
 
 (defun remove-vp-tense! (vp)
   "Removes the tense from the head verb of the ULF verb phrase."
@@ -246,7 +253,7 @@
 (defun possible-relativizer? (ulf)
   "A pronoun or non-pronoun which may be a mis-identified relativizer."
   (when (atom ulf)
-       (let ((wrd (split-by-suffix ulf))) 
+       (let ((wrd (split-by-suffix ulf)))
                 (member wrd *english-relativizers*))))
 
 ;; Checks each part of the ULF if any parts without the suffix are members of
@@ -254,15 +261,15 @@
 ;; pronoun
 (defun switch-simple-possible-rel-to-pro (ulf)
     (cond
-       ((and (atom ulf) 
-             (member (split-by-suffix ulf) *english-relativizers*)) 
+       ((and (atom ulf)
+             (member (split-by-suffix ulf) *english-relativizers*))
         (convert-expr-to-type ulf 'pro))
-       ((and (listp ulf) 
-             (member (split-by-suffix (car ulf)) *english-relativizers*)) 
+       ((and (listp ulf)
+             (member (split-by-suffix (car ulf)) *english-relativizers*))
         (cons (convert-expr-to-type (car ulf) 'pro)
               (cdr ulf)))
-       ((and (listp ulf) 
-             (member (split-by-suffix (second ulf)) *english-relativizers*) 
+       ((and (listp ulf)
+             (member (split-by-suffix (second ulf)) *english-relativizers*)
              (eql (car ulf) 'sub))
         (cons (first ulf)
               (cons (convert-expr-to-type (second ulf) 'pro)
@@ -344,12 +351,131 @@
 
 (defparameter *punct-list*
     '(\: \' \. \, \- \_ \{ \} \[ \] \~
-      \; ;; The semicolon was messing up the editor highlighting 
+      \; ;; The semicolon was messing up the editor highlighting
          ;; so it was put in this form
-     )) 
+     ))
 
 (defun punct? (x)
   (in-intern (x new-x :standardize-ulf) (if (member new-x *punct-list*) t nil)))
+
+(defun tree-contains? (tree pred)
+  (cond
+    ((funcall pred tree) t)
+    ((atom tree) nil)
+    (t (some #'(lambda (x) (eql x t))
+             (mapcar #'(lambda (sub) (tree-contains? sub pred)) tree)))))
+
+(defun cc-mismatched-types? (ulf)
+  "Identifies coordinated conjunctions of ULFs with mismatched types."
+  (and (listp ulf)
+       ;; contains a coordinator
+       (not (null (remove-if-not #'lex-coord? ulf)))
+       ;; ensure unknowns are already converted to names
+       (not (tree-contains? ulf #'lex-unknown?))
+       (let ((args (remove-if #'lex-coord? ulf)))
+         ;; at least 1 arg
+         (and (> (length args) 1)
+              ;; no agreed type
+              (null (reduce #'intersection
+                            (mapcar #'phrasal-ulf-type? args)))))))
+
+(defun cdr-max (cons1 cons2)
+  (if (> (cdr cons1) (cdr cons2))
+    cons1
+    cons2))
+
+(defun enforce-cc-types! (ulf)
+  "Enforce the majority type on coordinated conjunctions."
+  (let*
+    ((types (mapcar #'(lambda (expr)
+                        (phrasal-ulf-type? expr :callpkg :standardize-ulf))
+                    ulf))
+     (type-counts
+       (reduce
+         #'(lambda (count-alist newtypes)
+             (loop for ntype in newtypes do
+                   (if (assoc ntype count-alist)
+                     ;; increment
+                     (rplacd (assoc ntype count-alist)
+                             (1+ (cdr (assoc ntype count-alist))))
+                     ;; add new
+                     (setf count-alist (acons ntype 1 count-alist))))
+             count-alist)
+         types
+         :initial-value nil))
+     (majority-type-cons
+       (reduce #'cdr-max
+               (remove-if #'(lambda (pair) (eql 'coordinator (car pair)))
+                          type-counts)))
+     (majority-type (car majority-type-cons)))
+
+    ;; Enforce the majority type for non-coordinators.
+    (mapcar
+      #'(lambda (expr expr-types)
+          (cond
+            ((member 'coordinator expr-types)
+             expr)
+            ((member majority-type expr-types)
+             expr)
+            (t
+              (convert-to-type expr majority-type))))
+      ulf
+      types)))
+
+;; TODO: move to ulf-lib
+(defparameter *basic-types-to-suffix*
+  '((noun . n)
+    (adj . a)
+    (p-arg . p-arg)
+    (prep . p)
+    (verb . v)
+    (aux . aux-v)))
+
+(defun convert-to-type (ulf new-type)
+  "Convert ulf to have new-type."
+  (cond
+    ;; Atoms turn to names.
+    ((and (atom ulf) (equal 'term new-type))
+     (add-bars! (split-by-suffix ulf)))
+    ;; Adjectives.
+    ((and (atom ulf) (assoc new-type *basic-types-to-suffix*))
+     (replace-suffix! ulf (cdr (assoc new-type *basic-types-to-suffix*))))
+    ;; Unhandled cases, raise error.
+    (t (error
+         (format nil
+                 "Unknown type conversion.~%  ulf: ~s~%  new-type: ~s~%~%"
+                 ulf new-type)))))
+
+(defun det2adj! (det)
+  (if (atom det)
+    (replace-suffix! det 'a)
+    (second det)))
+
+(defun det2adv-s! (det)
+  (if (atom det)
+    (replace-suffix! det 'adv-s)
+    (list 'adv-s (second det))))
+
+(defun at-x? (ulf)
+  (and (atom ulf)
+       (eql 'at (split-by-suffix ulf))))
+(defun at-most/least? (ulf)
+  (and (atom ulf)
+       (member (split-by-suffix ulf) '(least most))))
+(defun a-x? (ulf)
+  (and (atom ulf)
+       (eql 'a (split-by-suffix ulf))))
+(defun few-x? (ulf)
+  (and (atom ulf)
+       (eql 'few (split-by-suffix ulf))))
+(defun merge-symbols! (x y suf)
+  (ulf:add-suffix
+    (fuse-into-atom (list (split-by-suffix x)
+                          '_
+                          (split-by-suffix y))
+                    :pkg :standardize-ulf)
+    suf
+    :pkg :standardize-ulf))
 
 ;; Fixing the possessives form
 
@@ -366,8 +492,12 @@
 ;; Rules used for performing domain-specific fixes.
 (defparameter *ttt-ulf-fixes*
   (list
-    ;'(/ ((lex-tense? have.v) _*1 ((perf lex-verb?) _*2)) ((lex-tense? perf) _*1 (lex-verb? _*2))) 
-    
+    ;'(/ ((lex-tense? have.v) _*1 ((perf lex-verb?) _*2)) ((lex-tense? perf) _*1 (lex-verb? _*2)))
+
+    ;; Weird possessives bug for words ending in "s".
+    '(/ |foot2|
+        (quote s))
+
     ;; Removing periods from ULFs.
     *ttt-remove-periods*
 
@@ -438,7 +568,32 @@
         ((replace-suffix! unknown-det? d)
          !))
     ;; (A.* (FEW.* ...)) -> (a_few.d ...)
-    *a-few-fix*
+    *a-few-joined-fix*
+    ;; (... A.* FEW.* ...)) -> (... a_few.d ...)
+    *a-few-flat-fix1*
+    *a-few-flat-fix2*
+    *a-few-flat-fix3*
+    ;; (at.x most.x/least.x quant.x)
+    ;; -> (nquan (at_most.mod-a quant.a))
+    '(/ (at-x? at-most/least? (! adj-det? pro-det? det? unknown-det?))
+        (nquan ((merge-symbols! at-x? at-most/least? mod-a)
+                (replace-suffix! ! a))))
+    '(/ ((at-x? at-most/least?) (! adj-det? pro-det? det? unknown-det?))
+        (nquan ((merge-symbols! at-x? at-most/least? mod-a)
+                (replace-suffix! ! a))))
+
+    ;; Double determiners
+    ;; all the men
+    ;; -> (all.d (the.d (plur man.n)))
+    ;; -> (all.d ({of}.p (the.d (plur man.n))))
+    '(/ ((!1 det?) ((!2 det?) (!3 noun? pp?)))
+        (!1 ({of}.p (!2 !3))))
+
+    ;; Modified quantifiers
+    '(/ (len-adv? det?)
+        ;; todo: infer whether it's nquan or fquan.
+        (nquan ((replace-suffix! len-adv? mod-a) ; todo: infer if mod-a or adv-s
+                (det2adj! det?))))
 
     ;; Introduce N+PREDS
     ;; ((k/Q X) PRED) -> (k/Q (N+PREDS X PRED))
@@ -519,6 +674,9 @@
         (_+ (replace-suffix! lex-prep? adv-a)))
 
     ;; DETERMINERS
+    ;; (<D> x <V>) -> (<D> x <V>)
+    '(/ (det? _! tensed-verb?)
+        ((det? _!) tensed-verb?))
     ;; (<D> x ...) -> (<D> (x ...))
     '(/ (det? _! _+) (det? (_! _+)))
 
@@ -554,6 +712,12 @@
     ;; (N SENT[with possible relativizer pronoun]) -> (N+PREDS N SENT[pro->rel])
     '(/ (noun? possible-relative-clause?)
         (n+preds noun? (relativize-sent! possible-relative-clause?)))
+    ;; (quantified-N SENT[with possible relativier pronoun])
+    ;; -> (det (n+preds n SENT[pro->rel]))
+    '(/ ((det? noun?) possible-relative-clause?)
+        (det? (n+preds noun? (relativize-sent! possible-relative-clause?))))
+    '(/ (((!1 det?) (lex-p? ((!2 det?) noun?))) possible-relative-clause?)
+        (!1 (lex-p? (!2 (n+preds noun? possible-relative-clause?)))))
 
     ;; Likely kinds
     ;; (NOUN TENSED-VERB) -> ((k NOUN) TENSED-VERB)
@@ -588,16 +752,66 @@
     ;;     ((lex-tense? (pasv lex-verb?)) _*))
     '(/ ((lex-tense? be.v) _*1 ((pasv lex-verb?) _*2))
         ((lex-tense? (pasv lex-verb?)) _*1 _*2))
+
+    ;; Reify sentence arguments to verbs.
+    ;; NB: sometimes this is actually two arguments with wrong bracketing, but
+    ;; we're gonna ignore that for now.
+    '(/ ((! verb? tensed-verb?) _*1 tensed-sent? _*2)
+        (! _*1 (tht tensed-sent?) _*2))
+    '(/ ((! verb? tensed-verb?) _*1 sent? _*2)
+        (! _*1 (ke sent?) _*2))
+
+    ;; either-or
+    ;; todo: just make the type system more robust to multiple CCs in multiple places.
+    '(/ ((! either either.cc either.adv) _*1 (!2 or or.cc) _*3)
+        (_*1 either_or.cc _*3))
+    '(/ (((! either either.cc either.adv) _!1) (!2 or or.cc) _*3)
+        (_!1 either_or.cc _*3))
+    '(/ (((! either either.cc either.adv) _+1) (!2 or or.cc) _*3)
+        ((_+1) either_or.cc _*3))
+
+    ;; Merge multi-argument copula
+    '(/ ((lex-tense? be.v) (det? noun?) pp?)
+        ((lex-tense? be.v) (= (det? (n+preds noun? pp?)))))
+
+    ;; Assume that there are no prepositional phrase complements.
+    ;; "that" with a sentence turns into a proposition.
+    '(/ ((!1 verb? tensed-verb?) _*2 (that.p _!3) _*4)
+        (!1 _*2 (that _!3) _*4))
+    
+    ;; Assume "by" prepositions to passivized verbs are argument markers.
+    '(/ ((lex-tense? (pasv verb?)) _*1 (by.p _!) _*2)
+        ((lex-tense? (pasv verb?)) _*1 (by.p-arg _!) _*2))
+
+    ;; Assume that there are no prepositional phrase complements.
+    ;; Turn them into modifiers.
+    '(/ ((! verb? tensed-verb?) _*1 pp? _*2)
+        (! _*1 (adv-a pp?) _*2))
+
+    ;; Convert floating determiners to adv-s.
+    '(/ (_+ det? _*)
+        (_+ (det2adv-s! det?) _*))
+
+    ;; Make types of coordinated conjunctions match.
+    '(/ cc-mismatched-types?
+        (enforce-cc-types! cc-mismatched-types?))
+
+    ;; Basic it-extraposition.
+    '(/ (it.pro ((lex-tense? be.v) adj? term?))
+        (it-extra.pro (((lex-tense? be.v) adj?) term?)))
     ))
 
 (defun standardize-ulf (inulf &key pkg)
   "Fixes the parsed ULF with domain-specific fixes which may not generalize
   outside of this package. Assumes the token-indexing has already been
   removed."
+  (when (not ulf2english::*setup-complete*)
+    (ulf2english::setup-pattern-en-env #'ulf2english::python-over-py4cl))
+
   (inout-intern (inulf ulf :standardize-ulf :callpkg pkg)
     ;; TODO: make max-n a multiplicative factor of the ulf size
     (ttt:apply-rules *ttt-ulf-fixes* ulf
                      :max-n 1000
                      :deepest t
-                   :rule-order :fast-forward)))
+                     :rule-order :fast-forward)))
 

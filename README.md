@@ -42,8 +42,7 @@ to `nil`.
 If you would rather stay in your current package, the following code results in
 the same input/output from your current package by using the global `*package*`
 variable. NB: `intern-symbols-recursive` is from a separate utility package
-[gute](https://github.com/genelkim/gute) (previously called
-[cl-util](https://github.com/genelkim/cl-util)).
+[gute](https://github.com/genelkim/gute).
 ```
 * (ql:quickload :gute)
 * (ql:quickload :lenulf)
@@ -166,7 +165,7 @@ The function `standardize-ulf` is placed in a separate package since it has addi
 dependencies that are not necessary for the parser alone. The following dependencies
 are not currently available automatically through quicklisp and must be installed in
 the local-projects directory.
-- [cl-util](https://github.com/genelkim/cl-util)
+- [gute](https://github.com/genelkim/gute)
 - [ttt](https://github.com/genelkim/ttt)
 - [ulf-lib](https://github.com/genelkim/ulf-lib)
 - [ulf2english](https://github.com/genelkim/ulf2english)
@@ -174,53 +173,8 @@ the local-projects directory.
 instructions. 
 
 ## Original README by Len
-```
-          PARSING ENGLISH INTO ULF -- PRELIMINARY VERSION
-          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Simplest usage: in allegro CL, do
-  (load "init.lisp")
-This will print out some guiding comments.
+The original README for Len's parser is available in `parser/README`. All of
+Len's original files are in the `parser/` directory with some minor edits to
+make it compatible with SBCL, Quicklisp packaging, and the extended parsers.
 
-This is based on the idea that Treebank parses give pretty good POS
-assignments. So along with parenteses (ignoring phrase labels), this
-comes pretty close to ULF (using POS's to determine ULF atom types).
-
-It does require quite a lot of parse-tree postprocessing (thus, tree
-PRE-processing rules, before extracting a ULF), but this can be done
-very modularly with rules written in TT -- a simplification of TTT,
-using position indices in output templates to refer to pieces of an
-input (generalizing the matching in Eta). See the rules in
-  "preprocessing-rules.lisp".
-
-After doing
-  (load "init.lisp"),
-the "english-to-ulf' function can be used (see "english-to-ulf.lisp" file)
-
-The 'english-to-parse-tree' and 'parse-tree-to-ulf' functions can also
-be used separately..
-
-Initially I used sample *.cmb files from the Brown corpus for development.
-
-I want to add quite a few more rules to "preprocessing-rules.lisp" (NB:
-these also need to be added to "preprocess-tree-for-ulf", with attention
-to ordering -- not all orderings work!)
-
-I've made some adaptations so that basic BLLIP (Charniak) parses work
-as well, but much checking remains to be done, ad in particular, TRACES
-(empty constituents corresponding to "moved" phrases) need to be added.)
-
-The lexical-level ULF derivation code is in
-   pos+word-to-ulf.lisp
-This also requires loading of "stem.lisp" (a variant of previous versions)
-
-The tree transduction code is in "tt.lisp". There's a documentation file
-for tt, viz., "tt-documantation". It's pretty simple!
-
-At the time of writing (Sep 20/20), ULF postprocessing remains to be done
-(based on looking at lots of examples of the "raw" ULF deriven from
-Brown trees). It's not always clear what should be done in proeprocessing
-parse trees or postprocessing ULFs.
-
-It may also be quite feasible to rewrite the ULF-to-ELF rules in TT.
-```
