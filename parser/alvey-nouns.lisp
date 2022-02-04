@@ -1,6 +1,8 @@
 
 (in-package :lenulf)
 
+(defparameter *n.le*
+
 ;;; ALVEY TOOLS - N.LE 
 ;;;
 ;;; Noun entries for morphology system
