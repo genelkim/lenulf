@@ -102,6 +102,10 @@
                          ; the pipes are missing, we add 'name
                (if (equal (string-upcase stem-str) stem-str) 'name nil))
              ((JJ JJR JJS) 'a)
+             (MOD-N 'mod-n); strictly attributive adjectives
+             (MOD-A 'mod-a); adverb premodifying an adjective
+             ((RB RBR RBS) 'adv); should become 'adv-a', 'adv-s', 'adv-e'
+                                ; (.RB is changed to 'mod-a' before adj)
              (IN 'p); may become 'p-arg' or 'ps'
              (P-ARG 'p-arg)
              (ADV-S 'adv-s)
@@ -116,8 +120,6 @@
              (POS nil); temporary -- possessive 's is left as such (later rephrased 
                       ; in terms of "the N poss-by ...")
              ((PRP PRP$) 'pro)
-             ((RB RBR RBS) 'adv); should become 'adv-a', 'adv-s', 'adv-e',
-                                ; 'mod-a', 'mod-n'
              ((PRT RP) 'prt); same, i.e., particle?? To be attached to verb
              (SYM 'c); to be modified to pipes, perhaps
              (UH 'x) ; However, filler sounds like "er" are deleted from ULF,

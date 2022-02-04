@@ -41,6 +41,7 @@
 ;   PDT  POS PRP PRP$ RB  RBR RBS RP SYM TO UH  VB  VBD VBG VBN VBEN 
 ;   VBP VBZ WDT WP WP$ WRB AUX AUXD AUXG AUXEN AUXP AUXZ  \. \: \, 
 ;   \" \` \' |``| |''| -LRB- -RRB- -LSB- -RSB- -LCB- -RCB-
+; Added Jan 2/22: MOD-N, for strictly attributive adjectives
 ;
  (prog ((tag (first pos-word)) (word (second pos-word)) backword result
         str upstr mixed-case)
@@ -144,7 +145,7 @@
                        (viruses 'VIRUS)
                        (bonuses 'BONUS)
                        (surplusses 'SURPLUS)
-                       (syllabuses 'SYLLABUS)
+                       ((syllabi syllabuses) 'SYLLABUS)
                        (censuses 'CENSUS)
                        (campuses 'CAMPUS)
                        (choruses 'CHORUS)
@@ -170,7 +171,7 @@
                        (pluses 'PLUS)
                        (crocuses 'CROCUS)
                        (sinuses 'SINUS)
-                       (geniuses 'GENIUS)
+                       ((geniuses genii) 'GENIUS)
                        (fetuses 'FETUS)
                        (trolleybuses 'TROLLEYBUS)
                        (statuses 'STATUS)
@@ -189,11 +190,11 @@
                        (corpuses 'CORPUS)
                        (hippopotamuses 'HIPPOPOTAMUS)
                        (mini-buses 'MINI-BUS)
-                       (cactuses 'CACTUS)
+                       ((cacti cactuses) 'CACTUS)
                        (poxviruses 'POXVIRUS)
                        (trolley-buses 'TROLLEY-BUS)
                        (ignoramuses 'IGNORAMUS)
-                       (funguses 'FUNGUS)
+                       ((funguses fungi) 'FUNGUS)
                        (conceptuses 'CONCEPTUS)
                        (boluses 'BOLUS)
                        (anuses 'ANUS)
@@ -212,6 +213,7 @@
                        (nexuses 'NEXUS)
                        (motor-buses 'MOTOR-BUS)
                        (incubuses 'INCUBUS)
+                       (millenia 'millenium)
                      )))
        (if result (return result))
                                     

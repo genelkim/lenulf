@@ -285,8 +285,9 @@
              (return tree0))
 
        ; Add occurrence indices to gap candidates; we use start values
-       ; -1, -1 for imax and lmax (highest index assigned), and we get back
-       ;  actual values along with the modified tree: (imax lmax tree1)
+       ; -1, -1 for imax and lmax (max strength, & max index assigned),
+       ; and we get back  actual values along with the modified tree:
+       ; (imax lmax tree1)
        (setq i+l+tree4 (assign-indices-to-gap-candidates (list -1 -1 tree4)))
        ; DEBUG:
     ;  (format t "~% Result of 'assign-indices-to-gap-candidates': ~%~s" i+l+tree4)
@@ -335,7 +336,9 @@
 ; We mark all possible gap positions of the appropriate type determined
 ; by expr1 (the expression "moved" out of the gap) using (:xp 1), (:xp 2),
 ; ... (:xp 4), where 1 - 4 represent "preference levels", intended to allow
-; making a choice of a maximally preferred gap position.
+; making a choice of a maximally preferred gap position. (Elsewhere, i in
+; (:xp i) is referred to as gap strength, and we'll choose the maximum gap
+; strength, imax.)
 ;
 ; Note: expr1 (i.e., (third tree) may itself contain 'sub' contexts, but
 ;       those are processed via 'globally-insert-gaps1'.
@@ -596,7 +599,10 @@
              (fill-template '(VP 2 3 (:xp (v_pp-pref! '2))) ma))
 
             ; (SQ ...) with subject/be inversion
-            ; e.g., "In what class is she _3?"
+            ; e.g., "In what class is she _3 (in this semester)?"
+            ; e.g., "In what class is she now _3?
+            ((ok (setq ma (match '(.SQ (.VB .be) ?[advp] ![np] ![adv]) tree)))
+             (fill-template '(1 2 3 4 5 (:xp 3.0)) ma))
             ((ok (setq ma (match '(.SQ (.VB .be) ?[advp] ![np] *[advp/pp]) tree)))
              (fill-template '(1 2 3 4 (:xp 3.0) 5) ma))
 
@@ -610,6 +616,8 @@
             ; Verb with complements/adjunct(s)?
             ; e.g., "With whom did you discuss it _ yesterday at the meeting?"
             ; e.g., "About which candidate are you claiming _2 that he lied _2?"
+            ((ok (setq ma (match '(VP (.VB !atom) ![adv] *[v-adjunct]) tree)))
+             (fill-template '(VP 2 3 (:xp 2.0) 4) ma)); NB: '2' would cause error
             ((ok (setq ma (match '(VP (.VB !atom) ?[np] +[v-adjunct]) tree)))
              (fill-template '(VP 2 3 (:xp 2.0) 4) ma)); NB: '2' would cause error
             
@@ -642,7 +650,7 @@
             ; "the foods to which he's been strongly allergic since childhood"
             ((ok (setq ma
                    (match '(VP (.VB !atom) (ADJP !expr (.JJ !atom)) +expr) tree)))
-             (fill-template '(VP 2 (ADJP (ADJP 3.2 (3.3.1 3.3 (:xp 2.0))))4) ma))
+             (fill-template '(VP 2 (ADJP (ADJP 3.2 (3.3.1 3.3 (:xp 2.0)))) 4) ma))
        
             ; Questions with copular "be" and a PP gap;
             ; e.g., "To what is he (not) allergic, besides penicillin?" 

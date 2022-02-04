@@ -9,7 +9,7 @@
 ;                          ; I note the following omissions:
 ;                          ; "amid(st)", "past (the house)", "except (for)",
 ;                          ; "underneath", "within". -LKS
-;                          ; I don't think "than" is a preposition
+;                          ; We might add "than" as a preposition
 ; Entries
 
 (defparameter *p.le*
@@ -32,6 +32,8 @@
 (against against ((V -) (N -) (PFORM WITH_AGAINST) (LOC -)) AGAINST NIL)
 (along along ((V -) (N -) (PFORM ALONG)) ALONG NIL)
 (along along ((V -) (N -) (PFORM NORM)) ALONG NIL)
+   (alongside alongside ((V -) (N -) (PFORM ALONGSIDE)) ALONGSIDE NIL); LKS
+   (amidst amidst ((V -) (N -) (PFORM AMIDST)) AMIDST NIL); added by LKS
 (among among ((V -) (N -) (PFORM AMONG)) AMONG NIL)
 (among among ((V -) (N -) (PFORM NORM)) AMONG NIL)
 (amongst amongst ((V -) (N -) (PFORM AMONGST)) AMONGST NIL)
@@ -59,14 +61,19 @@
 (beside beside ((V -) (N -) (PFORM NORM)) BESIDE NIL)
 (between between ((V -) (N -) (PFORM BETWEEN)) BETWEEN NIL)
 (between between ((V -) (N -) (PFORM NORM)) BETWEEN NIL)
+   (betwixt betwixt ((V -) (N -) (PFORM BETWIXT)) BETWIXT NIL); added by LKS
+   (beyond beyond ((V -) (N -) (PFORM BEYOND)) BEYOND NIL); added by LKS
 (by by ((V -) (N -) (PFORM BY)) BY NIL)
 (by by ((V -) (N -) (PFORM NORM)) BY NIL)
 (by by ((V -) (N -) (PFORM BY_FOR) (LOC -)) BY NIL)
+   (despite despite ((V -) (N -) (PFORM DESPITE) (LOC -)) DESPITE NIL); LKS
 (down down ((V -) (N -) (PFORM DOWN)) DOWN NIL)
 (down down ((V -) (N -) (PFORM NORM)) DOWN NIL)
 (down down ((V -) (N -) (PFORM DOWN_TO) (LOC -)) DOWN NIL)
 (during during ((V -) (N -) (PFORM DURING)) DURING NIL)
 (during during ((V -) (N -) (PFORM NORM)) DURING NIL)
+   (except except ((V -) (N -) (PFORM EXCEPT)) EXCEPT NIL); can be"prep-like" -LKS
+   (except_for except_for ((V -) (N -) (PFORM EXCEPT_FOR)) EXCEPT_FOR NIL); LKS
 (for for ((V -) (N -) (PFORM FOR) (LOC -)) FOR NIL)
 (for for ((V -) (N -) (PFORM NORM) (LOC -)) FOR NIL)
 (for for ((V -) (N -) (PFORM AT_FOR) (LOC -)) FOR NIL)
@@ -97,6 +104,9 @@
 (like like ((V -) (N -) (PFORM LIKE) (LOC -)) LIKE NIL)
 (like like ((V -) (N -) (PFORM NORM) (LOC -)) LIKE NIL)
 (near near ((V -) (N -) (PFORM NORM)) NEAR NIL)
+  (next_to ((V -) (N -) (PFORM NEXT_TO)) NEXT_TO NIL); added by LKS
+  (notwithstanding ((V -) (N -) (PFORM NOTWITHSTANDING) (LOC -)) 
+                                             NOTWITHSTANDING NIL); added by LKS
 (of of ((V -) (N -) (PFORM OF) (LOC -)) OF NIL)
 (of of ((V -) (N -) (PFORM OF_AS) (LOC -)) OF NIL)
 (of of ((V -) (N -) (PFORM OF_FOR) (LOC -)) OF NIL)
@@ -115,14 +125,16 @@
 (out out ((V -) (N -) (PFORM OUT)) OUT NIL)
 (out out ((V -) (N -) (PFORM NORM)) OUT NIL)
 (outside outside ((V -) (N -) (PFORM NORM)) OUTSIDE NIL)
+   (outside_of outside_of ((V -) (N -) (PFORM OUTSIDE_OF)) OUTSIDE_OF NIL); LKS
 (out_of out_of ((V -) (N -) (PFORM OUT_OF) (LOC -)) OUT_OF NIL)
 (over over ((V -) (N -) (PFORM OVER) (LOC -)) OVER NIL)
 (over over ((V -) (N -) (PFORM NORM) (LOC -)) OVER NIL)
 (over over ((V -) (N -) (PFORM OVER_WITH) (LOC -)) OVER NIL)
 (over over ((V -) (N -) (PFORM WITH_OVER) (LOC -)) OVER NIL)
+  (past past ((V -) (N -) (PFORM PAST) (LOC -)) PAST NIL); added by LKS
 (round round ((V -) (N -) (PFORM ROUND)) ROUND NIL)
 (round round ((V -) (N -) (PFORM NORM)) ROUND NIL)
-(than than ((V -) (N -) (PFORM THAN) (LOC -)) THAN NIL)
+(than than ((V -) (N -) (PFORM THAN) (LOC -)) THAN NIL); questionable - LKS
 (through through ((V -) (N -) (PFORM THROUGH)) THROUGH NIL)
 (through through ((V -) (N -) (PFORM NORM)) THROUGH NIL)
 (throughout throughout ((V -) (N -) (PFORM THROUGHOUT)) THROUGHOUT NIL)
@@ -143,12 +155,17 @@
 (to to ((V -) (N -) (PFORM UP_TO) (LOC -)) TO NIL)
 (together together ((V -) (N -) (PFORM TOGETHER)) TOGETHER NIL)
 (together together ((V -) (N -) (PFORM NORM)) TOGETHER NIL)
+   (to_the_left_of to_the_left_of ((V -) (N -) (PFORM TO_THE_LEFT_OF)) 
+                                                      TO_THE_LEFT_OF NIL); LKS
+   (to_the_right_of to_the_right_of ((V -) (N -) (PFORM TO_THE_RIGHT_OF)) 
+                                                      TO_THE_RIGHT_OF NIL); LKS
 (toward toward ((V -) (N -) (PFORM TOWARD)) TOWARD NIL)
 (toward toward ((V -) (N -) (PFORM NORM)) TOWARD NIL)
 (towards towards ((V -) (N -) (PFORM TOWARDS)) TOWARDS NIL)
 (towards towards ((V -) (N -) (PFORM NORM)) TOWARDS NIL)
 (under under ((V -) (N -) (PFORM UNDER)) UNDER NIL)
 (under under ((V -) (N -) (PFORM NORM)) UNDER NIL)
+   (underneath underneath ((V -) (N -) (PFORM UNDERNEATH)) UNDERNEATH NIL); LKS
 (until until ((V -) (N -) (PFORM UNTIL)) UNTIL NIL)
 (until until ((V -) (N -) (PFORM NORM)) UNTIL NIL)
 (up up ((V -) (N -) (PFORM UP)) UP NIL)
@@ -170,6 +187,7 @@
 (with with ((V -) (N -) (PFORM WITH_FOR) (LOC -)) WITH NIL)
 (with with ((V -) (N -) (PFORM WITH_ON) (LOC -)) WITH NIL)
 (with with ((V -) (N -) (PFORM WITH_OVER) (LOC -)) WITH NIL)
+   (within within ((V -) (N -) (PFORM WITHIN) (LOC +)) WITHIN NIL); LKS
 (without without ((V -) (N -) (PFORM WITHOUT)) WITHOUT NIL)
 (without without ((V -) (N -) (PFORM NORM)) WITHOUT NIL)
 ))

@@ -42,14 +42,17 @@
 ; Note that particles make a difference to transitivity. E.g., "back"
 ; can be transitive, while "back_away" is not; by contrast, "bargain"
 ; is intransitive, whereas "bargain_away" is transitive.
-'(
-abound accede accrue acquiesce act_up adhere agonize allude amble amount anticorrelate antipathize apologize appear arse_around ask_around autodestruct back_away backpedal band_together bang_away bargain base_jump battle_it_out bawl bed-wet behave blast_off blaze_away bleed_to_death blossom bode boil_over bone_up boogie bottom_out bow_down brachiate branch branch_off breeze bring_it bubble_up buckle bugger_off bulge bungee_jump burgeon burst_out busk butt_out cackle caddy calve camp_out campaign care carom carouse catch_on caterwaul cavort cha-cha charleston chat chatter chillax chip_away chirp chortle clam_up clash clomp cloud_over co-occur coconspire coexist cohabit collide collude come come_along come_apart come_away come_back come_correct come_forward come_on_over come_through come_to_grips come_to_life come_to_order come_together come_up come_with commune complain condescend conflict conk_out consist consort converge converse cooperate correspond counterstrike crackle creep creep_up crop_up crouch crump cuddle_up daddle dawn decamp default degenerate deliquesce desist deviate diddle-daddle digress dine_out disagree disco dispose dissent diverge do_battle do_business dote dream_on drift_apart drift_off drone_on drop_away drop_dead drop_round duckwalk duet dwell dwindle eddy edge_up effervesce effloresce egress elapse elope emerge emigrate emote empathize equivocate err evanesce exclaim face_off faint fall_apart fall_away fall_behind fall_in fall_in_love fall_on_deaf_ears fall_out fall_over fall_through fall_together fare fast fawn feel_down fend fess_up feud fib fiddle_about fiddle_around file_in fire_away fishtail fission fizz flail_about flake_out flare_up flatline flicker flounder fluoresce fly_off foam fool_about fool_around fornicate fraternize freestyle freeze_over freeze_up fuck_about function gad gallivant galumph gambol gander gang gape garden genuflect get_along get_by get_carried_away get_cold_feet get_hitched get_in_the_way get_into_trouble get_laid get_lost get_lucky get_together give_birth give_chase glance glimmer glisten glower go_all_the_way go_apeshit go_awry go_back go_bankrupt go_mad go_overboard go_places go_platinum go_public go_steady go_to_war go_wrong grandstand gravitate grind_to_a_halt grouch grow_cold grunt guffaw gyre hang_a_left hang_a_right hang_in hang_out hang_tough hang-glide happen happen_along have_a_go heal_up hearken_back hee-haw hibernate hide_out hit_the_ceiling hit_the_fan hit_the_roof hold_fire hold_hands hold_true hole_out hotdog hotfoot_it hunker ice_over immigrate impend inch intercede interfere introspect iridesce jaw_away jet jet_off jitter jut keel keel_over keep_on_trucking keep_one\'s_eyes_peeled keep_watch kill_time kneel knuckle_down kowtow lactate lapse lay_over lay_rubber leaf level_off lie lie_back lie_down lie_low linger live_in_sin loaf lol look_alike look_round lose_count lose_weight lust luxuriate make_merry make_off make_sense make_time make_way malinger mambo masturbate meddle meditate menstruate meow merengue mingle misspeak misstep moo moonwalk mouth_off move_in move_on muck_about mushroom mutiny nosedive oink opt oscillate ovulate pamphleteer pander partake party pay_attention pay_one\'s_last_respects peak pee peep_out peer pelt_down perspire pertain phone_home pick_holes pick_up_the_pieces pick_up_the_tab pig_out pinch-hit pipe_down pirouette plateau play_hookey play_second_fiddle play_to_the_crowd plummet polka pontificate pour_down powwow preside press_ahead prevail pull_ahead pull_strings pull_the_plug pull_the_trigger punch_in push_the_envelope pussyfoot putter quibble quiver rage ramp reach_out read_lips rebel recidivate recoil recriminate recur reek reign relapse remain reminisce result retrogress reverberate reverse_the_charge revolt ribbit ripen_up rise rock_on rock_out rocket_up roister roll_around roll_in roll_on rush_off salivate salsa sashay scamper scheme scrape_by scuffle seem shape_up shimmer shimmy shop_around shrimp shudder sidle silt_up simmer_down simper sin sit_on_the_fence skateboard skitter skydive slalom slave_away sleep_in sleepwalk slither slouch slug_away smolder snicker sniffle snigger snore snowshoe snuggle_up sojourn spaz_out spazz_out spill_over spill_the_beans spin_out spiral splish spring_up sproing stand_back stand_by stand_out stand_pat stare steal_away steal_the_show steer_clear step_aside step_forward step_in stick_together stomp_off stop_dead stop_off stop_on_a_dime stop_over stride strike_back strut_one\'s_stuff succumb sunbathe sweat_bullets swelter take_a_look take_advantage take_aim take_care take_heed take_ill take_inventory take_notice take_one\'s_time take_part take_place take_pride take_refuge take_root take_shape take_sick take_the_floor take_turns talk_dirty talk_shop tamper tattle teethe telemarket tense_up tent thieve throb thumb_a_ride tie_the_knot tip_the_scale top_out totter transit transmigrate trek tremble trot_off troupe trundle_along tsk tsktsk tsk-tsk tumble_down turn_on_a_dime turn_one\'s_back turn_to_dust vacation vacillate vape verge video_conference waddle waft walk_out wallow want_in want_out water_ski watusi waver wayfare wee-wee weight-train welter whack_off wither window-shop wise_up wither_away wuther yackety-yak yak yap yarr yaw yo-yo zone_out zoom_in zoom_out))
+'( ; TO BE FILTERED
+
+abound accede accrue acquiesce act_up adhere agonize allude amble amount anticorrelate antipathize apologize appear arse_around ask_around autodestruct back_away backpedal band_together bang_away bargain base_jump battle_it_out bawl bed-wet behave blast_off blaze_away bleed_to_death blossom bode boil_over bone_up boogie bottom_out bow_down brachiate branch branch_off breeze bring_it bubble_up buckle bugger_off bulge bungee_jump burgeon burst_out busk butt_out cackle caddy calve camp_out campaign care carom carouse catch_on caterwaul cavort cha-cha charleston chat chatter chillax chip_away chirp chortle clam_up clash clomp cloud_over co-occur coconspire coexist cohabit collide collude come come_along come_apart come_away come_back come_correct come_forward come_on_over come_through come_to_grips come_to_life come_to_order come_together come_up come_with commune complain condescend conflict conk_out consist consort converge converse cooperate correspond counterstrike crackle creep creep_up crop_up crouch crump cuddle_up daddle dawn decamp default degenerate deliquesce desist deviate diddle-daddle digress dine_out disagree disco dispose dissent diverge do_battle do_business dote dream_on drift_apart drift_off drone_on drop_away drop_dead drop_round duckwalk duet dwell dwindle eddy edge_up effervesce effloresce egress elapse elope emerge emigrate emote empathize equivocate err evanesce exclaim face_off faint fall_apart fall_away fall_behind fall_in fall_in_love fall_on_deaf_ears fall_out fall_over fall_through fall_together fare fast fawn feel_down fend fess_up feud fib fiddle_about fiddle_around file_in fire_away fishtail fission fizz flail_about flake_out flare_up flatline flicker flounder fluoresce fly_off foam fool_about fool_around fornicate fraternize freestyle freeze_over freeze_up fuck_about function gad gallivant galumph gambol gander gang gape garden genuflect get_along get_by get_carried_away get_cold_feet get_hitched get_in_the_way get_into_trouble get_laid get_lost get_lucky get_together give_birth give_chase glance glimmer glisten glower go_all_the_way go_apeshit go_awry go_back go_bankrupt go_mad go_overboard go_places go_platinum go_public go_steady go_to_war go_wrong grandstand gravitate grind_to_a_halt grouch grow_cold grunt guffaw gyre hang_a_left hang_a_right hang_in hang_out hang_tough hang-glide happen happen_along have_a_go heal_up hearken_back hee-haw hibernate hide_out hit_the_ceiling hit_the_fan hit_the_roof hold_fire hold_hands hold_true hole_out hotdog hotfoot_it hunker ice_over immigrate impend inch intercede interfere introspect iridesce jaw_away jet jet_off jitter jut keel keel_over keep_on_trucking keep_one\'s_eyes_peeled keep_watch kill_time kneel knuckle_down kowtow lactate lapse lay_over lay_rubber leaf level_off lie lie_back lie_down lie_low linger live_in_sin loaf lol look_alike look_round lose_count lose_weight lust luxuriate make_merry make_off make_sense make_time make_way malinger mambo masturbate meddle meditate menstruate meow merengue mingle misspeak misstep moo moonwalk mouth_off move_in move_on muck_about mushroom mutiny nosedive oink opt oscillate ovulate pamphleteer pander partake party pay_attention pay_one\'s_last_respects peak pee peep_out peer pelt_down perspire pertain phone_home pick_holes pick_up_the_pieces pick_up_the_tab pig_out pinch-hit pipe_down pirouette plateau play_hookey play_second_fiddle play_to_the_crowd plummet polka pontificate pour_down powwow preside press_ahead prevail pull_ahead pull_strings pull_the_plug pull_the_trigger punch_in push_the_envelope pussyfoot putter quibble quiver rage ramp reach_out read_lips rebel recidivate recoil recriminate recur reek reign relapse remain reminisce result retrogress reverberate reverse_the_charge revolt ribbit ripen_up rise rock_on rock_out rocket_up roister roll_around roll_in roll_on rush_off salivate salsa sashay scamper scheme scrape_by scuffle seem shape_up shimmer shimmy shop_around shrimp shudder sidle silt_up simmer_down simper sin sit_on_the_fence skateboard skitter skydive slalom slave_away sleep_in sleepwalk slither slouch slug_away smolder snicker sniffle snigger snore snowshoe snuggle_up sojourn spaz_out spazz_out spill_over spill_the_beans spin_out spiral splish spring_up sproing stand_back stand_by stand_out stand_pat stare steal_away steal_the_show steer_clear step_aside step_forward step_in stick_together stomp_off stop_dead stop_off stop_on_a_dime stop_over stride strike_back strut_one\'s_stuff succumb sunbathe sweat_bullets swelter take_a_look take_advantage take_aim take_care take_heed take_ill take_inventory take_notice take_one\'s_time take_part take_place take_pride take_refuge take_root take_shape take_sick take_the_floor take_turns talk_dirty talk_shop tamper tattle teethe telemarket tense_up tent thieve throb thumb_a_ride tie_the_knot tip_the_scale top_out totter transit transmigrate trek tremble trot_off troupe trundle_along tsk tsktsk tsk-tsk tumble_down turn_on_a_dime turn_one\'s_back turn_to_dust vacation vacillate vape verge video_conference waddle waft walk_out wallow want_in want_out water_ski watusi waver wayfare wee-wee weight-train welter whack_off wither window-shop wise_up wither_away wuther yackety-yak yak yap yarr yaw yo-yo zone_out zoom_in zoom_out)
+); end of *purely-intransitive-verbs*
+
 
 (defparameter *complement-free-verbs* (make-hash-table))
 
 (mapcar #'(lambda (x) (setf (gethash x *complement-free-verbs*) t))
 ;``````````````````````````````````````````````````````````````````````
-; NB: Many of these verbs take non-NP complements.
+; NB: Many of these verbs take non-NP complements. *** faulty nomenclature!!
 ;
 ; Verbs never followed by an NP gap. Note: "behave" is included, even
 ; though it can be followed by an NP like "himself", because this can't
@@ -93,7 +96,8 @@ take_shape take_sick take_the_floor teethe tense_up tent thieve throb
 thumb_a_ride tie_the_knot tremble trundle_along tsk tsktsk tsk-tsk 
 turn_on_a_dime turn_to_dust vacation vape waddle waft water_ski watusi 
 waver wear_off wee-wee weight-train whack_off wither window-shop wither_away 
-wuther yackety-yak yo-yo zone_out))
+wuther yackety-yak yo-yo zone_out)
+ ); end of *complement-free-verbs*
 
 
 (defparameter *ditransitive-verbs* (make-hash-table))
@@ -133,7 +137,7 @@ wuther yackety-yak yo-yo zone_out))
    owe pawn pay peddle permit; "permitted him one cigarette"
    pitch pledge pour prepare prescribe proffer promise remit rename sell send
    serve show slip supply teach tell throw tip wager wire wish
- ))
+ )); end of *ditransitive-verbs*
 
 
 (defparameter *weakly-ditransitive-verbs* (make-hash-table))
@@ -155,9 +159,9 @@ wuther yackety-yak yo-yo zone_out))
    leave microwave mix net order; left her the estate; mixed himself a drink
    pass play pose post punt quote read refund rent repay save secure sew 
    ship sing sneak spare telex toss transmit type write yield)
- )
+ ); end of *weakly-ditransitive-verbs*
 
-(defparameter *pp-arg-taking-verbs* (make-hash-table))
+(defparameter *pp[arg]-taking-verbs* (make-hash-table))
 ; Originally this was to contain all verbs that subcategorize for a PP.
 ; But parses don't distinguish between complements and adjuncts, and
 ; PP-adjuncts can always be gapped, there's really no benefit here for
@@ -175,7 +179,7 @@ wuther yackety-yak yo-yo zone_out))
 ; generally don't take NP objects. E.g., "He agreed {what Alice said /
 ; where Alice stood on the matter} was unclear"; "He cares what others
 ; think of him". (So these are "silent preposition" examples.)
-(mapcar #'(lambda (x) (setf (gethash x *pp-arg-taking-verbs*) t))
+(mapcar #'(lambda (x) (setf (gethash x *pp[arg]-taking-verbs*) t))
 ;```````````````````````````````````````````````````````````
 ; The initial focus was on verbs that readily allow a PP complement gap 
 ; (in addition ; to allowing a gap of type PP/NP, as all PP-complement-
@@ -259,11 +263,11 @@ wuther yackety-yak yo-yo zone_out))
   wait walk wallow wander war waver weary weasel weep welch well_out
   welsh welter wince wink winter withdraw wonder wrangle wriggle yearn
   yield zero_in zoom zoom_in
- ))
+ )); end of *pp[arg]-taking-verbs*
 
-(defparameter *strong-np-pp-taking-verbs* (make-hash-table))
+(defparameter *strong-np+pp-taking-verbs* (make-hash-table))
 
-(mapcar #'(lambda (x) (setf (gethash x *strong-np-pp-taking-verbs*) t))
+(mapcar #'(lambda (x) (setf (gethash x *strong-np+pp-taking-verbs*) t))
 ;````````````````````````````````````````````````````````````````````
 ; The goal here is to enable guessing whether a PP following an NP object
 ; of a verb is likely to be an argument supplier, rather than an adverbial.
@@ -276,8 +280,11 @@ wuther yackety-yak yo-yo zone_out))
 ; assume the PP in these cases is always an argument-supplier.
 ; Also v_np_pp[as] are omitted here -- they are considered separately
 '(absent abstract acquaint adorn adulterate affiliate afflict aim alienate 
+;                          ``````````````` unsure: .p-arg or .p [=> adv-a]?
 align alloy ally alternate amalgamate analogize anoint answer apparel arm 
+;                                               `````` ditto
 arraign assimilate assist associate attire augment avert balance ballast 
+;                                   `````` ditto  etc. [leave as .p-arg for now]
 bamboozle ban banish barrage barricade barter base bedaub bedeck beg beguile 
 berate beseech beset bestow bet betroth bid bilk bill blackmail
 blame blanket blend blow bludgeon bombard book borrow bribe browbeat 
@@ -302,9 +309,9 @@ expand expel expend expunge extort extract extrapolate extricate extrude exude
 face familiarise familiarize fashion fault favor favour feather feed festoon 
 fetter file fill fit fix flank flavor flavour flick fling flood flush focus 
 foist fold forewarn forgive form free freight fringe furnish galvanise galvanize 
-garnish gird goad gorge grace graft grind groom guard gull hammer hang harden 
-harness heap hustle illuminate imbed imbue immerse immunise immunize impale 
-impanel implant implicate import impose impregnate impress imprint 
+garnish gird give goad gorge grace graft grind groom guard gull hammer hang 
+harden harness heap hustle illuminate imbed imbue immerse immunise immunize 
+impale impanel implant implicate import impose impregnate impress imprint 
 incarnate incite inclose incorporate inculcate indoctrinate indulge infect 
 infer infest infiltrate inform infuse inherit inhibit initiate inject inoculate
 inscribe insert inset insinuate install instil instill instruct insulate 
@@ -339,7 +346,7 @@ transform translate transmit transplant transport trawl treat trick trim
 trouble trust tuck tune turn tutor twist unify unleash unload upbraid 
 use usher vaccinate value wad wager walk wangle warn waste wean weave wedge
 weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
-)
+); end of *strong-np+pp-taking-verbs*
 
 
 (defparameter *rarely-transitive-verbs* (make-hash-table))
@@ -358,7 +365,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
       ;??````  ```` ; "What case did he plead _?" "I can't stand it";
             ;         "Whose execution did he stay _?"
  ; that's all, based on Alvey
- )
+ ); end of *rarely-transitive-verbs*
 
 (defparameter *pseudo-transitive-verbs* (make-hash-table))
 
@@ -385,7 +392,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ;
 '(be become blush); "What color did he blush _?"
  ; that's all, based on Alvey
- )
+ ); end of *pseudo-transitive-verbs*
 
 (defparameter *pred-taking-verbs* (make-hash-table))
 
@@ -417,7 +424,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
   taste turn wipe); "seal" is doubtful - can't gap "shut" in "seal shut";
   ; "How spicy do you like/want it _?", "How cold did it turn _?";
   ; "How clean was the crime scene wiped _?"
- )
+ ); end of *pred-taking-verbs*
 
 (defparameter *np+pred-taking-verbs* (make-hash-table))
 
@@ -431,7 +438,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
    ; gapped: ?"What did you appoint him?"; though "call", "christen"
    ; and "name" do allow this ...; however, we have "How smart do you
    ; reckon him _?", "How sick did the poison render him _?", etc.
- ))
+ )); end of *np+pred-taking-verbs*
 
 (defparameter *np+pp[pred]-taking-verbs* (make-hash-table))
 
@@ -442,7 +449,8 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ;       a tricycle in the driveway", "saw her at the mall", ...
 ;       (judge, observe, term, think, watch, etc.? hard to disambiguate:
 ;       "observed it on {the hike, the trunk of the elm tree}")
-'(consider deem keep like imagine notice picture see spot term))
+'(consider deem keep like imagine notice picture see spot term)
+ ); end of *np+pp[pred]-taking-verbs*
 
 
 ; For the time being, the following is not needed for gap insertion.
@@ -461,7 +469,8 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ; e.g., "posed as a salesman", "acted as an intermediary"; Alvey: (PFORM AS)
 '(act come_across debut double dress emerge enrol excel figure function 
   masquerade parade part pass pose practice practise precipitate
-  qualify rank sit_in serve turn_out ))
+  qualify rank sit_in serve turn_out )
+ ); end of *pred[as]-taking-verbs*
 
 ; ** outlier: "differ as to their diet"
 
@@ -481,7 +490,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
   ; transitive verbs (the assumed default category. But this is useful
   ; for the pred/advp distinction. Ambiguous: "made it as {an actor, a gift
   ; for his mother}"; "posted it as {a precaution, first-class mail}".
- )
+ ); end of *np+pred[as]-taking-verbs*
 
 (defparameter *pp+pred[as]-taking-verbs* (make-hash-table))
 
@@ -490,7 +499,8 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ; e.g., "thought of her as a guardian angel"; feature OF_AS in Alvey
 ; e.g., "looked on her as a friend"; feature ON_AS in Alvey;
 ; e.g., "referred to her as his assistant"; feature TO_AS in Alvey
-'(conceive denounce think look refer))
+'(conceive denounce think look refer)
+ ); end of *pp+pred[as]-taking-verbs*
 
 
 (defparameter *whs-taking-verbs* (make-hash-table))
@@ -518,21 +528,21 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
   recall recollect reflect remember say see sense settle show smell 
   sort_out specify state suggest take tell think understand verify 
   watch wonder)
- )
+ ); end of *whs-taking-verbs*
 
-(defparameter *np-whs-taking-verbs* (make-hash-table))
+(defparameter *np+whs-taking-verbs* (make-hash-table))
 
-(mapcar #'(lambda (x) (setf (gethash x *np-whs-taking-verbs*) t))
+(mapcar #'(lambda (x) (setf (gethash x *np+whs-taking-verbs*) t))
 ;``````````````````````````````````````````````````````````````
 ; This is largely a subset of the above, but typically interprets
 ; a whs complement as a nominal even after another np verb argument,
 ; e.g., "He told Alice when he was leaving". Similarly for "where"
 '(ask guarantee pledge promise remind show teach tell)
- )
+ ); ed of *np+whs-taking-verbs*
 
-(defparameter *pp-whs-taking-verbs* (make-hash-table))
+(defparameter *pp+whs-taking-verbs* (make-hash-table))
 
-(mapcar #'(lambda (x) (setf (gethash x *pp-whs-taking-verbs*) t))
+(mapcar #'(lambda (x) (setf (gethash x *pp+whs-taking-verbs*) t))
 ;``````````````````````````````````````````````````````````````
 ; This is largely a subset of *whs-taking-verbs*, but typically interprets
 ; a whs complement as a nominal even after a pp verb argument, e.g.,
@@ -544,12 +554,14 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
   disclose divulge enquire establish forecast foresee foretell forget
   guess indicate infer inquire know learn ponder predict prophesy recall
   reveal specify state verify wonder)
- )
+ ); end of *pp+whs-taking-verbs*
 
 (defparameter *inf-taking-verbs* (make-hash-table))
 
 (mapcar #'(lambda (x) (setf (gethash x *inf-taking-verbs*) t))
 ;`````````````````````````````````````````````````````````````
+; This includes verbs that take a VP[inf] as first or second complement.
+;
 ; The purpose of this list is to enable likely distinctions between
 ; infinitives that are stand-alone object complements of the verb, as in
 ;   "Bob decided to catch a bus"
@@ -571,25 +583,31 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
   compete condescend connive consent conspire continue contract contrive 
   cooperate covenant crave decide decline deign delight demand deserve desire
   die disdain dread elect endeavor expect fail fear fix forbear forget get 
-  grow happen hasten hate hesitate hope incline intend itch learn like long 
+  grow happen hasten hate have hesitate hope incline intend itch learn like long 
   love manage mean need neglect offer omit pant petition pine plan pledge 
   plot pray prefer prepare presume pretend proceed profess promise propose 
   purport qualify race refuse rejoice remember resolve scheme scorn scramble 
   seek seem set_out stand start strain strive struggle swear tend threaten 
   trouble try undertake venture vote vouchsafe vow wait want wish yearn)
- )
+ ); end of *inf-taking-verbs*
 
 (defparameter *inf-tolerating-verbs* (make-hash-table))
 
 (mapcar #'(lambda (x) (setf (gethash x *inf-tolerating-verbs*) t))
 ;`````````````````````````````````````````````````````````````
 ; This is an odd little group where the infinitive denotes some sort of 
-; emotion-evoking perception or thought.
+; emotion-evoking perception or thought. The infinitive seems part of a
+; tacit ADVP (but not a purpose-ADVP).
 ;  "He awoke to see a stranger stand by the tent"
+;    (This seems to mean something like, "He awoke and thereupon saw ...")
 ;  "He blanched to see her so emaciated"
+;    (This seems to mean something like "He blanched at seeing her ...",
+;    and that also applies to the remaining verbs)
 '(awake blanch blush exult shudder tremble )
- );                  
+ ); end of *inf-tolerating-verbs*
 
+; There are also odd uses of ADVP[inf], as in "He retook the exam, only
+; to fail again".
 
 (defparameter *np+inf-taking-verbs* (make-hash-table))
 
@@ -609,34 +627,35 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ; But intervening "not/never" may still favor the OC reading: "aided him not 
 ; to get caught". Also, the combination of object type and infinitive type
 ; matters: "asserted it to be moot", vs. "asserted it {just} to be flippant"
-'(acknowledge adjudge adjure admit advise aid allow allure appoint
-  argue ask assert assign assist assume authorize avow badger beckon
-  beg believe beseech bribe bully cable cause caution challenge choose
-  claim command commission compel condition confess consider constrain
-  convince counsel decide declare deduce deem defy delegate depress
-  deputize deputise designate desire determine direct discover doom
-  draw drive egg_on embolden employ empower enable encourage engage
-  enjoin entitle entreat equip estimate exert exhort expect fancy 
-  fear feel find forbid force foreordain get groom guess hate help 
-  imagine impel implore incline induce influence inspire instigate ;
-  instruct intend invite judge know lead leave licence license 
-  like love maintain mean motion motivate move nag name need 
-  nominate notify obligate oblige observe order organise organize pay 
-  perceive permit persuade pester petition pick pledge predestinate 
+'(acknowledge adjudge adjure advise aid allow appoint
+  argue ask assume authorize badger beckon
+  beg believe beseech bribe cable cause caution challenge choose
+  claim command commission compel condition consider constrain
+  convince counsel declare deduce deem defy delegate depress ; "It depressed ..."
+  deputize deputise designate desire determine direct discover
+  egg_on embolden employ empower enable encourage engage
+  enjoin entitle entreat equip estimate exhort expect fancy 
+  fear feel find forbid force foreordain get guess hate help 
+  imagine impel implore incline induce inspire 
+  instruct intend invite judge know lead licence license 
+  like love mean motion motivate nag name need 
+  nominate notify obligate oblige order pay 
+  perceive permit persuade pester petition pick predestinate 
   predestine predetermine predicate predict predispose prefer preordain 
-  prepare press pressure pressurise pressurize presume proclaim profess 
-  program programme prompt pronounce prove provoke push qualify reckon 
-  recognise recognize recommend reeducate remind report represent request 
-  require reveal schedule school seduce select send set shape show sign 
-  signal slate spur steel suffer summon summons supplicate suppose surmise 
-  suspect take teach telegraph telephone telex tell tempt thank time 
-  timetable tip train trouble trust understand urge use want warn warrant 
-  will wish
-))
+  press pressure presume proclaim profess 
+  prompt pronounce prove push qualify reckon 
+  recognise recognize remind report request 
+  require reveal schedule school select set shape 
+  slate spur steel suffer summon summons supplicate suppose surmise 
+  suspect teach telegraph telex tell tempt 
+  train trouble trust understand urge want warn 
+  will wish; I've deleted a lot retroactively; doing statistical
+           ; spot checks "suffered it/them TO SO-AND-SO": term or ADVP?
+)); end of *np+inf-taking-verbs*
 
-(defparameter *strong-np-inf-taking-verbs* (make-hash-table))
+(defparameter *strong-np+inf-taking-verbs* (make-hash-table))
 
-(mapcar #'(lambda (x) (setf (gethash x *strong-np-inf-taking-verbs*) t))
+(mapcar #'(lambda (x) (setf (gethash x *strong-np+inf-taking-verbs*) t))
 ;`````````````````````````````````````````````````````````````````````
 ; These are a subset of the above np-inf-taking verbs verbs where even 
 ; material between the NP and the infinitive leaves us with a preference
@@ -660,7 +679,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
   steel suffer supplicate suppose surmise suspect teach telegraph telex 
   tell tempt thank timetable train trouble trust understand urge want 
   warn warrant will wish
- ))
+ )); end of *strong-np+inf-taking-verbs*
 
 (defparameter *inf-taking-extraposition-verbs* (make-hash-table))
 
@@ -675,7 +694,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
   nauseate pain peeve perplex perturb petrify pique please rankle relieve 
   rile sadden satisfy shock sicken suit surprise terrify thrill unnerve 
   unsettle upset vex worry wound
-))
+)); end of *inf-taking-extraposition-verbs*
 
 ; ** We'll also need *pp-inf-taking-verbs*, e.g., "appealed to him to ..."
 ;    But we really need to particularize the prepositions
@@ -693,7 +712,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ; So this may be very incomplete. 
 '(
  anxiety association attempt call calling carte_blanche challenge chance claim commission commitment compulsion concession contract craving cry curiosity demand desire determination disposition effort effrontery endeavor endeavour entreaty fitness freedom grace guarantee hope impatience impulse impulsion inability incapacity incentive inclination indisposition inducement injunction instinct intent intention invitation leave means message mission moment monopoly mood motion motivation necessity need notion offer opportunity option order permission power proclivity promise propensity proposal qualifications readiness reason refusal requirement resolution resolve room rush scurry sign signal suggestion temptation tendency threat turn undertaking urge warning way wherewithal will wish yearning yen zeal)
-)
+); end of *inf-taking-nouns*
 
 (defparameter *inf-eager-adjectives* (make-hash-table))
 
@@ -711,7 +730,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
  raring ready relieved reluctant reputed rumored rumoured scared set
  sorry sure swift thankful unable unlikely unqualified welcome willing 
  wont worthy)
-)
+); end of *inf-eager-adjectives*
 
 (defparameter *inf-easy-adjectives* (make-hash-table))
 
@@ -723,7 +742,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
  incompetent inessential insensitive interesting normal permissible 
  practicable proper right safe set slow sufficient suitable terrible
  thoughtful thoughtless worthy)
-)
+ ); end of *inf-easy-adjectives*
 
 
 (defparameter *prepositions* (make-hash-table))
@@ -737,14 +756,15 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
   off on on_board onto out outside out_of over past round than through 
   throughout till to together toward towards under underneath until up 
   upon with within without)
-)
+); end of *prepositions*
 
 (defparameter *pre-prepositions* (make-hash-table))
 
 (mapcar #'(lambda (x) (setf (gethash x *pre-prepositions*) t))
 ;````````````````````````````````````````````````````````
 ; Alvey pre-prepositions taking PP complements
-'(out in up down because on off from to ))
+'(out in up down because on off from to )
+ ); end of *pre-prepositions*
 
 (defparameter *s-taking-prepositions* (make-hash-table))
 
@@ -753,4 +773,260 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ; Alvey prepositions taking sentential complements
 '(after although because before if lest like once otherwise since so
  though till unless until while whilst whereas whereupon when whenever)
-)
+ ); end of *s-taking-prepositions*
+
+; The following was aimed at helping to create a predicate
+;  ![at-most-weakly-transitive-verb]
+; to help repair BLIPP parses such as
+;  *"He asked [S [NP his friend] [VP to collaborate with him.]]", or
+;  *"They prompted [NP [NP newcomers] [SBAR to pair up]]."
+; If the infinitive verb is at most weakly transitive, as for "collaborate"
+; and "pair up", the bad S or NP needs to be pried apart
+
+; In general, deciding whether an infinitive after an NP-object of a verb
+; should attach to the N of the NP object, or to the verb, is pretty subtle.
+; E.g., "He found some tasks to keep busy" vs. "He found some tasks to finish".
+; This depends both on the affinity of the main verb for a purpose modifier
+; or infinitive complement, on the affinity of the object noun for an
+; infinitive complement or adjunct, and on the affinity of the infinitive
+; verb for an NP object (the stronger the latter affinity, the more likely
+; it is that if the infinitive has no NP complement, there's a gap present
+; in the infinitive, and it postmodifies the noun).
+;
+; HOWEVER, I THINK I BACK-BURNERED THIS EFFORT because it seemed that simpler
+; heuristics would suffice for the majority of cases; AND BESIDES, THIS
+; ISN'T RELEVANT TO COMPUTING ULFS FOR BROWN ENTRIES (WHERE ATTACHMENTS
+; SHOULD BE CORRECT), JUST POTENTIALLY FOR CORRECTING BLLIP OR OTHER
+; PARSES. STILL, ![at-most-weakly-transitive-verb] is already in use!
+; Currently, I define this as being purely intransivie, weakly transitive,
+; or pseudo-transitive; I don't know how different this is from what I
+; hope to get out of the following data.
+;
+; Words calculated as weakly transitive to be used to expel rather strongly 
+; transitive ones manually, to build an *at-most-weakly-transitive-verbs*
+; list from *weakly-transitive-verb-list*: I'll mark the at-most-weakly-
+; transitive verbs with asterisks; first I'll do that for verbs where
+; it's natural to say "in order to <verb> *PP" (e.g., "in order to adjust
+; to the new job with minimum delay"), and extract the starred verbs;
+; from the resulting list, I'll remove verbs that tend to attach to a
+; preceding N  (think about "picked up something to <verb>" or "contacted
+; someone  to <verb>", i.e., these are cases where there's likely to be
+; a gap after the verb after all when they occur as N-postmodifying
+; infinitives. 
+
+'(ABATE *ABORT ABRADE *ACCELERATE *ACCLIMATIZE ACCREDIT ACCUMULATE ACIDIFY
+ *AD-LIB ADDLE ADJOIN *ADJUST ADORE *ADVERTISE  *AFFILIATE  *AGE AGGLOMERATE
+ AIL AIR *ALIGN ALLOW *ALLY ALTER *AMALGAMATE AMASS AMELIORATE AMEND
+ AMERICANISE AMERICANIZE AMPUTATE *ANALOGIZE ANGER ANGLE ANGLICISE
+ ANGLICIZE ANTE *ANTICIPATE APOSTROPHIZE *APPLAUD *ARM ARTICULATE *ASCEND
+ ASCERTAIN ASPHYXIATE *ASSEMBLE ASSESS *ASSOCIATE ATROPHY *ATTACK ATTAIN
+ ATTENUATE *ATTEST ATTRIBUTE *AUDITION AUGUR AUTOMATE AVAIL AVOID *AWAKEN
+ *BAKE *BALANCE BALLS *BAND *BANQUET *BARNSTORM *BARRACK BASTE *BATH *BATHE
+ *BAWL BEAM BECOME BEFALL BEGRUDGE *BELAY *BELCH BELLY *BELLY-LAND BELT
+ *BENEFIT BERTH BETTER BLACK BLACKEN BLEACH BLEAT *BLEED BLESS *BLINK
+ *BLISTER BLOT BOG BOLLOCKS BOLSTER *BOLT BOMB *BONE BOOB BOOTLEG BORROW
+ BOSS BOTANISE BOTANIZE BOTTLE-FEED *BOUND *BOWL *BRAKE BRAZEN *BREAST-FEED
+ *BREATHE *BREED BREW BRICK BRIGHTEN BROIL BROWN BRUISE BUCK BUDGE BULK
+ BUNCH BUNGLE BURGLE *BURP BUS *BUSHWHACK BUTTON CALCIFY CAMBER *CANCEL
+ CANDY CANKER *CANOE *CANTER CANVAS CANVASS *CAPITALISE *CAPSIZE CARBONISE
+ CARBONIZE CARD CARRY CARVE CASCADE CASH CATALOG CATALOGUE CAVE
+ *CELEBRATE CENTRALISE CENTRALIZE *CHAIN-SMOKE CHALK CHANCE *CHANT CHAP
+ CHAPERON CHAPERONE CHAR CHAUFFEUR CHEAPEN *CHEAT *CHEER CHEESE *CHILL
+ CHINK CHURN CIPHER *CIRCULATE CIVILISE CIVILIZE *CLACK CLANG CLANK
+ CLARIFY CLATTER CLEAN CLEAVE *CLIMAX CLINCH CLINK CLOG CLOT CLOY *CLUB
+ *CLUCK CLUTCH COAGULATE COAL COARSEN COCK COLLAPSE COLLECTIVISE
+ *COLLECTIVIZE COMMAND COMPERE COMPOSE COMPREHEND COMPUTE *CONCENTRATE
+ CONCEPTUALISE CONCEPTUALIZE CONCRETE CONDENSE *CONFEDERATE *CONFER
+ CONFLATE CONGEAL CONGEST CONJOIN CONJUGATE *CONK_OUT CONQUER CONSOLIDATE
+ CONSTIPATE CONTEST CONTORT CONTOUR CONTRADICT CONTRAST *CONTRIBUTE
+ CONTRIVE *CONVENE *COOK *COOL_OFF COOP *COORDINATE CORD CORDON CORNER 
+ CORRODE CORRUGATE CORRUPT *COUGH COUNTER *COUNTERATTACK COUNTERBALANCE
+ COUNTERFEIT COURT COX COZEN CRACKLE CRANE *CRASH-DIVE *CRASH-LAND CRAYON
+ CREOSOTE *CRIB CRIMSON CRINKLE CRISP CRISSCROSS *CROAK *CROCHET CROOK
+ CROP CROSS-EXAMINE CROSS-FERTILIZE CROSS-POLLINATE CROSS-REFER
+ *CROSSBREED CRUMBLE CRUMPLE CRUSH CRYSTALLISE CRYSTALLIZE CUE CURDLE
+ *CURL_UP CURVE *CUSS CYCLOSTYLE CYPHER DAMPEN *DANCE DARESAY DARKEN DART
+ DECAY *DECELERATE DECENTRALISE DECENTRALIZE DECIMALISE DECIMALIZE
+ DECLARE DECOMPOSE DECREASE DEEPEN DEFER DEFLATE DEFLECT *DEFROST
+ DEGRADE DEHYDRATE DEICE DEMOCRATISE DEMOCRATIZE DENT DEPOSE DEPUTISE
+ DEPUTIZE DERAIL DERIVE DEROGATE *DESEGREGATE DESERVE DESICCATE DESIRE
+ *DESTROY DETERIORATE DETERMINE DETEST DETONATE DEVALUE *DEVELOP DIAL
+ *DIET DIFFERENTIATE DIFFUSE DIGEST DIKE DIM DIMINISH DIN DIRTY
+ DISAFFILIATE *DISARM *DISBAND DISBELIEVE DISBURSE DISCARD *DISCLAIM
+ DISCOLOR DISCOLOUR DISCUSS *DISEMBARK *DISENGAGE DISENTANGLE DISGORGE
+ DISINTEGRATE DISLIKE DISMANTLE *DISOBEY *DISPERSE DISPORT *DISROBE
+ DISSECT DISSEMBLE DISSIMULATE *DISSIPATE DISTEND DISTIL DISTILL
+ DISTINGUISH DISUNITE DIVE-BOMB *DIVERSIFY DODGE DOLE DOLL DONATE DOT
+ DOUBLE-CHECK *DOUBLE-PARK DOUBLE-STOP DOUBLE-TALK DRAGOON *DRAIN
+ DRAMATISE DRAMATIZE *DRESS DRIFT *DRINK *DRIP-DRY DROPKICK *DRY DULL DUMP
+ DYE DYKE EARN EASE *EJACULATE EMBEZZLE *EMBRACE EMBROIDER *EMPLANE
+ ENCIPHER *ENLIST *ENPLANE *ENROL *ENROLL *ENTERTAIN ENTRAIN ENUNCIATE ENVY
+ ERODE ESCALATE ESSAY ETCH *EVADE *EVANGELISE *EVANGELIZE EVAPORATE EVEN
+ *EVOLVE *EXAGGERATE EXCEED EXCRETE *EXHALE EXHIBIT *EXPECTORATE EXPORT
+ EXTEND EXUDE FACE FAKE FALTER FAMISH FAN FARROW FATHOM *FEAST FEATURE
+ *FEDERATE *FERMENT FETCH FIDGET FIELD FINE FIRE FIRM FLAG *FLAIL FLANNEL
+ FLATTEN FLICK FLIP FLOOD *FLOURISH *FOCUS FOG FORESEE FORGIVE FORSWEAR
+ FOSSILISE FOSSILIZE FOUL FOUNDER FOX FRACTURE FRAGMENT FRAY FREAK
+ FRISK FRIZZLE FROST FROTH FRUCTIFY FRY FUME FUR FURL FUSE *GALLOP
+ GANGRENE GAS GASIFY *GATECRASH *GAZUMP *GERMINATE *GIGGLE GINGER GIVE
+ GLASS GLEAN GOAD GOBBLE GOUGE *GOVERN GRAB GRANULATE GRAY *GRAZE GREY
+ GRILL GRIP GROUP *GROWL GULP HABITUATE *HALT HAM HANDLE *HARMONISE
+ *HARMONIZE HARROW HATCH HATE HAZE HEAD *HEAL HEAT *HECKLE HECTOR HEIGHTEN
+ HEM HERD *HIDE *HIE *HIKE *HOBBLE HOE HOLD HOOVER *HOP HOT HUSH *HUSTLE
+ HYBRIDISE HYBRIDIZE ICE IDEALISE IDEALIZE IGNITE *IMBIBE IMPOSE
+ IMPROVISE INCH INCLINE INCREASE *INCUBATE INDEX *INDULGE *INDUSTRIALISE
+ *INDUSTRIALIZE INFER INFLATE INFLECT *INHALE INHERIT INK *INTEGRATE
+ INTENSIFY *INTERBREED INTERCHANGE INTERJECT *INTERLOCK INTERRUPT
+ *INTERSECT *INTERTWINE INTONE INTOXICATE INTRIGUE *INTRUDE INURE *INVADE
+ INVESTIGATE INVIGILATE IONISE IONIZE IRON ITALICISE ITALICIZE JACK JAG
+ *JAM JANGLE JAZZ JERK JERRY-BUILD JET JIGGLE JINGLE JOCKEY JOGGLE *JOIN
+ JOSH JOSTLE KEEN KEYBOARD KID *KILL *KISS *KNIT KNOT LACK LADDER LAP
+ *LATHER LAUNCH LAUNDER LAYER LEAGUE LENGTHEN LESSEN LET *LEVITATE
+ LIBERALISE LIBERALIZE LICK LIFT LIKE *LIMBER_UP LIQUEFY LIQUIDATE LISP
+ LITHOGRAPH *LITIGATE LIVEN LOAN LOATHE LOB *LODGE LOOP LOOSEN *LOOT LOP
+ LOUSE LOWER LULL LUMP *LUNCH MACERATE MALT MAP MARKET MASS *MASTICATE
+ *MASTURBATE MAT *MATE *MATERIALISE *MATERIALIZE *MATRICULATE *MATURE MELD
+ MELIORATE MELLOW *MEND MERIT *METAMORPHOSE METRICISE METRICIZE MILDEW
+ MILK MILL MIME MINCE MIND *MINGLE *MINISTER MIRE MISBEHAVE MISCALCULATE
+ MISCOUNT MISCUE MISDEAL MISHEAR MISHIT MISTIME MISTRANSLATE
+ MISUNDERSTAND MIX *MOBILISE *MOBILIZE MODERATE *MODERNISE *MODERNIZE
+ MOISTEN *MOLT MORTIFY *MOULT *MOUTH_OFF *MOW *MUG MUSTER MUTE NAG NAP 
+ *NARRATE NARROW NASALISE NASALIZE *NAVIGATE NEAR *NEST NORMALISE NORMALIZE 
+ NOTE *OBEY OBTAIN *OBTRUDE OCCASION OFFER *OOZE OPE *OPINE ORBIT ORIGINATE
+ OSSIFY OVERACT OVERARCH OVERBALANCE OVERCALL OVERCAPITALISE
+ OVERCAPITALIZE OVERCOME OVERDRAW *OVERDRESS OVERESTIMATE OVERHANG
+ *OVERLAP OVERMAN OVERPRINT OVERSHOOT *OVERSIMPLIFY OVERSTOCK OVERTAKE
+ OVERTRUMP OVERTURN OVERWORK OWN OXIDISE OXIDIZE PACE *PACK *PADDLE
+ PADLOCK *PAIR PALATALIZE *PARACHUTE PARAPHRASE PARCEL PARCH PARSE
+ PARTICULARISE PARTICULARIZE PASSIVIZE *PASTURE PECULATE *PEDAL PEDDLE
+ PEG PENSION PEP *PERCH PERISH PERJURE *PERK_UP PERMEATE PERSONALISE
+ PERSONALIZE *PET PETITION *PHONE PHOTOGRAPH *PICKET PIERCE PILFER PINCH
+ PINK PIONEER *PLAGIARISE *PLAGIARIZE PLOUGH PLOW PLUG PLY POKE POLE
+ POLISH POLITICALISE POLITICALIZE POLITICISE POLITICIZE POLL POSTMARK
+ POSTPONE POUND *POUT POWDER *PRACTICE *PRACTISE *PREACH PRECLUDE PREMIERE
+ PRESS PRICKLE PRIDE *PRIMP PRINK PRINT PROCESS *PROCREATE PROCURE
+ PRODUCE *PROMENADE PROOFREAD PROP PROPAGATE *PROPOSE *PROSELYTISE
+ *PROSELYTIZE *PROSPECT *PROSPER PSYCH PSYCHE PUBLISH *PUCKER_UP *PUKE PULP
+ PULVERISE PULVERIZE PUNCTURE PURL PURPOSE *PUTREFY PUTT QUARRY QUAVER
+ QUERY QUICKEN QUIET QUIETEN RADIATE RADIO RAID *RAMIFY *RANT *RAP
+ *RATIONALISE *RATIONALIZE RAVEL *RE-FORM REACH REACTIVATE *READJUST REAP
+ REAR *RECANT *RECAP *RECAPITULATE RECEIVE RECESS *RECIPROCATE RECITE RECK
+ RECLINE *RECONNOITER *RECONNOITRE *RECONSIDER RECORD RECRUIT RECYCLE
+ REDDEN REDECORATE REDOUBLE REECHO *REFEREE REFINE REFIT REFLATE REFLOAT
+ *REFORM *REFUEL *REGENERATE *REGISTER *REGROUP *REHEARSE REIN *REJUVENATE
+ REKINDLE *RELAX RELISH *RELOAD *REMARRY *REMEMBER REMOUNT REOPEN
+ REORGANISE REORGANIZE REPLAY REPORT REPOSE REPRINT *REPRODUCE RESENT
+ *RESETTLE RESHUFFLE *RESIGN *RESIST *RESTOCK *RESURFACE RETAIL RETHINK
+ RETRACT *RETRENCH *REUNITE REVERSE REVIEW REVISE *REVIVE REVOKE RHYME
+ *RIPEN RIPOSTE RIPPLE RISK *ROBE *ROCK ROMANTICISE ROMANTICIZE ROPE
+ ROTATE ROUGE ROUGHEN *ROVE RUFFLE RUPTURE RUSH RUST RUSTICATE SACK
+ SACRIFICE *SAIL *SALUTE SAVOUR SCALD SCALE SCAN SCAR *SCAVENGE SCISSOR
+ SCOUR *SCRATCH *SCREECH SCRIBBLE *SCRIMP SCRUB SCRUNCH SCUFF SCULL
+ SCULPTURE *SCUTTLE SEGMENT SEIZE SEMAPHORE SENSE *SEPARATE *SERVE SEVER
+ SHANGHAI SHARPEN SHATTER *SHAVE SHEAR SHED SHELL SHEW SHIP *SHIT *SHOOT
+ *SHOPLIFT SHORT-CIRCUIT SHORTEN *SHOWER *SHRIEK *SHRIVEL SHRUG SHUFFLE
+ SHUNT SHUSH SHUTTLE SICK SIDESTEP SIGHT *SIGHT-READ SILT SILVER *SING
+ *SKETCH SKITTER SKITTLE SLACKEN SLAKE SLAM SLANT SLEDGE *SLENDERISE
+ *SLENDERIZE SLICK SLIVER *SLOG *SLOUGH SLOW SLUE SLUICE *SLUM SLURP
+ *SMARTEN_UP SMASH SMUDGE *SNAKE SNARL SNIP SNORT SNUFF *SOB *SOBER_UP SOFTEN
+ SOIL *SOLICIT *SOLIDIFY *SOLILOQUISE *SOLILOQUIZE SOUP SOW SPADE SPANK
+ SPARE *SPAWN SPELL *SPEW *SPIN SPIRIT *SPIT *SPLASH_AROUND SPLATTER SPLAY 
+ *SPLURGE SPLUTTER SPOOF SPORT SPOUT SPREAD-EAGLE *SPRING-CLEAN *SPUTTER SQUASH
+ SQUELCH STAB *STABILISE *STABILIZE STAGGER STAIN STALK *STALL STAMPEDE
+ *STARVE STATE STAVE STEADY STEEP STEEPEN STEM STEW STIFFEN STIFLE STING
+ STIPPLE STOW *STRAIGHTEN_UP STRANGULATE STRATIFY STREAM STRENGTHEN STRIDE
+ STRING *STUDY *STUMP *SUB *SUBCONTRACT SUBDIVIDE *SUBLEASE *SUBLET SUBMERGE
+ *SUBSTITUTE *SUCKLE SUE *SUFFOCATE SUM *SUMMER SUPERVISE *SURFACE *SURRENDER
+ *SURVIVE SWALLOW SWAY *SWEAT *SWERVE SWIRL SWISH SYNCHRONISE SYNCHRONIZE
+ *SYNDICATE TAIL TAILOR TAKE TAN *TAP TAPER TARNISH TART TAT *TATTLE *TAXI
+ TEASE TELESCOPE TELEVISE TENDER TENSE TERMINATE TEST *THICKEN *THIEVE
+ THIN THRASH THREATEN THRESH *THROTTLE_BACK TICK TICKLE *TIDY_UP TIE TING 
+ *TINKLE TITIVATE TITTIVATE TOLL *TOOT TOPPLE TOTAL TOUGHEN *TOUR TRACK *TRAMP
+ TRANSFER TRANSGRESS TRAP TRAVERSE *TRAWL *TREAD TREAT TREBLE TRICKLE
+ *TRILL TRIPLE *TROOP TRUE TRUMPET TRUNDLE TUG *TUNNEL TURN *TUT-TUT TWANG
+ TWINE TWIRL TWITCH TWO-TIME ULCERATE UMPIRE *UNDERACT UNDERESTIMATE
+ *UNDRESS UNFIT UNFOLD *UNIONISE *UNIONIZE *UNPACK UNRAVEL UNROLL *UNSADDLE
+ UNVEIL *UNWIND UP USHER VACUUM VALET VAMP VAPORISE VAPORIZE *VAULT
+ VELARIZE VERBALISE VERBALIZE VERSIFY VICTUAL VITRIFY VITUPERATE
+ VIVISECT *VOCALISE *VOCALIZE VOCIFERATE *VOMIT VOUCHSAFE WAFT WAG WAGGLE
+ *WAKE *WAKE_UP WAKEN WALLPAPER WARD WARP *WASH WASTE WATER WEAKEN WEARY WEATHER
+ *WED *WEEP WELD WHEEZE WHIFF WHILE *WHIMPER WHIRL *WHISPER WHITEN WIGGLE
+ WILE *WILT *WIN WINCH *WIND_DOWN WINE WING *WINK WIRE *WITHDRAW WITNESS WOBBLE
+ WORSEN WRINKLE *YELL YELLOW *YODEL ZIP)
+
+; I've forgotten what this list is -- it overlaps heavily with the above!
+'(*ABORT ACCELERATE ACCLIMATIZE AD-LIB *ADJUST *ADVERTISE AFFILIATE AGE
+       *ALIGN ALLY *AMALGAMATE *ANALOGIZE *ANTICIPATE *APPLAUD *ARM ASCEND
+       *ASSEMBLE ASSOCIATE *ATTACK ATTEST AUDITION *AWAKEN *BAKE *BALANCE
+       BAND BANQUET BARNSTORM BARRACK *BATH *BATHE BAWL *BELAY BELCH
+       BELLY-LAND BENEFIT BLEED BLINK BLISTER BOLT *BONE BOUND BOWL
+       BRAKE *BREAST-FEED BREATHE *BREED BURP BUSHWHACK *CANCEL CANOE
+       CANTER CAPITALISE CAPSIZE *CELEBRATE CHAIN-SMOKE *CHANT *CHEAT
+       *CHEER CHILL *CIRCULATE CLACK CLIMAX *CLUB CLUCK *COLLECTIVIZE
+       CONCENTRATE CONFEDERATE *CONFER CONK_OUT *CONTRIBUTE CONVENE *COOK
+       COOL_OFF COORDINATE COUGH *COUNTERATTACK CRASH-DIVE *CRASH-LAND
+       *CRIB CROAK *CROCHET *CROSSBREED CURL_UP *CUSS DANCE DECELERATE
+       *DEFROST DESEGREGATE *DESTROY *DEVELOP DIET DISARM DISBAND DISCLAIM
+       DISEMBARK DISENGAGE *DISOBEY *DISPERSE DISROBE DISSIPATE DIVERSIFY
+       *DOUBLE-PARK *DRAIN DRESS *DRINK *DRIP-DRY *DRY EJACULATE *EMBRACE
+       *EMPLANE *ENLIST *ENPLANE *ENROL *ENROLL *ENTERTAIN *EVADE *EVANGELISE
+       *EVANGELIZE EVOLVE EXAGGERATE EXHALE EXPECTORATE FEAST *FEDERATE
+       *FERMENT FLAIL FLOURISH FOCUS GALLOP GATECRASH GAZUMP GERMINATE
+       GIGGLE *GOVERN GRAZE GROWL HALT HARMONISE HARMONIZE *HEAL *HECKLE
+       *HIDE HIE HIKE *HOBBLE HOP HUSTLE *IMBIBE *INCUBATE INDULGE
+       *INDUSTRIALISE *INDUSTRIALIZE *INHALE INTEGRATE INTERBREED
+       INTERLOCK INTERSECT *INTERTWINE INTRUDE *INVADE JAM *JOIN *KILL *KISS
+       KNIT LATHER LEVITATE LIMBER_UP LITIGATE LODGE *LOOT LUNCH
+       MASTICATE MASTURBATE MATE MATERIALISE MATERIALIZE MATRICULATE
+       MATURE *MEND METAMORPHOSE MINGLE MINISTER *MOBILISE *MOBILIZE
+       *MODERNISE *MODERNIZE MOLT MOULT MOUTH_OFF *MOW MUG *NARRATE
+       *NAVIGATE NEST *OBEY OBTRUDE OOZE OPINE OVERDRESS OVERLAP
+       *OVERSIMPLIFY *PACK *PADDLE *PAIR PARACHUTE PASTURE *PEDAL PERCH
+       PERK_UP *PET *PHONE *PICKET *PLAGIARISE *PLAGIARIZE POUT *PRACTICE
+       *PRACTISE PREACH PRIMP PROCREATE *PROMENADE *PROPOSE PROSELYTISE
+       PROSELYTIZE PROSPECT PROSPER PUCKER_UP PUKE PUTREFY RAMIFY RANT
+       RAP *RATIONALISE *RATIONALIZE *RE-FORM *READJUST RECANT RECAP
+       RECAPITULATE RECIPROCATE RECONNOITER RECONNOITRE *RECONSIDER
+       *REFEREE *REFORM REFUEL *REGENERATE *REGISTER REGROUP *REHEARSE
+       *REJUVENATE RELAX *RELOAD REMARRY *REMEMBER REPRODUCE RESETTLE
+       RESIGN *RESIST RESTOCK RESURFACE RETRENCH *REUNITE *REVIVE RIPEN
+       *ROBE *ROCK ROVE *SAIL *SALUTE SCAVENGE *SCRATCH SCREECH SCRIMP
+       SCUTTLE *SEPARATE *SERVE *SHAVE SHIT *SHOOT *SHOPLIFT SHOWER SHRIEK
+       SHRIVEL *SIGHT-READ *SING *SKETCH SLENDERISE SLENDERIZE SLOG SLOUGH
+       SLUM SMARTEN_UP SNAKE SOB SOBER_UP SOLICIT *SOLIDIFY SOLILOQUISE
+       SOLILOQUIZE SPAWN *SPEW *SPIN SPIT SPLASH_AROUND SPLURGE
+       *SPRING-CLEAN SPUTTER *STABILISE *STABILIZE STALL *STARVE
+       STRAIGHTEN_UP *STUDY STUMP SUB SUBCONTRACT *SUBLEASE *SUBLET
+       *SUBSTITUTE SUCKLE *SUFFOCATE SUMMER SURFACE SURRENDER SURVIVE
+       SWEAT SWERVE SYNDICATE *TAP TATTLE TAXI *THICKEN THIEVE
+       THROTTLE_BACK *TIDY_UP TINKLE *TOOT *TOUR TRAMP TRAWL TREAD TRILL
+       TROOP TUNNEL TUT-TUT UNDERACT *UNDRESS *UNIONISE *UNIONIZE *UNPACK
+       UNSADDLE UNWIND *VAULT *VOCALISE *VOCALIZE VOMIT *WAKE *WAKE_UP *WASH
+       *WED WEEP WHIMPER WHISPER WILT *WIN *WIND_DOWN WINK *WITHDRAW YELL
+       YODEL)
+
+; Very weakly transitive verbs, unlikely to form an infinitive with
+; an object-gap that attaches to a preceding noun. E.g., "He had time
+; to adjust"
+'(ABORT ADJUST ADVERTISE ALIGN AMALGAMATE ANALOGIZE ANTICIPATE APPLAUD
+       ARM ASSEMBLE ATTACK AWAKEN BAKE BALANCE BATH BATHE BELAY BONE
+       BREAST-FEED BREED CANCEL CELEBRATE CHANT CHEAT CHEER CIRCULATE
+       CLUB COLLECTIVIZE CONFER CONTRIBUTE COOK COUNTERATTACK
+       CRASH-LAND CRIB CROCHET CROSSBREED CUSS DEFROST DESTROY DEVELOP
+       DISOBEY DISPERSE DOUBLE-PARK DRAIN DRINK DRIP-DRY DRY EMBRACE
+       EMPLANE ENLIST ENPLANE ENROL ENROLL ENTERTAIN EVADE EVANGELISE
+       EVANGELIZE FEDERATE FERMENT GOVERN HEAL HECKLE HIDE HOBBLE
+       IMBIBE INCUBATE INDUSTRIALISE INDUSTRIALIZE INHALE INTERTWINE
+       INVADE JOIN KILL KISS LOOT MEND MOBILISE MOBILIZE MODERNISE
+       MODERNIZE MOW NARRATE NAVIGATE OBEY OVERSIMPLIFY PACK PADDLE
+       PAIR PEDAL PET PHONE PICKET PLAGIARISE PLAGIARIZE PRACTICE
+       PRACTISE PROMENADE PROPOSE RATIONALISE RATIONALIZE RE-FORM
+       READJUST RECONSIDER REFEREE REFORM REGENERATE REGISTER REHEARSE
+       REJUVENATE RELOAD REMEMBER RESIST REUNITE REVIVE ROBE ROCK SAIL
+       SALUTE SCRATCH SEPARATE SERVE SHAVE SHOOT SHOPLIFT SIGHT-READ
+       SING SKETCH SOLIDIFY SPEW SPIN SPRING-CLEAN STABILISE STABILIZE
+       STARVE STUDY SUBLEASE SUBLET SUBSTITUTE SUFFOCATE TAP THICKEN
+       TIDY_UP TOOT TOUR UNDRESS UNIONISE UNIONIZE UNPACK VAULT
+       VOCALISE VOCALIZE WAKE WAKE_UP WASH WED WIN WIND_DOWN WITHDRAW)
+
+

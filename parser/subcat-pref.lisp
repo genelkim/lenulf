@@ -132,7 +132,7 @@
 ; E.g., "He told Alice when he was arriving" (vs., "He phoned Alice when
 ; he was arriving").
  (let ((stm (stem pos+verb)))
-      (cond ((gethash stm *np-whs-taking-verbs*) 3)
+      (cond ((gethash stm *np+whs-taking-verbs*) 3)
             (t 0))
  )); end of v_np_whs-pref!
 
@@ -144,7 +144,7 @@
 ; "He checked with Alice when the concert was scheduled to take place";
 ; (vs. "He talked to Alice when he resigned his position.")
  (let ((stm (stem pos+verb)))
-      (cond ((gethash stm *pp-whs-taking-verbs*) 3)
+      (cond ((gethash stm *pp+whs-taking-verbs*) 3)
             (t 0))
  )); end of v_np_whs-pref!
 
