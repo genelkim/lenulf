@@ -867,6 +867,11 @@
             (t name))
  )); end of format-name-for-ulf!
 
+(defun make-number-into-symbol! (n)
+;`````````````````````````````````
+; This is for incorporating a number into a name, as in "World War 2"
+  (intern (format nil "~a" n)))
+
 
 (defun merge-names! (names); Oct 17/20
 ;`````````````````````````

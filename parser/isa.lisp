@@ -1,3 +1,12 @@
+;; Jan 4/22
+;;
+;; I've added predicate functions 'event-noun' and 'attribute-noun' from
+;; the KNEXT code (though I'm not sure whether I'll need the latter).
+;; We may want to define 
+;;   (defpred ![event-np] x ...)
+;; if we want to check for event NPs directly in the preprocessing rules.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; July 27/21
 ;;
 ;; This file is is a revision of the way 'isa' works, so that the ETA pattern
@@ -116,7 +125,10 @@
 ;     Look up x in the *isa-features* hash table and see if feat appears in the
 ;     retrieved list or in the lists (in the same table) associated with the
 ;     retrieved features, etc., while guarding against loops. Return T if 
-;     the feature is found and NIL otherwise. Case is ignored.
+;     the feature is found and NIL otherwise. Case is ignored. Both x and
+;     feat are allowed to be dot-atoms (i.e., preceded by a dot), but the
+;     dot(s) are stripped away before the hash-table lookup is done.
+;     (Dot-atoms just serve to indicate to the matcher to do an isa-test.)
 ;
   (prog (ff f closed fff)
         (if (eq x feat) (return t))
@@ -192,6 +204,12 @@
      ;         and phrasal elements, can lead to recursive run-away 
      ;         when rules that combine phrases are applied as often
      ;         as possible!
+     (ATTR-JJ ; strictly attributive adjectives; collected mostly from
+              ; https://guinlist.wordpress.com/tag/attributive-adjectives/
+       former erstwhile latter previous past future ultimate 
+       eventual consummate fake prospective elder eldest main mere 
+       live sheer chief leading lone only principal sole primary major
+       utter upper very adverse alternative)
      (ADJP JJ JJR JJS)
      (ADVP WHADVP RB RBR RBS NEG PP)
      (NON-ADVP NP VP AP ADJP PP SQ SBARQ WHNP WHADJP WHPP)
@@ -199,14 +217,22 @@
          ; fronted SBARs are not considered topicalized: "Although he won,
          ; he's dissatisfied"; allow "Why are you leaving, I ask" as 
          ; topicalized, though probably will be misparsed aby BLLIP.
-     (THIS-DAY yesterday today tomorrow)
+     (THIS-DAY yesterday today tomorrow tonight)
      (WEEKDAY |Monday| | Monday| Monday 
+       ; NB: the preprocessed Brown corpus may contain "pipe-enclosed" NNPs
        |Tuesday| | Tuesday| Tuesday |Wednesday| | Wednesday| Wednesday
        |Thursday| | Thursday| Thursday |Friday| | Friday| Friday
        |Saturday| | Saturday| Saturday |Sunday| | Sunday| Sunday)
-     (TIME-PERIOD day week month year decade century morning evening night
-       January February March April May June July August September October
-       November December Christmas spring summer fall winter)
+     (TIME-PERIOD time present past future femtosecond picosecond nanosecond 
+       microsecond millisecond second minute hour morning noon afternoon evening 
+       night midnight day week-day holiday week month year decade century 
+       millenium eon aeon January February March April May June July August 
+       September October November December Christmas spring summer fall winter
+       dusk dawn start beginning interim moment instant intermission pause
+       |January| |February| |March| |April| |May| |June| |July| |August| 
+       |September| |October| |November| |December| |Christmas|
+       | January| | February| | March| | April| | May| | June| | July| | August| 
+       | September| | October| | November| | December| | Christmas|)
      (next/last next last)
      (of/to/by of to by); these are usually argument-suppliers
      (WHNP WDT)
@@ -219,11 +245,15 @@
      (NP-i NP-1 NP-2 NP-3 NP-4); e.g., rightward displace't
      (CC \, \;); for detecting end of an NP
      (and/or and \& or \'r)
+     (SUBORD-CONJ as since although though because whereas even-though if
+       provided-that so-that unless whether-or-not)
      (EXTRAP-S SBAR-1 SBAR-2 SBAR-3 SBAR-4 S-1 S2 S-3 S-4)
       ; these SBAR/S variants are used in Brown to correlate it-extra
       ; with a corresponding clause; in ULF, we expect that it-extra
       ; provides enough of a clue to locate the extraposed clause.
-     (PP WHPP PP-1 PP-2 PP-3 PP-4)
+     (PP- PP-1 PP-2 PP-3 PP-4 PP-5 PP-6 PP-7 PP-8 PP-9 PP-10)
+     (PP WHPP PP-); the PP-i phrases occur in Brown for phrase displacements
+                  ; of various sorts (e.g., extraposition) -- '*pseudo-attach*'
      (with without); "with" is special, allowing 
                                        ; verbless S-complements
      (when where whenever wherever why how)
@@ -235,7 +265,7 @@
                                           ; allowing general VP seems risky
                                           ; Use separate rules for VBG &
                                           ; VBN postmodifiers
-     (DIS-POSTMOD PP-1 PP-2 PP-3 PP-4 SBAR-1 SBAR-2 SBAR-3
+     (DIS-POSTMOD PP-1 PP-2 PP-3 PP-4 PP-5 SBAR-1 SBAR-2 SBAR-3
         SBAR-4 VP-1 VP-2 VP-3 VP-4 ADJP-1 ADJP-2 ADJP-3 ADJP-4); more?
      (JJ JJR JJS); NB: .ADJP also inludes these
      (VB VBZ VBP VBD VBG VBN VBEN)
@@ -288,6 +318,224 @@
    '((N-PROPOS-OBJ *n-propos-obj*)
      (N-COMMUN-OBJ *n-commun-obj*)
      (N-COG-OBJ (union *n-propos-obj* *n-commun-obj*))
+     (N-PLACE *n-place*)
  ))
 
+;; ADAPTED FROM KNEXT, MODIFIED TO INCLUDE NOUNS THAT ARE LIKELY TO
+;; DENOTE EVENTS WHEN USED AS MAIN NOUN IN A PP LIKE "AFTER THE <noun>"
+;; "AT THE <np>", "IN THE <np>", "UNTIL THE <np>" (whereas the goal
+;; in KNEXT was to identifiy "undergoer NPs" of an event in a phrase
+;; of form "NP of <event>")
+;;
+(defun event-noun (noun); June 12/01; Jan 2/08; Oct 9/10
+;~~~~~~~~~~~~~~~~~~~~~~~
+; Heuristically test whether `noun' (a singular noun, as an atom) is likely
+; to be an event noun. Many nouns ending in -sion, -tion, -al, -ance, -ment
+; are event nouns, but there are many event nouns with different endings,
+; e.g., accident, adventure, ambush, etc., and many nouns with -sion, ...,
+; -ment endings are not event nouns, e.g., tension, corral, chance, cement,
+; etc. We first identify event nouns not ending in -sion, ..., -ment,
+; then return nil for non-event nouns with such endings, and then accept
+; any remaining noun ending in -sion, -tion, -al, -ance, -ment as an event
+; noun. Obviously, refinements would definitely be possible.
+; 
+; A difficulty is that many nouns are ambiguous between event and
+; non-event nouns in a fairly balanced way, e.g., "in the injury",
+; "in the exhibit", "at its foundation", "before the conclusion".
+;
+; Note: in PPs with prepositions {during, till, until} we assume we
+;       we have an event PP; for {after, before, at, in, up_to} we check
+;       for an event noun. e.g., we exclude "He ran after the dog"; 
+;       "He stood before the door" from event-PPs.)
+; 
+  (prog (backword)
+
+        (case noun
+          ; morpholically unrecognizable undergoing-event nouns:
+          ; CHANGED JAN 2/08; GREATLY EXPANDED OCT 9/10; PRUNED JAN 3/22
+          ((abuse accident adventure agony airdrop ambush analysis
+            apocalypse apotheosis arrest ascent
+            assault ban barter belch bellyache birth birthday
+            breach breakage breakdown breakup bribery
+            broadcast buildup burglary burnout burp 
+            butchery capture catharsis censure change changeover checkup
+            chemotherapy clash cleanup colonoscopy crash closure
+            cloture collapse conflict conquest cramp crash
+            death decay decline decrease defeat delay delerium
+            delivery demise departure descent dialysis discovery
+            divestiture divorce doomsday drainage eclipse
+            electrolysis erasure
+            event exchange exodus expenditure exposure
+            failure fall falloff fever forfeiture 
+            flop gasp genesis giveaway glide haircut
+            handover hand-over headache holdup holocaust
+            hydrolysis hypnosis hysterectomy
+            increase infancy inflow influx injury klatsch lapse 
+            laughter launch layoff lecture lesson lobotomy lockout lockup
+            loss manufacture marriage martyrdom massage meltdown
+            menopause metamorphosis mitosis 
+            murder necrosis neglect nightmare 
+            orgasm pandemonium paralysis
+            pardon parody parse party pass physiotherapy plunder plunge
+            praise preview progress psychoanalysis 
+            psychotherapy puncture purchase radiotherapy
+            rape rapture remand rescue ridicule rinse rise roast
+            ruin rupture sabotage scan search seizure setback shift
+            shrinkage shutdown siege simulcast slaughter
+            sleep slide slip slowdown slumber sneeze spasm speedup
+            spill spillage spin spoilage start stasis
+            storage struggle stumble surgery surrender
+            survey swap synthesis takeover talk test theft therapy
+            thrombisis torture toss transfer trip
+            tumble turnabout turnaround turnover tutelage twitch
+            use upset vasectomy venture voyage 
+            worship wrapup) ; 
+           (return T) )
+          ;
+          ; We add a case here for exceptions to the rules at the end, 
+          ; returning nil for these; the original test for putting words on
+          ; this list was, do they commonly occur with "of" and when they
+          ; do, would it be bad to rephrase "x of y" as "y undergoes x"?
+          ; But for present ULF purposes, we prune nouns from the exclusion
+          ; list if they yield a temporal PP when preceded by "before" or
+          ; "after".
+
+          ((foreboding heading ; a fairly complete exclusion list
+            clothing coating feeling meaning scaffolding
+            bing arcing ding pudding spalding inholding being edging lagging
+            legging pegging rigging wigging thing something nothing plaything
+            anything everything king stocking Viking sibling cling seedling
+            foundling hireling fledgling duckling inkling bestselling
+            sapling darling sparling starling sanderling underling sterling
+            sling mudsling gosling lemming shortcoming subsuming 
+            cunning aborning foregoing churchgoing ping weatherstripping
+            ring smattering bedspring offspring earring averring string
+            shoestring bowstring sting formatting abetting pacesetting 
+            typesetting teletypesetting earsplitting lawgiving earthmoving
+            wing lacewing owing batwing zing
+
+            adhesion admiration
+            affectation affection allegation ambition ammunition
+            approbation argumentation assumption attention 
+            aversion bastion caption coalition cohesion collocation 
+            combination commendation compassion composition compunction
+            condescension condition configuration
+            congregation concession connotation constitution
+            contention contraption contribution convention 
+            denotation derision description destination
+            devotion diction dimension direction discretion dissertation
+            duration emotion erudition evasion exception
+            expectation explanation
+            exultation fiction foundation fraction friction
+            function gumption habitation illusion imagination imprecision
+            impression inclination inclusion indecision
+            indignation information injunction inscription 
+            intention intuition invitation
+            irresolution junction jurisdiction lesion limitation
+            location locomotion locution mansion midsection
+            munition nation notion nutrition obsession occasion
+            omission opposition option organization passion pension
+            permission perspiration petition pigmentation portion position
+            possession potion precaution procession profession profusion
+            proportion proposition propulsion protestation provision
+            position precision preposition prescription
+            presumption presupposition protusion question recommendation
+            recursion religion reputation respiration
+            retribution revulsion sanction satisfaction
+            seclusion section situation station
+            stupefaction succession suction suggestion superstition
+            supposition suspicion tension torsion tradition version
+            vision workstation
+
+            cabal cannibal gimbal decal radical umbilical geochemical
+            radiochemical physiochemical petrochemical bifocal
+            reciprocal rascal mescal medal pedal sandal vandal
+            conceal ideal cornmeal oatmeal cereal seal goldenseal
+            teal veal weal commonweal zeal offal gal illegal madrigal paschal
+            marshal withal wherewithal special official financial dial radial
+            gerundial sundial cordial binomial multinomial monomial polynomial
+            baronial marsupial aerial serial material factorial
+            editorial terrestrial extraterrestrial sial initial credential
+            exponential differential essential potential vial extremal decimal
+            hexadecimal animal planetesimal infinitesimal mammal isothermal
+            normal paranormal abnormal orthonormal canal arsenal signal
+            cardinal ordinal original aboriginal marginal virginal criminal
+            nominal terminal urinal annal diagonal orthogonal professional
+            supranational eternal journal communal coal charcoal foal
+            goal shoal pal sepal principal opal estoppal cathedral liberal
+            numeral general mineral collateral integral admiral spiral
+            oral coral moral corporal pectoral chaparral corral mitral central
+            neutral plural mural natural transversal vassal metal
+            petal barbital orbital genital capital hospital total portal
+            pedestal crystal dual individual manual equal usual actual factual
+            intellectual victual spiritual bisexual homosexual heterosexual
+            naval rival oval larval interval loyal
+
+            significance riddance impedance chance ambiance fiance
+            affiance alliance appliance lance balance imbalance semblance
+            parlance conformance ordnance countenance sustenance provenance
+            ordinance finance luminance governance forbearance clearance
+            encumbrance hindrance furtherance temperance
+            intemperance perseverance durance endurance insurance
+            nuisance reflectance inductance conductance transconductance
+            capacitance inheritance acquaintance susceptance inertance
+            stance circumstance instance emittance remittance transmittance
+            nuance grievance relevance connivance contrivance allowance
+            abeyance conveyance annoyance
+
+            apartment armament cement compartment complement compliment
+            condiment decrement department detriment
+            disappointment document element embodiment emolument 
+            figment filament fragment government impediment implement increment
+            instalment instrument integument ligament liniment moment monument
+            ointment ornament parliament pediment pigment regiment sacrament
+            sediment segment sentiment tenement testament);
+           (return nil) )
+         )
+        (setq backword (reverse (coerce (string noun) 'list)))
+        ; Exceptions to the following have been pretty fully enumerated above
+        (if (or (ends-in backword '(#\I #\N #\G))
+                (ends-in backword '(#\S #\I #\O #\N))
+                (ends-in backword '(#\T #\I #\O #\N))
+                (ends-in backword '(#\A #\L))
+                (ends-in backword '(#\A #\N #\C #\E))
+                (ends-in backword '(#\M #\E #\N #\T)) )
+            (return T) )
+ )); end of event-noun
+
+;; ** FROM KNEXT; NOT USED HERE CURRENTLY
+(defun attribute-noun (noun); June 13/01
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Heuristically test whether `noun' (a singular noun, as an atom) is likely
+; to be an `attribute noun' such as "kindness", "heat", "excitement", etc.
+; (typically de-adjectival).
+;
+  (prog (backword)
+
+        (case noun
+          ; Morphologically unrecognizable cases:
+          ; Note: many cases are covered pretty well by using "have"
+          ;       (i.e., having a property) so completeness is not vital
+          ((heat cold warmth excitement wrath) ; ** others ??
+           (return T) )
+          ; Add a case here for exceptions to the rules that follow,
+          ; returning nil for these
+          ((witness business illness governess)
+           (return nil) ))
+
+        (setq backword (reverse (coerce (string noun) 'list)))
+        (if (ends-in backword '(#\N #\E #\S #\S))
+            (return T) )
+ )); end of attribute-noun
+
+(defun abstract-noun (noun); NOT CLEAR IF THIS MAY BE NEEDED
+;~~~~~~~~~~~~~~~~~~~~~~~~~
+; noun: a noun stem
+;
+; The abstract nouns include most that end in "-ism", "-ity", "-ment",
+; "-ion", "-ing", or an NN or NNS with no determiner. Many common nouns 
+; should be treated as abstract, eg., basis, case, interest, manner, 
+; science, etc., etc. Use 'attribute-noun' above?
+;
+ NIL) ; STUB
 

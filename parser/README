@@ -1,4 +1,14 @@
-Version 3 of the English-to-ULF parser, and new version of TT; Aug 20/21
+Version 4 of the English-to-ULF parser (Jan 31/22), and TT version of Aug 20/21
+=================================================================
+Jan 31/22
+
+The list of files being loaded by "init.lisp" has not changed.
+But there have been numerous changes (not logged, alas) in rules 
+(e.g., in "preprocessing-rules.lisp" and "isa.lisp") and in various 
+types of lexical information (e.g., in "transitivity-lists.lisp",
+and "subcat-pref.lisp")
+
+SEE ALSO "README-SUPPLEMENT-FOR-BROWN-CORPUS", & "REVISION-LOG".
 =================================================================
 
 The main ULF-derivation programs are in "parse-tree-to-ulf.lisp"

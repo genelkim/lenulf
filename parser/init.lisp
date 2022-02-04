@@ -10,7 +10,7 @@
 (load "pos+word-to-ulf.lisp")        
 (load "preprocessing-rules.lisp")   
 (load "stem.lisp")
-(load "lexical-semantic-features.lisp"); very partial, not used yet
+(load "lexical-semantic-features.lisp"); very partial, but now used
 (load "transitivity-lists.lisp")
 (load "tt.lisp")
 (load "isa.lisp")

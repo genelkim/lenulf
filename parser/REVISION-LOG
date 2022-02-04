@@ -2,6 +2,15 @@
 IN REVERSE CHRONOLOGICAL ORDER  (since July 2021)
 
 ################################################################################
+Jan 31/22
+
+The list of files being loaded by "init.lisp" has not changed.
+But there have been numerous changes (not logged, alas) in rules
+(e.g., in "preprocessing-rules.lisp" and "isa.lisp") and in various 
+types of lexical information (e.g., in "transitivity-lists.lisp",
+and "subcat-pref.lisp")
+
+==================================================================
 Sep 23/21
 
 Various additions/revisions made to attempt distinuishing PP arguments,
