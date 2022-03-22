@@ -45,14 +45,15 @@
 '( ; TO BE FILTERED
 
 abound accede accrue acquiesce act_up adhere agonize allude amble amount anticorrelate antipathize apologize appear arse_around ask_around autodestruct back_away backpedal band_together bang_away bargain base_jump battle_it_out bawl bed-wet behave blast_off blaze_away bleed_to_death blossom bode boil_over bone_up boogie bottom_out bow_down brachiate branch branch_off breeze bring_it bubble_up buckle bugger_off bulge bungee_jump burgeon burst_out busk butt_out cackle caddy calve camp_out campaign care carom carouse catch_on caterwaul cavort cha-cha charleston chat chatter chillax chip_away chirp chortle clam_up clash clomp cloud_over co-occur coconspire coexist cohabit collide collude come come_along come_apart come_away come_back come_correct come_forward come_on_over come_through come_to_grips come_to_life come_to_order come_together come_up come_with commune complain condescend conflict conk_out consist consort converge converse cooperate correspond counterstrike crackle creep creep_up crop_up crouch crump cuddle_up daddle dawn decamp default degenerate deliquesce desist deviate diddle-daddle digress dine_out disagree disco dispose dissent diverge do_battle do_business dote dream_on drift_apart drift_off drone_on drop_away drop_dead drop_round duckwalk duet dwell dwindle eddy edge_up effervesce effloresce egress elapse elope emerge emigrate emote empathize equivocate err evanesce exclaim face_off faint fall_apart fall_away fall_behind fall_in fall_in_love fall_on_deaf_ears fall_out fall_over fall_through fall_together fare fast fawn feel_down fend fess_up feud fib fiddle_about fiddle_around file_in fire_away fishtail fission fizz flail_about flake_out flare_up flatline flicker flounder fluoresce fly_off foam fool_about fool_around fornicate fraternize freestyle freeze_over freeze_up fuck_about function gad gallivant galumph gambol gander gang gape garden genuflect get_along get_by get_carried_away get_cold_feet get_hitched get_in_the_way get_into_trouble get_laid get_lost get_lucky get_together give_birth give_chase glance glimmer glisten glower go_all_the_way go_apeshit go_awry go_back go_bankrupt go_mad go_overboard go_places go_platinum go_public go_steady go_to_war go_wrong grandstand gravitate grind_to_a_halt grouch grow_cold grunt guffaw gyre hang_a_left hang_a_right hang_in hang_out hang_tough hang-glide happen happen_along have_a_go heal_up hearken_back hee-haw hibernate hide_out hit_the_ceiling hit_the_fan hit_the_roof hold_fire hold_hands hold_true hole_out hotdog hotfoot_it hunker ice_over immigrate impend inch intercede interfere introspect iridesce jaw_away jet jet_off jitter jut keel keel_over keep_on_trucking keep_one\'s_eyes_peeled keep_watch kill_time kneel knuckle_down kowtow lactate lapse lay_over lay_rubber leaf level_off lie lie_back lie_down lie_low linger live_in_sin loaf lol look_alike look_round lose_count lose_weight lust luxuriate make_merry make_off make_sense make_time make_way malinger mambo masturbate meddle meditate menstruate meow merengue mingle misspeak misstep moo moonwalk mouth_off move_in move_on muck_about mushroom mutiny nosedive oink opt oscillate ovulate pamphleteer pander partake party pay_attention pay_one\'s_last_respects peak pee peep_out peer pelt_down perspire pertain phone_home pick_holes pick_up_the_pieces pick_up_the_tab pig_out pinch-hit pipe_down pirouette plateau play_hookey play_second_fiddle play_to_the_crowd plummet polka pontificate pour_down powwow preside press_ahead prevail pull_ahead pull_strings pull_the_plug pull_the_trigger punch_in push_the_envelope pussyfoot putter quibble quiver rage ramp reach_out read_lips rebel recidivate recoil recriminate recur reek reign relapse remain reminisce result retrogress reverberate reverse_the_charge revolt ribbit ripen_up rise rock_on rock_out rocket_up roister roll_around roll_in roll_on rush_off salivate salsa sashay scamper scheme scrape_by scuffle seem shape_up shimmer shimmy shop_around shrimp shudder sidle silt_up simmer_down simper sin sit_on_the_fence skateboard skitter skydive slalom slave_away sleep_in sleepwalk slither slouch slug_away smolder snicker sniffle snigger snore snowshoe snuggle_up sojourn spaz_out spazz_out spill_over spill_the_beans spin_out spiral splish spring_up sproing stand_back stand_by stand_out stand_pat stare steal_away steal_the_show steer_clear step_aside step_forward step_in stick_together stomp_off stop_dead stop_off stop_on_a_dime stop_over stride strike_back strut_one\'s_stuff succumb sunbathe sweat_bullets swelter take_a_look take_advantage take_aim take_care take_heed take_ill take_inventory take_notice take_one\'s_time take_part take_place take_pride take_refuge take_root take_shape take_sick take_the_floor take_turns talk_dirty talk_shop tamper tattle teethe telemarket tense_up tent thieve throb thumb_a_ride tie_the_knot tip_the_scale top_out totter transit transmigrate trek tremble trot_off troupe trundle_along tsk tsktsk tsk-tsk tumble_down turn_on_a_dime turn_one\'s_back turn_to_dust vacation vacillate vape verge video_conference waddle waft walk_out wallow want_in want_out water_ski watusi waver wayfare wee-wee weight-train welter whack_off wither window-shop wise_up wither_away wuther yackety-yak yak yap yarr yaw yo-yo zone_out zoom_in zoom_out)
-); end of *purely-intransitive-verbs*
+ ); end of *purely-intransitive-verbs*
 
 
 (defparameter *complement-free-verbs* (make-hash-table))
 
 (mapcar #'(lambda (x) (setf (gethash x *complement-free-verbs*) t))
 ;``````````````````````````````````````````````````````````````````````
-; NB: Many of these verbs take non-NP complements. *** faulty nomenclature!!
+; NB: These take neither NP-complements nor any others; thus they are
+;     included in the *purely-intransitive-verbs*
 ;
 ; Verbs never followed by an NP gap. Note: "behave" is included, even
 ; though it can be followed by an NP like "himself", because this can't
@@ -185,6 +186,15 @@ wuther yackety-yak yo-yo zone_out)
 ; (in addition ; to allowing a gap of type PP/NP, as all PP-complement-
 ; taking verbs do).
 ;
+; But later I needed a good list of PP-taking verbs so that ones that
+; are *not* PP-taking can have their PP adjuncts turned into ADVP.
+; Consequently, ignoring the subtleties immediately following, I've
+; put some verbs like "agree" and "balk" back in the list (but not ones
+; whose _pp subcat is much rarer than others -- e.g., "check" is more
+; often simply _np, less often _pp[with]_np[wh]; also PP[of] and PP[to]
+; are treated more or less uniformly as supplying args.)
+;
+; [SO, THE FOLLOWING IS NOT LONGER STRICTLY CONFORMED WITH:]
 ; E.g., "On what topics does the course focus?" is perfectly colloquial
 ; (as is "What topics does the course focus on?"); whereas we exclude 
 ; "agree", since gap-examples like "With whom do you agree?" probably
@@ -202,25 +212,25 @@ wuther yackety-yak yo-yo zone_out)
 ;     ??Off what list did you cross him?" vs "What list did you cross
 ;     him off (of)?"; ??Of what was he cured?" vs "What was he cured of?"
 ;     ??"At what are you driving?" vs "What are you driving at?"
-'(abscond abstain adhere adjust
-  affiliate agonize agonise ally apologize apologise appeal 
-  arbitrate argue arrive atone 
-  band_together  belong benefit 
+'(abscond abstain ascertain adhere adjust
+  affiliate agonize agonise agree ally apologize apologise appeal 
+  arbitrate argue arrive atone balk
+  band_together belong benefit 
   bicker bitch blaspheme blaze 
-  brag  campaign
+  brag break campaign check
   chum co-star co-habit collaborate collide
   collocate collude come come_across come_away come_back come_down come_out 
   come_off come_over come_round comment commiserate commune
   communicate complain comply concentrate concur condescend condole
-  confer confide conflict conform connive consent consist
+  confer confide confirm conflict conform connive consent consist
   consort conspire converse cooperate cope
   copulate correspond crawl cringe crusade culminate curtsy dabble
-  dance dawn deal default defect delve demur depart depend
+  dance dawn deal default defect deliberate delve demur depart depend
   derive desist despair detour deviate devolve dicker differ 
   differentiate digress dine direct disagree disapprove discourse
   discriminate disengage dismount dispose dissent dither
   dive diverge dote dovetail duel eavesdrop elope emanate embark
-  emerge emigrate encamp encroach enthuse escape experiment
+  emerge emigrate encamp encroach enquire enthuse escape experiment
   fall fawn feast fend feud fiddle flee flinch flirt flock focus
   forage fraternize fraternise fret frown fulminate function fuss
   gamble gape gargle gasp gawk gaze gibe glance glare glisten gloat
@@ -264,6 +274,23 @@ wuther yackety-yak yo-yo zone_out)
   welsh welter wince wink winter withdraw wonder wrangle wriggle yearn
   yield zero_in zoom zoom_in
  )); end of *pp[arg]-taking-verbs*
+
+"NOTE: The hash table *v_np_pp* is computed in the file
+       extract-data-from-alvey.lisp. 
+ The verbs considered are those in *strong-np+pp-taking-verbs* (below).
+ Alvey is used to find what prepositions the verb accepts in the PP
+ complement position; the keys to the table are (verb-stem preposition)
+ pairs."
+
+"NOTE: The hash table *v_{np}_* is computed in the file 
+       extract-data-from-alvey.lisp. 
+ This is indexed by a verb, and yields a non-NIL value (an occurrence
+ count in Alvey) if it has more entries lacking an NP complement than
+ ones that have such a complement; i.e., the verbs are weakly transitive.
+
+ At the same time, the global list *weakly-transitive-verbs* is created.
+ Note that these are actually *at most* weakly transitve, i.e., they
+ include the non-NP-taking verbs."
 
 (defparameter *strong-np+pp-taking-verbs* (make-hash-table))
 
@@ -406,7 +433,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ; includes some "strictly intransitive" verbs (not taking NP complements)
 ; like "remain". Not all V[_np_pred] are included; e.g., "called her
 ; brilliant" is ok, but you can't gap the AP: ??"How smart did he call
-; her _?" (cf., "How smart dishe consider her _?"; similarly "He came 
+; her _?" (cf., "How smart did he consider her _?"; similarly "He came 
 ; clean", vs *"How clean did he come _?"; some cases are hard to decide,
 ; e.g., "How smart do you find her _?" is possible but quite unlikely;
 ; similarly, "How cold do you keep the vaccine _?", "How large does he
@@ -517,7 +544,8 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ; So even though the present list gives the common cases, it may be
 ; better to include everything but purely transitive verbs and maybe
 ; some pure PP-taking verbs, like "collude"
-'(anticipate arrange ascertain ask assess attest calculate care check 
+'(anticipate arrange ascertain ask assess attest be calculate care check 
+                                                ;``` e.g., "this is why he ..."
   choose confide confirm consider contemplate count decide deliberate 
   demonstrate describe determine discern disclose discount discover 
   discuss devine divulge doubt enquire establish exclude explain express 
@@ -675,7 +703,7 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
   need nominate notify obligate oblige order perceive permit persuade 
   petition predestinate predestine predetermine predict predispose prefer 
   preordain press pressure presume prompt pronounce reckon recognise 
-  recognize remind require schedule school select send shape slate spur 
+  recognize remind require schedule school select shape slate spur 
   steel suffer supplicate suppose surmise suspect teach telegraph telex 
   tell tempt thank timetable train trouble trust understand urge want 
   warn warrant will wish
@@ -698,6 +726,33 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 
 ; ** We'll also need *pp-inf-taking-verbs*, e.g., "appealed to him to ..."
 ;    But we really need to particularize the prepositions
+
+; ** I was considering possible *prog-taking-verbs* and *np+prog-taking-verbs*,
+;    like those in, e.g., "He came running", or "He sent them packing", 
+;    or "He found her sitting on the porch", so that the VP[-ing] wouldn't
+;    be reified or made into an adverbial. But now I think this might best 
+;    be considered pred-taking or np+pred-taking respectively; maybe 
+;    create vp[pred]-taking, np+vp[pred]-taking lists? See SC_ING & OC_ING
+;    verbs in Alvey. 
+;
+;    But I find that I want to treat the subject-control _VP[-ing] verbs
+;    in Alvey as taking gerunds (thus nominals) as complements, e.g.,
+;    {abide, anticipate, admit, attempt, etc.
+;      
+;    Concerning OC_ING verbs in Alvey, I guess not all np+vp[pred]-taking 
+;    verbs allow other predicates, e.g., "appreciate". So let's enumerate
+;    np+prog-taking verbs:
+;
+(defparameter *np+prog-taking-verbs* (make-hash-table))
+
+(mapcar #'(lambda (x) (setf (gethash x *np+prog-taking-verbs*) t))
+;`````````````````````````````````````````````````````````
+'(abide anticipate appreciate behold bring catch countenance dread fancy
+  find get hate hear imagine keep like mind need notice observe overhear
+  prevent remember see send set show smell spy stand start stop visualize
+  visualise want watch))
+ ; Note: "mind" and "stand" are really only used as OC_ING with negation,
+ ;       or in questions, as in "{don't mind, can't stand} him smoking weed".
 
 (defparameter *inf-taking-nouns* (make-hash-table))
 
@@ -775,13 +830,19 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
  though till unless until while whilst whereas whereupon when whenever)
  ); end of *s-taking-prepositions*
 
-; The following was aimed at helping to create a predicate
+; The following verb list was aimed at helping to create a predicate
 ;  ![at-most-weakly-transitive-verb]
 ; to help repair BLIPP parses such as
 ;  *"He asked [S [NP his friend] [VP to collaborate with him.]]", or
 ;  *"They prompted [NP [NP newcomers] [SBAR to pair up]]."
 ; If the infinitive verb is at most weakly transitive, as for "collaborate"
-; and "pair up", the bad S or NP needs to be pried apart
+; and "pair up", the bad S or NP needs to be pried apart.
+
+; HOWEVER, I've so far written a "quick & dirty" version of that predicate,
+; using by precluding 
+;    *purely-intransitive-verbs*,
+;    *rarely-transitive-verbs*, and
+;    *pseudo-transitive-verbs*.
 
 ; In general, deciding whether an infinitive after an NP-object of a verb
 ; should attach to the N of the NP object, or to the verb, is pretty subtle.
@@ -813,6 +874,14 @@ weld wheedle will win wind wire withdraw withhold worm wrap wrest wring yield)
 ; someone  to <verb>", i.e., these are cases where there's likely to be
 ; a gap after the verb after all when they occur as N-postmodifying
 ; infinitives. 
+
+"I didn't mark this down, but I believe this is the *weakly-transitive-verbs*
+ list computed in the file extract-data-from-alvey.lisp.
+
+I probably noted that this still includes a lot of quite frequently
+transitive verbs, and decided to mark the ones that seem only weakly
+transitive with '*', extract these, and filter again. But I never did
+the latter. See above for the mental 'tests' to be used for selection."
 
 '(ABATE *ABORT ABRADE *ACCELERATE *ACCLIMATIZE ACCREDIT ACCUMULATE ACIDIFY
  *AD-LIB ADDLE ADJOIN *ADJUST ADORE *ADVERTISE  *AFFILIATE  *AGE AGGLOMERATE

@@ -2,6 +2,10 @@
 IN REVERSE CHRONOLOGICAL ORDER  (since July 2021)
 
 ################################################################################
+Last revisions Mar 12/22 -- many fixes, including ones for KA, ADV- etc.
+
+For some known "issues", see README
+=================================================================
 Jan 31/22
 
 The list of files being loaded by "init.lisp" has not changed.

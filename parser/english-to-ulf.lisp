@@ -2,14 +2,21 @@
 ; I'm borrowing the code from ~schubert/elf-to-sentences, main program
 ; 'process-sentence1.lisp', to get a (potentially somwhat postprocessed)
 ; parse tree, for use prior to parse tree to ULF conversion.
+; Currently this uses Charniak's BLLIP parser, but Hannah An has determined
+; that the Kitaev & Klein ("K&K") parser is a bit better, e.g., in handling
+; coordination. (Installation instructions are included herein, if a switch
+; to the K&K parser is desired.)
 ;
 ; Then the 'parse-tree-to-ulf' program is applied.
 ;
-; To add the input repairs and parse-tree repairs, we would neen to define
-; 'repeatedly-repair-parse-tree' (see below), and add various programs 
-; from "process-sentence1.lisp" in "elf-from-sentences.lisp":
+; Originally I had inended to use some preexisting parse-tree repair code,
+; by defining 'repeatedly-repair-parse-tree' (see below), and adding
+; various programs from "process-sentence1.lisp" in "elf-from-sentences.lisp":
 ;   repair-input, tokenize-simply, detokenize, repair-parse-tree,
 ;   repair-refined-parse-tree, hide-ttt-ops, unhide-ttt-ops, & maybe more
+; HOWEVER, I decided to use tt-based transformation rules instead,
+; defined in "preprocessing-rules.lisp". This is a much more modular
+; approach, and is directly geared towards supporting conversion to ULF.
 
 (in-package :lenulf)
 

@@ -234,7 +234,12 @@
        | January| | February| | March| | April| | May| | June| | July| | August| 
        | September| | October| | November| | December| | Christmas|)
      (next/last next last)
-     (of/to/by of to by); these are usually argument-suppliers
+     (of/to of to)
+     (of/to/by of/to by); these are usually argument-suppliers
+     (SPACE-TIME-PREP aboard above after along amid amidst among amongst
+      at before behind below beside between betwixt beyond by
+      during in in_front_of inside near on on_board outside
+      till under underneath until upon within)
      (WHNP WDT)
      (WHXP WHNP WHADJP WHPP WHADVP)
      (DT DT CD PRP$); initial CD is often a DT
@@ -242,7 +247,7 @@
      (RB RBR RBS NEG); ex. of NEG: (NEG (NOT))
      ; (NOT-PREP-OR-SYMB (not (member atm '(IN -SYMB-))))
      ;    replaced by !NOT-PREP-OR-SYMB
-     (NP-i NP-1 NP-2 NP-3 NP-4); e.g., rightward displace't
+     (NP- NP-1 NP-2 NP-3 NP-4 NP-5 NP-6 NP-7 NP-8); e.g., rightward displace't
      (CC \, \;); for detecting end of an NP
      (and/or and \& or \'r)
      (SUBORD-CONJ as since although though because whereas even-though if
@@ -389,7 +394,14 @@
             thrombisis torture toss transfer trip
             tumble turnabout turnaround turnover tutelage twitch
             use upset vasectomy venture voyage 
-            worship wrapup) ; 
+            worship wrapup ; 
+           ; Mar 11/22: added event nouns ending in -ance, which are
+           ; rarer than non-event nouns with that ending
+            disturbance dance ; avoidance ? Test: "<it> lasted so-and-so-long"
+                              ;             Test: "during <it>"         
+            seance romance performance governance clearance
+            diapearance deliverance renaissance reconnaissance
+            advance)
            (return T) )
           ;
           ; We add a case here for exceptions to the rules at the end, 
@@ -471,17 +483,18 @@
             intellectual victual spiritual bisexual homosexual heterosexual
             naval rival oval larval interval loyal
 
-            significance riddance impedance chance ambiance fiance
-            affiance alliance appliance lance balance imbalance semblance
-            parlance conformance ordnance countenance sustenance provenance
-            ordinance finance luminance governance forbearance clearance
-            encumbrance hindrance furtherance temperance
-            intemperance perseverance durance endurance insurance
-            nuisance reflectance inductance conductance transconductance
-            capacitance inheritance acquaintance susceptance inertance
-            stance circumstance instance emittance remittance transmittance
-            nuance grievance relevance connivance contrivance allowance
-            abeyance conveyance annoyance
+          ; Mar 11/22: no longer needed -- no explicit check for "-ance".
+          ; accordance significance riddance impedance chance ambiance fiance
+          ; affiance alliance appliance lance balance imbalance semblance
+          ; parlance conformance ordnance countenance sustenance provenance
+          ; ordinance finance luminance governance forbearance clearance
+          ; encumbrance hindrance furtherance temperance
+          ; intemperance perseverance durance endurance insurance
+          ; nuisance reflectance inductance conductance transconductance
+          ; capacitance inheritance acquaintance susceptance inertance
+          ; stance circumstance instance emittance remittance transmittance
+          ; nuance grievance relevance connivance contrivance allowance
+          ; abeyance conveyance annoyance
 
             apartment armament cement compartment complement compliment
             condiment decrement department detriment
@@ -498,7 +511,7 @@
                 (ends-in backword '(#\S #\I #\O #\N))
                 (ends-in backword '(#\T #\I #\O #\N))
                 (ends-in backword '(#\A #\L))
-                (ends-in backword '(#\A #\N #\C #\E))
+              ; (ends-in backword '(#\A #\N #\C #\E)); replced by explicit list
                 (ends-in backword '(#\M #\E #\N #\T)) )
             (return T) )
  )); end of event-noun

@@ -119,7 +119,8 @@
              (PDT 'd) ; might be re-formulated, e.g., "half"-> "one half of" [a pie]
              (POS nil); temporary -- possessive 's is left as such (later rephrased 
                       ; in terms of "the N poss-by ...")
-             ((PRP PRP$) 'pro)
+             (PRP 'pro)
+             (PRP$ 'd)
              ((PRT RP) 'prt); same, i.e., particle?? To be attached to verb
              (SYM 'c); to be modified to pipes, perhaps
              (UH 'x) ; However, filler sounds like "er" are deleted from ULF,

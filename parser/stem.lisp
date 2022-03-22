@@ -138,6 +138,7 @@
                        (beasties 'BEASTIE)
                        (movies 'MOVIE)
                        (bowies 'BOWIE)
+                       ((monies moneys) 'MONEY)
               ; (mostly) Latinate exceptions to "...uses"
               ; --> "...use", in order of frequency;
               ; Also "...ses" --> "...sis".
@@ -281,6 +282,8 @@
            (return-from stem 'HAVE)); a guess! It could be "would"
        (if (and (eq tag 'AUX-CF) (member word '(had \'d)))
            (return-from stem 'HAD)); subjunctive stays as "had"
+       (if (and (member tag '(AUXZ AUXP)) (eq word 'has))
+           (return-from stem 'HAVE))
        (if (member tag '(VBP AUXP)) (return-from stem word)) 
                        ; actually some modals are tense-ambiguous;
                        ; e.g., "would" in "He said he would do it"
