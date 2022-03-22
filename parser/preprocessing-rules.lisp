@@ -206,6 +206,12 @@
    '((NP *expr (.NN +atom) ?expr (SBAR (-NONE- !zero) (S (NP +expr) +expr)))
      (ADJP 2 3 4 (NP (-SYMB- tht) 5.3))))
 
+(defrule *associate-pp-after-aux+vp-with-main-verb*
+; E.g., "They have (VP built (a house)) (in Iowa)" -- the kind of structure
+;       assigned in Brown -- should probably have (a house), (in Iowa) as sisters
+   '((S +expr (.AUX !list) *expr (VP +expr) (PP +expr) *expr)
+     (S 2 3 4 (VP 5.2 6) 7)))
+
 (defrule *comb-aux-vp* ; NEEDED FOR BROWN TREES, WHICH USE (S [NP] [AUX] (VP ...))
 ; E.g., "He has left the crime scene."
 ; Add another level of VP structure for a "floating" auxiliary in an S:
@@ -492,6 +498,10 @@
 ; E.g., (AUX (VBZ has)) --> (AUXZ has)
    '((AUX (VBZ !atom)) (AUXZ 2.2)))
 
+(defrule *form-auxp-from-aux-vbp*
+; E.g., "They have built some churches"
+   '((AUX (VBP !atom)) (AUXP 2.2)))
+
 (defrule *form-auxd-from-aux-vbd*
 ; E.g., (AUX (VBD had)) --> (AUXD had)
    '((AUX (VBD !atom)) (AUXD 2.2)))
@@ -556,26 +566,74 @@
 (defrule *insert-you-in-please-imperative*
 ; e.g., "please {,} go away" -- now a VP by the previous rule
 ; NB: If this is VP-embedded, we'll drop the {you}.pro again
-   '((S ?non-np (VP (ADV-S please) ?[comma] (VP (VB !atom) *expr)) *expr)
+   '((S ?[non-np] (VP (ADV-S please) ?[comma] (VP (VB !atom) *expr)) *expr)
      (S 2 (S (NP (-SYMB- {you}.pro)) 3.2 3.4) 4))) 
 
 (defrule *separate-obj-pred-combination-after-imperative-v*
 ; e.g., "Make it very spicy"; "Let's dance"; "Please don't let him fail."
 ; BLLIP incorrectly makes an S out of an NP complement and any other complement.
-   '((!atom *non-np (VP (.VB !atom) (S (NP +expr) +expr)) *expr)
+   '((!atom *[non-np] (VP (.VB !atom) (S ![non-null-np] +expr)) *expr)
      (1 2 (VP 3.2 3.3.2 3.3.3) 4)))
 
 (defrule *insert-you-in-simple-imperative*
 ; e.g., "Make it very spicy" (in VP form after previous rule)
 ; NB: If this is VP-embedded, we'll drop the {you}.pro again
-  '((!atom *non-np (VP (VB !atom) *expr) *expr)
-    (1 2 (S (NP (-SYMB- {you}.pro)) 3) 4)))
+  '((S *[non-np-non-aux] (VP (VB !atom) *expr) *expr)
+    (S 2 (S (NP (-SYMB- {you}.pro)) 3) 4)))
+
+(defrule *insert-you-in-vp-question*
+; e.g., "Coming to the party?"; "Feeling ok?"; "Got it?";
+; The result wil still lack (pres be.v), (pres be.aux-v), (pres have.aux-v)
+; but there's no easy way to insert this here -- leave to postprocessing;
+; (note that we should then really have {be.v}, etc.);
+  '(((.S (NP (-NONE- *)) (VP *expr)) ?expr (\. ?))
+    ((1.1 (NP (-SYMB- {you}.pro)) 1.3) 2 (\. ?))))
+
+(defrule *insert-you-in-double-imperative*
+; e.g., "Entertain me and amuse me!"
+; This rule also corrects for the tendency of the parser to mark the
+; second verb of a coordinated imperative as VBP rather than VB.
+; NB: If this is VP-embedded, we'll drop the {you}.pro again
+  '((S *[non-np-non-aux] (VP (VP (VB !atom) *expr) ![coord] 
+                           (VP (.VB !atom) *expr)) *expr)
+    (S 2 (S (NP (-SYMB- {you}.pro)) (VP 3.2 3.3 (VP (VB 3.4.2.2) 3.4.3)) 4))))
 
 (defrule *insert-you-in-brown-imperative*
 ; e.g., "Make it very spicy" (Brown makes it an S with subject (NP (-NONE- *)))
 ; NB: If this is VP-embedded, we'll drop the {you}.pro again
   '((S (NP (-NONE- *)) (VP (VB !atom) *expr) *expr)
     (S (NP (-SYMB- {you}.pro)) 3 4)))
+
+(defrule *insert-you-in-brown-do-imperative*
+; e.g., "only don't believe a word they say"; ("do" may be misparsed as VBP)
+;       (S (NP (-NONE- *) ) (AUX (VBP do) ) (NEG (RB n\'t) ) (VP (VB ...)))
+  '((S (NP (-NONE- *)) (AUX (.VB do)) *[advp] (VP (VB !atom) *expr))
+    (S (NP (-SYMB- {you}.pro)) (AUX (VB do)) 4 5)))
+
+(defrule *insert-you-in-faulty-brown-do-imperative*
+; e.g., "only don't believe a word they say"; ("do" may be misparsed as non-aux)
+;       (S (NP (-NONE- *) ) (VP ![do] (NEG (RB n\'t)) (VP (VB ...))))
+  '((S (NP (-NONE- *)) (VP ![do] *[advp] (VP (VB !atom) *expr)))
+    (S (NP (-SYMB- {you}.pro)) (AUX (VB do)) 3.3 3.4)))
+
+(defrule *insert-you-in-brown-double-s-imperative*
+; e.g., "Make it spicy and add cumin" (Brown may use two (NP (-NONE- *)))
+; NB: If this is VP-embedded, we'll drop the {you}.pro again
+  '((S (S (NP (-NONE- *)) (VP (VB !atom) *expr)) ![coord]
+       (S (NP (-NONE- *)) (VP (VB !atom) *expr)))
+    (S (S (NP (-SYMB- {you}.pro)) 2.3) 3 
+       (S (NP (-SYMB- {you}.pro)) 4.3))))
+
+; ** Should also insert rules for double Brown do-imperatives
+;    (with "do" in one conjunct or both)
+
+(defrule *insert-you-in-brown-double-vp-imperative*
+; e.g., "Make it spicy and add cumin" (Brown may use (S (NP (-NONE- *))
+;                (VP (VP (VB ..) ...) (CC and/or/but) (VP (VB ..) ...))
+; NB: If this is VP-embedded, we'll drop the {you}.pro again
+  '((S (NP (-NONE- !atom)) (VP (VP (VB !atom) *expr) ![coord]
+                               (VP (VB !atom) *expr)))
+    (S (NP (-SYMB- {you}.pro)) 3))) 
 
 (defrule *remove-inserted-you-in-a-larger-vp*
 ; e.g., "I want you to MAKE IT VERY SPICY"
@@ -587,6 +645,22 @@
 ;       "I know the man with *[whom you spoke]." NB: Wrong SBAR grouping
    '((.XP *expr (PP (IN !atom) (SBAR (WHNP +expr) (S +expr))) *expr)
      (1 2 (SBAR (WHPP 3.2 3.3.2) 3.3.3) 4)))
+
+(defrule *remove-remaining-empty-np-before-aux-to*
+; e.g., "...can be generalized to include ..." is rendered as
+;    (S ... (VP (VBN generalized) (S (NP (-NONE- *)) (AUX (TO to)) ...)))
+   '((S (NP (-NONE- *))  (AUX (TO to)) *expr) (VP 3 4)))
+
+(defrule *remove-remaining-empty-np-before-vp[aux-to]*
+; e.g., "...to reduce it ..." is rendered as
+;  (S (NP (-NONE- *)) (VP (TO TO) (VP (VB REDUCE) (NP (PRP IT))...)))
+   '((S (NP (-NONE- *)) (VP (AUX (TO to)) *expr) *expr) (VP 3 4)))
+
+(defrule *remove-remaining-empty-np-before-vp[to]*
+; e.g., "...to reduce it ..." is rendered as
+;  (S (NP (-NONE- *)) (VP (TO TO) (VP (VB REDUCE) (NP (PRP IT))...)))
+   '((S (NP (-NONE- *)) (VP (TO to) *expr) *expr) (VP 3 4)))
+
 
 (defrule *reunite-pp-in-sq-with-preceding-noun*
 ; e.g., "Which type of tango did you say you danced?" BLLIP makes "of tango"
@@ -717,8 +791,16 @@
 (defrule *drop-sentence-initial-np[none]*
 ; e.g., (NP (NP (DT THE) (NNS GENERALS))      [from Brown corpus]
 ;           (SBAR (WHNP (WP WHO)) (S (NP (-NONE- T)) (VP (VBD HELD) ...))))
-   '((.SBAR (WHNP !expr) (S (NP (-NONE- T)) ?expr (VP +expr)) *expr)
-     (1 (S 2 3.3 3.4) 4)))
+   '((.SBAR (WHNP !expr) (S (NP (-NONE- T)) ?expr (VP +expr) *expr))
+     (1 2 3.3 3.4 3.5))) ; modified 3/8/22 disallowing more stuff after (S ...)
+
+(defrule *drop-np[none]-before-aux-to*
+; e.g., (S (NP (-NONE- *) ) (AUX (TO to) ) (VP (VB hear) (NP ...)))
+   '((S (NP (-NONE- !atom)) (AUX (TO to)) *expr) (VP 3 4))) 
+
+(defrule *drop-np[none]-before-to*
+; e.g., (S (NP (-NONE- *) ) (TO to) (VP (VB hear) (NP ...)))
+   '((S (NP (-NONE- !atom)) (!not-prep to) *expr) (VP 3 4)))
 
 (defrule *change-trace-t-to-h*
 ; This is for occurrences of (-NONE- T) in Brown, which are traces --
@@ -765,6 +847,10 @@
 ; E.g., "I doubt THAT." "THAT's all." "THAT's all I can offer you."
    '((NP ![det-sing-alone]) (NP 2 (NN {ref}))))
 
+(defrule *expand-that-preceding-pp*
+; E.g., "analogous to (NP (DT that) (PP (IN for) ...))"
+   '((NP (DT that) (PP +expr)) (NP (DT that) (NN {ref}) 3)))
+
 (defrule *change-jjs-most-to-dt-most-when-np-initial*
 ; E.g., "MOST students passed the course"; "Most got an A"
 ; If there's no head noun, the next rule inserts (NNS {ref})
@@ -794,12 +880,18 @@
 (defrule *change-prep-clause-to-prep-ps-clause*
 ; E.g., "While/though/if he worked, nothing happened."
 ;       "He whistled while he worked."
-   '((SBAR (IN !not-that) (S +expr)) (SBAR (PS 2.2) 3)))
+;       "...for/as/since the elasticty is related to various properties..."
+   '((.S *expr (IN !not-that) (S +expr)) (1 2 (S (PS 3.2) 4))))
 
 (defrule *change-pre-sentential-when-clause-to-when-ps-clause*
 ; E.g., "WHEN it rains, it pours." "WHERE there is smoke, there is fire."
    '((!atom ?expr (SBAR (!atom (WRB .when)) (S +expr)) ?[comma] (S +expr) *expr)
      (1 2 (SBAR (ADVP (PS 3.2.2.2)) 3.3) 4 5 6)))
+
+(defrule *change-prep-clause-within-pp-to-prep-ps-clause*
+; E.g., "It happened suddently, {just as, while} he left."
+;       "...for/as/since the elasticty is related to various properties..."
+   '((.PP *expr (IN !not-that) (S +expr)) (1 2 (S (PS 3.2) 4))))
 
 ; (defrule *reify-whnp-object*
 ; ; E.g., "I don't understand what you are doing" (or "... where you're heading"); 
@@ -935,6 +1027,13 @@
     '((!atom *expr (!not-prep-or-symb +expr) (NP (NNP .WEEKDAY)) *expr)
       (1 2 3 (ADVP (-SYMB- adv-e) (PP (-SYMB- {during}.p) 4)) 5)))
 
+(defrule *reshape-premodified-now*
+; e.g. "right now", "just now", etc., are (ADVP (RB ..) (RB now)). We want
+;       and adj form of "now", and regain the ADVP via ADV-E:
+; This preempts the default rule for combining RB RB, treated as ADV-A
+   '((ADVP (RB !atom) (RB now)) 
+     (ADVP (-SYMB- ADV-E) (ADJP (ADVP (-SYMB- MOD-A) 2) (JJ now)))))
+
 (defrule *add-prep-for-definite-embedded-time-np*
 ; E.g., "I know what you did last summer"; "I'll do it {next week}/{this evening}"
     '((!atom *expr (!not-prep-or-symb +expr) 
@@ -966,20 +1065,41 @@
 ;    BUT THIS REQUIRES CAUTION, E.G., "JULY WAS HOT", AND "HER DAUGHTER,
 ;    JUNE", AND "1972 DEMONSTRATORS WERE HURT".
 
-(defrule *make-metric-np-before-pp-into-modifier*
-; E.g., "five years after the war" should be of type 
-;       (PP ((ADVP five years) (PP after the war))), not
-;       (NP five years (after the war)), or (NP five years) (PP after the war)
+(defrule *make-metric-np-initiating-a-pp-into-a-pp-modifier*
+; E.g., "five years after the war" should be of general type 
+;       (PP ((ADVP five years) (PP after the war))), not as per BLLIP,
+;       (PP (NP five years) after (NP the war))
 ; cf., "shortly after the war"
-   '((NP (CD +expr) +expr (PP +expr))
-     (PP (-SYMB- adv-e) (PP (-SYMB- {at}.p) (NP 2 3)) 4)))
+   '((PP (NP (CD +expr) +expr) (IN !expr) (NP +expr))
+     (PP (ADVP (-SYMB- mod-a) (NN (JJ 2.2.2) 2.3)) (PP 3 4)))) 
+
+; I DECIDED AGAINST THE NEXT 2 RULES BECAUSE THE WRONG BROWN ANNOTATION
+; IS CORRECT FRO ANALOGOUS EXAMPLES, LIKE "FIVE CHILDREN IN THE PARK",
+; OR "FIVE CHILDREN IN THE PARK ON THE SWINGS"
+; (defrule *make-metric-np-continued-with-a-pp-into-a-pp-modifier*
+; ; E.g., "five years after the war" should be of general type 
+; ;       (PP ((ADVP five years) (PP after the war))), not (as per Brown)
+; ;       (NP five years (PP after the war))
+; ; cf., "shortly after the war"
+;    '((NP (CD +expr) +expr (PP +expr))
+;      (PP (ADVP (-SYMB- mod-a) (NN (JJ 2.2) 3)) 4))) 
+; 
+; (defrule *make-metric-np-initiating-a-pp-sequence-into-a-pp-modifier*
+; ; E.g., "five years after the war on the aniversary of D-Day" should 
+; ;        be of general type 
+; ;       (PP (PP ((ADVP five years) (PP after the war))) (PP on D-Day)), 
+; ;       not (NP five years (PP after the war) (PP on D-Day))
+; ; cf., "shortly after the war"
+;    '((NP (CD +expr) +expr (PP +expr) +expr)
+;      (PP (PP (ADVP (-SYMB- mod-a) (NN (JJ 2.2) 3)) 4) 5))) 
 
 (defrule *change-wdt-to-wp-rel*
 ; In context (NP ...) (SBAR (WHNP (WDT ...) ..) ...), WDT should be WP-REL.
 ; (For SBARQ instead of SBAR, we have a question and so WDT remains WDT.)
-; E.g., "[the car] that he bought"
-   '((!atom *expr (NP +expr) (SBAR (WHNP (WDT !atom)) +expr) *expr) 
-     (1 2 3 (SBAR (WHNP (WP-REL 4.2.2.2)) 4.3) 5)))
+; E.g., "[the car] that he bought"; "the old car, which he traded in";
+; The comma is retained for now (dropped later): nonrestrictive relclause
+   '((!atom *expr (NP +expr) ?[comma] (SBAR (WHNP (WDT !atom)) +expr) *expr) 
+     (1 2 3 4 (SBAR (WHNP (WP-REL 5.2.2.2)) 5.3) 6)))
 
 (defrule *change-in-to-wp-rel*
 ; In context (NP ...) (SBAR (WHNP (IN that) ..) ...), IN should be WP-REL.
@@ -1001,40 +1121,49 @@
                               
 (defrule *change-wp-to-wp-rel*
 ; In context (NP ...) (SBAR (WHNP (WP ...) ..) ...), WP should be WP-REL.
-; E.g., "[the man] who called", "[the man] whom everone admires"
-   '((!atom *expr (NP +expr) (SBAR (WHNP (WP !atom)) +expr) *expr)
-     (1 2 3 (SBAR (WHNP (WP-REL 4.2.2.2)) 4.3) 5)))
+; E.g., "[the man] who called", "[that man] {,} whom everone admires"
+; Keep comma (if any) for now, marking a nonrestrictive relclause (drop later)
+   '((!atom *expr (NP +expr) ?[comma] (SBAR (WHNP (WP !atom)) +expr) *expr)
+     (1 2 3 4 (SBAR (WHNP (WP-REL 5.2.2.2)) 5.3) 6)))
 
 (defrule *change-wp$-to-wp$-rel-and-possessive*
 ; In context (NP ...) (SBAR (WHNP (WP$ ...) ..) ...), WP$ should be a relative
 ; determiner consisting of WP$-REL and 's (e.g., "whose life" ==> "who's life")
-; E.g., "[the man] whose life she saved"
-   '((!atom *expr (NP +expr) (SBAR (WHNP (WP$ !atom) +expr) +expr) *expr) 
-     (1 2 3 (SBAR (WHNP (WDT-REL (WP$-REL 4.2.2.2) (POS \'s)) 4.2.3) 4.3) 5)))
+; E.g., "[the man] whose life she saved"; "[this man] {,} whose life she saved"
+; Keep comma (if any) for now (dropped later): marks nonrestrictive relclause;
+  '((!atom *expr (NP +expr) ?[comma] (SBAR (WHNP (WP$ !atom) +expr) +expr) *expr) 
+    (1 2 3 4 (SBAR (WHNP (WDT-REL (WP$-REL 5.2.2.2) (POS \'s)) 5.2.3) 5.3) 6)))
+
+(defrule *change-wdt-to-wp-rel*
+; In context (NP ...) (SBAR (WHADVP (WDT ..) ..) ...), WDT should be WP-REL.
+; (For SBARQ instead of SBAR, we have a question and so WDT remains WDT.)
+; E.g., "[the new car] {,} which he bought recently"; keep comma (if any) 
+; for now (dropped later): marks nonrestrictive relclause;
+   '((!atom *expr (NP +expr) ?[comma] (SBAR (WHNP (WDT !atom)) +expr) *expr)
+     (1 2 3 4 (SBAR (WHNP (WP-REL 5.2.2.2)) 5.3) 6)))
 
 (defrule *change-wrb-to-wrb-rel*
-; In context (NP ...) (SBAR (WHADVP (WDT ...) ..) ...), WDT should be DT-REL.
+; In context (NP ...) (SBAR (WHADVP (WRB ...) ..) ...), WRB should be WRB-REL.
 ; (For SBARQ instead of SBAR, we have a question and so WDT remains WDT.)
-; E.g., "[the car] that he bought"
+; E.g., "[the reason] why he left", "[the time] when dinosaurs roamed the Earth"
    '((!atom *expr (NP +expr) (SBAR (WHADVP (WRB !atom)) +expr) *expr)
-     (1 2 3 (SBAR (WHADVP (WP-REL 4.2.2.2)) 4.3) 5)))
+     (1 2 3 (SBAR (WHADVP (WRB-REL 4.2.2.2)) 4.3) 5)))
 
 (defrule *change-wp-to-wp-rel-within-a-relative-pp*
-; E.g., "I know the man with WHOM you talked"; "I know the town from which he hails"
+; E.g., "I know the man with WHOM you talked"; 
+;       "I know the town from which he hails"
    '((!atom *expr (NP +expr) (PP !expr (SBAR (WP !atom) *expr) *expr) *expr)
      (1 2 3 (PP 4.2 (SBAR (WP-REL 4.3.2.2) 4.3.3) 4.4) 5)))
 
 (defrule *change-whnp-embedded-wp-to-wp-rel-within-a-relative-pp*
-; E.g., "I know the man with WHOM you talked"; "I know the town from which he hails"
-   '((!atom *expr (NP +expr) (PP !expr (SBAR (WHNP (WP !atom)) *expr) *expr) *expr)
-     (1 2 3 (PP 4.2 (SBAR (WP-REL 4.3.2.2.2) 4.3.3) 4.4) 5)))
-
-; TBC: WHAT ABOUT WP-REL, WDT-REL IN NONRESTRICTIVE REL-CLAUSES?
+; E.g., "I know the man with WHOM you talked"; 
+;       "I know the town from which he hails"
+  '((!atom *expr (NP +expr) (PP !expr (SBAR (WHNP (WP !atom)) *expr) *expr) *expr)
+    (1 2 3 (PP 4.2 (SBAR (WP-REL 4.3.2.2.2) 4.3.3) 4.4) 5)))
 
 (defrule *comb-such-a*
-; Delete the indefinite "a" or "an" from, e.g., "such a great party",
-; "such an idiot"
-    '((NP (PDT such) (DT .A/AN) *expr) (NP (DT such) (NP (-SYMB- =) 3 4))))
+; Introduce equality e.g., in "such (= (a great party))", "such (= (an idiot))"
+    '((NP (!atom such) (DT .A/AN) *expr) (NP (DT such) (NP (-SYMB- =) 3 4))))
 
 (defrule *comb-cd-quote-cd-double-quote*
 ; e.g., "He is 6'2'' tall." BLLIP: (ADJP (CD 6) (|''| |'|) (CD 2) (|''| |''|) ...)
@@ -1056,6 +1185,31 @@
 (defrule *pluralize-nn-inch*
 ; Change (NN |''|) to (NNS |''|)
     '((NN |''|) (NNS |''|)) )
+
+(defrule *wrap-adv-s-around-of+course*
+    '((*not-advp (PP (IN of) (NP (NN course))) *expr) 
+      (1 (ADVP (-SYMB- adv-s) 2) 3)))
+
+(defrule *wrap-adv-s-around-in+fact*
+    '((*not-advp (PP (IN in) (NP (NN fact))) *expr) 
+      (1 (ADVP (-SYMB- adv-s) 2) 3)))
+
+(defrule *wrap-adv-s-around-after+all*
+    '((*not-advp (PP (IN after) (NP (CD all))) *expr) 
+      (1 (ADVP (-SYMB- adv-s) (PP (IN after) (NP (NN all)))) 3)))
+
+(defrule *wrap-adv-s-around-for+sure*
+    '((*not-advp (PP (IN for) (NP (JJ sure))) *expr) 
+      (1 (ADVP (-SYMB- adv-s) (PP (IN for) (NP (NN sure)))) 3)))
+
+(defrule *wrap-adv-s-around-without+a+doubt*
+    '((*not-advp (PP (IN without) (NP (CD a) (NN doubt))) *expr) 
+      (1 (ADVP (-SYMB- adv-s) 2) 3)))
+
+(defrule *wrap-adv-s-around-as-for-np*
+   '((*not-advp (PP (IN as) (PP (IN for) (NP +expr))) ?[comma] *expr)
+     (1 (ADVP (-SYMB- adv-s) 2) 4)))
+     
 
 ; Auxiliary editing
 ;``````````````````
@@ -1134,7 +1288,7 @@
 ; e.g., "I know what you've done." "What have you not done yet?" "Have you left?"
 ;       (But not in "Will you have left by then?")
 ; After possible non-auxiliaries, if followed by a VP, "have" is (AUXP have)
-   '((!atom *[non-aux-part] (VP ?expr (!atom .have/ve) ?expr (VP +expr)))
+   '((!atom *[non-aux] (VP ?expr (!atom .have/ve) ?expr (VP +expr)))
      (1 2 (VP 3.2 (AUXP 3.3.2) 3.4 3.5))))
 
 (defrule *form-vbz-has*
@@ -1145,7 +1299,7 @@
 (defrule *form-vbp-have*
 ; e.g., "I like the house you have." "You have it all."
    '((.S (NP (!not-none +expr) *expr) *expr 
-         (VP *[non-aux-part] (!atom have) *expr))
+         (VP *[non-aux] (!atom have) *[non-vp]))
      (1 2 3 (VP 4.2 (VBP have) 4.4))))
 
 (defrule *form-auxd-had*
@@ -1330,7 +1484,7 @@
 (defrule *change-vbn-to-vben-after-have*
 ; E.g., "Had he not yelled ..." wrongly would give (past yell.v)
 ; NB: '.have' allows any form of "have";
-   '((!atom (.AUX .have) *[non-aux-be-verb] (VP *expr (VBN !atom) *expr) *expr)
+   '((!atom (.AUX .have) *[not-aux-be-verb] (VP *expr (VBN !atom) *expr) *expr)
      (1 2 3 (VP 4.2 (VBEN 4.3.2) 4.4) 5)))
 
 (defrule *change-had-to-subjunctive-in-inverted-sbar*
@@ -1430,7 +1584,7 @@
 (defrule *add-ans-to-operator-for-wh-vp-nominal*
 ; e.g., "I know who called"; "I know what needs to be done";
 ;        But avoid e.g., "{the man} who called"
-   '((!atom *non-np (.SBAR (WHNP +expr) (S (VP ?expr (.VB/AUX !atom) *expr))))
+   '((!atom *[non-np] (.SBAR (WHNP +expr) (S (VP ?expr (.VB/AUX !atom) *expr))))
      (1 2 (NP (-SYMB- ans-to) (S 3.2 3.3.2)))))
 
 
@@ -1486,7 +1640,7 @@
      (S (-SYMB- sub) 2 4)))
 
 (defrule *add-sub-operator-to-s-with-topicalized-whnp*
-; e.g., "What a mess you made!"
+; e.g., "What a mess you made!" 
     '((.SBAR (.NP +expr) (.S (NP +expr) ?expr (VP +expr) *expr))
       (1 (-SYMB- sub) 2 3)))
 
@@ -1518,16 +1672,27 @@
 ; RULES THAT CHANGE MORE THAN A WORD
 ;````````````````````````````````````
 (defrule *comb-adv-adjp* 
-; For an adv immediately preceding an adj or adjp, add a level of adjp structure:
-   '((*expr +list (.RB +expr) (ADJP +expr) *expr) (1 2 (ADJP 3 4) 5)) )
+; e.g., "much smaller nuclear weapons"; Brown has flat structures like
+;       (NP (RB much) (JJR smaller) (JJ nuclear) (NNS weapons))
+; For an adv immediately preceding an adj or adjp, add a level of adjp 
+; structure; but avoid inward recursion!
+   '((+not-adjp (.RB +expr) (.ADJP +expr) *expr) (1 (ADJP 2 3) 4)) )
+
+(defrule *comb-adv-adjp-within-longer-adjp* 
+; e.g., "much smaller nuclear weapons"; some parsers might give
+;       (NP (ADJP (RB much) (JJR smaller) (JJ nuclear)) (NNS weapons))
+; For an adv immediately preceding an adj or adjp, add a level of adjp 
+; structure; but avoid inward recurion!
+   '((.ADJP +expr (.RB +expr) (.ADJP +expr) *expr) (1 2 (ADJP 3 4) 5)) )
 
 (defrule *reformat-advp-rb-rb*
 ; e.g., (ADVP (RB steadily) (RB enough)) ==> 
 ;       (ADVP (-SYMB- mod-a) (ADJP (RB steadily) (JJ enough)))
 ; ** Hmm, this actually seems backward: "steadily enough" = "sufficiently
-;    steady"; thus, (ADVP (-SYMB- mod-a) (ADJP (RB enough) (JJ steady)))
+;    steadily"; thus, (ADVP (-SYMB- adv-a) (ADJP (RB enough) (JJ steady)))
+;    But in other cases, like "quite rapidly" we don't want to invert.
     '((ADVP (.RB +expr) (RB !atom)) 
-      (ADVP (-SYMB- adv-a) (ADJP (RB 2.2) (JJ 3.2)))) )
+      (ADVP (-SYMB- adv-a) (ADJP (RB 2.2) (JJ (adv2adj! '3.2))))) )
 ; **                ^^^^^ in some cases, like "right now", this should be 'adv-e'
   
 (defrule *comb-nn-nn*
@@ -1550,9 +1715,9 @@
 
 (defrule *comb-cc-joined-nns*
 ; e.g., "[I removed] the water meter and screws."
-; For two CC-joined NNs (possibly with modifiers) form conjoined NPs
-   '((NP (.DT !atom) *list (.NN +expr) (.CC !atom) *list (.NN +expr)) 
-     (NP (NP 2 3 4) 5 (NP 6 7))) )
+; For two CC-joined NNs/NNPs (possibly with modifiers) form conjoined NPs:
+   '((NP (.DT !atom) *list (.NN/NNP +expr) (.CC !atom) *list (.NN/NNP +expr)) 
+     (NP (NP 2 3 4) 5 (NP 2 6 7))) ); NB: inserting extra determiner
 
 (defrule *comb-cc-joined-adjs*
 ; e.g., (NP (DT a) (JJ smart) (CC and) (JJ savvy) (NN guy))
@@ -1564,7 +1729,7 @@
 ; e.g., (NP (DT the) (JJ former) (NN mayor)) -->
 ;       (NP (DT the) (MOD-N former) (NN mayor))
    '((+expr (.JJ .ATTR-JJ) *expr (.NN +expr) *[non-np-compl]) 
-     (1 (MOD-N 2.2) 3 4 5)))
+     (1 (MOD-N 2.2) 3 4 5))); this gives, e.g., former.mod-n
 
 (defrule *shift-adj-to-modifier-before-nn*
 ; e.g., (NP (JJ big) (NN dog)) --> 
@@ -1572,6 +1737,12 @@
 ; e.g., (NP (ADJP (RB very) (JJ big)) (NN dog))  -->
 ;       (NP (ATTR (-SYMB- MOD-N) (ADJP (RB very) (JJ big))) (NN dog))
    '((+expr (.ADJP +expr) (.NN +expr) *[non-np-compl])
+     (1 (ATTR (-SYMB- mod-n) 2) 3 4)))
+
+(defrule *shift-adj-to-modifier-before-modifiers+nn*
+; e.g., "[a] great many small nuclear weapons";
+;            ````````` (ADJP (MOD-A great) (JJ many)) (JJ small) ... (NN{S} ...)
+   '((*expr (.ADJP +expr) *expr (.NN +expr))
      (1 (ATTR (-SYMB- mod-n) 2) 3 4)))
 
 (defrule *shift-nn-to-modifier-before-nn*
@@ -1643,6 +1814,20 @@
 ; E.g., "He made no attempt openly to outdo Ray Bolger";
    '((.NP *expr (.NN +expr) (S ![advp/pp] (VP (TO to) +expr)) *expr)
      (1 2 (3.1 3 (S (VP (TO to) (VP 4.2 4.3.3)))) 5)))
+
+(defrule *add-rep-and-placeholders-for-gaps-linked-to-final-pp*
+; e.g., "the demolition _ or, more often, the sale _ of 764 chapels";
+;       the Brown parse is of shape
+;        (NP (NP ... (PP-1 (-NONE- *pseudo-attach*))) (CC ..) (\, \,) (ADVP ...)
+;            (NP ... (PP-1 (-NONE- *pseudo-attach*))) (PP-1 (IN of) (NP ...)) )
+;       Because (NP (NN ..) (PP ...)) is later (see below) reshaped into 
+;       (NP (NN (NN ..) (PP ...))), we apply this rule early. The analogous
+;       rule *add-rep-and-placeholders-for-gaps-linked-to-final-np* is
+;       applied later.
+ '((NP (NP +expr (.PP- (-NONE- !pseudo-attach))) *expr 
+       (NP +expr (.PP- (-NONE- !pseudo-attach))) (.PP- +expr))
+   (NP (-SYMB- rep) (NP (NP 2.2 (PP (-SYMB- *p))) 
+                    3 (NP 4.2 (PP (-SYMB- *p)))) 5)))
 
 (defrule *comb-nn-postmod*
 ; For an NN followed (*within* an NP or WHNP) by a postmodifier (e.g., PP),
@@ -1740,12 +1925,25 @@
 ; and ellipsis after the verb (cf. "It's bigger than I thought", where this
 ; first needs expansion to "It's bigger than I thought it is")
 
+(defrule *change-bare-nnps-to-nns*
+; e.g., "Protestants" ... (NP (NNPS |Protestants|)) --> (NP (NNS |Protestants|))
+   '((NP (NNPS !atom)) (NP (NNS 2.2))))
+
 (defrule *add-k-to-bare-np*
 ; For a bare NP add an implicit kind-forming operator; this assumes that
 ; NN premodifiers, the NP-internal postmodifiers, and then adj-premodifiers
 ; have already been added. NP-external postmodifiers are added later (by
 ; *comb-np-postmod*)
     '((NP (.NN +expr)) (NP (-SYMB- K) 2)) )
+
+(defrule *add-k-to-jj-premodified-nn*
+; e.g., "rich people"
+   '((NP (.JJ !atom) (.NN +expr)) 
+     (NP (-SYMB- k) (3.1 (ADJP (-symb- MOD-N) 2) 3))))
+
+(defrule *add-k-to-mod-n-premodified-nn*
+; e.g., "rich people", if "rich" has already had MOD-N applied to it
+  '((NP (ATTR +expr) (.NN +expr)) (NP (-SYMB- k) (3.1 2 3))))
 
 (defrule *form-what-a-np*
 ; E.g., "What a big house" currently gets parsed as 
@@ -1776,6 +1974,22 @@
        '((NP (NP *pre-nn-pos+word *expr (.NN +expr)) (.POSTMOD +expr) *expr)
          (NP 2.2 2.3 (2.4.1 (-SYMB- n+preds) 2.4 3 4))) )
 
+(defrule *add-np+preds-to-nonrestrictive-relclause*
+; e.g., "Bob, who works with Alice, ..." (WHNP in subject role)
+      '((NP (NP +expr) ![comma] (SBAR (WHNP !expr) (VP +expr) *expr))
+        (NP (-SYMB- np+preds) 2 4)))
+
+(defrule *add-np+preds-to-nonrestrictive-relclause-with-s-embedded-vp*
+; e.g., "Bob, who works with Alice, ..." (WHNP in subject role)
+      '((NP (NP +expr) ![comma] (SBAR (WHNP !expr) 
+                                      (S (VP +expr) *expr)))
+        (NP (-SYMB- np+preds) 2 4)))
+
+(defrule *add-np+preds-to-nonrestrictive-relclause-with-sub-operator*
+; e.g., "Bob, who{m} Alice hired, ..." (WHNP in non-subject role)
+      '((NP (NP +expr) ![comma] (SBAR (-SYMB- sub) +expr))
+        (NP (-SYMB- np+preds) 2 4)))
+
 (defrule *comb-np-participle* ; dimensions (3 3) (breadth 3, depth 3);
 ; e.g., "The children playing outside are happy." "Anyone singing is happy."
 ;       "the child left behind is distraught." "Anyone given money is happy."
@@ -1785,8 +1999,8 @@
 ; premodifiers, internal postmodifiers, and adjective premodifiers
 ; incorporated (see earlier rules), so that now the NP starts with
 ; a determiner or (-SYMB- k):
-       '((NP (NP *expr (.NN +expr)) (VP (.VBG/VBN !atom) *expr))
-         (NP 2.2 (NP (-SYMB- n+preds) 2.3 3))) )
+       '((NP (NP *expr (.NN +expr)) ?[comma] (VP (.VBG/VBN !atom) *expr) *expr)
+         (NP 2.2 (NP (-SYMB- n+preds) 2.3 4 5))) )
 
 (defrule *comb-sentence-initial-np-participle*
 ; e.g., "The child playing in the sand is happy"; I know the man taken to jail."
@@ -1849,19 +2063,27 @@
                           (S (VP ?[advp/pp] (.VBG/AUXG !atom) *expr))) 
       (VP 2 3 4 (NP (-SYMB- Ka) 5.2))) )
 
-(defrule *change-prog-vp-compl-of-non-be-verb-to-gerund* ; Feb 26/21
+(defrule *change-prog-compl-of-non-be-verb-to-gerund* ; Feb 26/21
 ; E.g., in "Joe stopped doing homework" treat "doing homework" as a
 ; gerund (thus, an action type); e.g., "Bob went rock climbing."
-; But bypass aux-be verbs, as in "Joe is doing homework". 
-    '((VP *expr ![non-aux-be-verb] *expr (VP ?expr (.VBG/AUXG !atom) *expr))
+; But bypass aux-be verbs, as in "Joe is doing homework". Note also
+; that we allow only adverb(ial)s between the verb and the VP[-ing],
+; o/w we'd wrongly convert the prog in "saw Ed smoking" to a gerund
+    '((VP *expr ![non-aux-be-verb] *[advp/pp] (VP ?expr (.VBG/AUXG !atom) *expr))
       (VP 2 3 4 (NP (-SYMB- Ka) 5))) )
 
-(defrule *change-prog-s-vp-subject-to-gerund* ; May 1/21
+(defrule *change-prog-after-np-object-of-ditrans-verb-to-gerund*
+; E.g., "taught Alice programming"
+   '((VP *[advp] ![ditrans-non-prog-taking-verb] ![np] 
+                 (VP ?expr (.VBG/AUXG !atom) *expr))
+     (VP 2 3 4 (NP (-SYMB- Ka) 5))) )
+
+(defrule *change-prog-subject-to-gerund* ; May 1/21
 ; E.g., in "Sleeping in the park is illegal" the subject should be
 ; a gerund (to be reified), not an (S (VP ...))
     '((S (S (VP +expr)) *expr) (S (NP (-SYMB- Ka) 2.2) 3)))
 
-(defrule *change-prog-s-vp-object-of-prep-to-gerund*
+(defrule *change-prog-object-of-prep-to-gerund*
 ; E.g., "I'm tired of seeing constant commercials"
     '((PP (IN !atom) (S (VP ?[advp/pp] (.VBG/AUXG +expr) *expr)))
       (PP 2 (NP (-SYMB- Ka) 3.2))))
@@ -1924,7 +2146,11 @@
 ; e.g., "the silvery Moon"; NB: It's assumed that examples like "Mr. Smith",
 ; Vice President Gore" won't match here, because successive NNPs should
 ; already have been merged.
-   '((NP *expr ![nn-premod] (.NNP +expr)) (NP 2 3 (NN 4.2))))
+   '((NP *expr ![nn-premod] (NNP +expr)) (NP 2 3 (NN 4.2))))
+
+(defrule *change-nnps-to-nns-after-premod*
+; e.g., "the same Protestants";
+   '((NP *expr ![nn-premod] (NNPS +expr)) (NP 2 3 (NNS 4.2))))
 
 (defrule *change-final-nnp-to-nn-after-initial-dt*
 ; e.g., "the Examiner" should come out as (the.d | Examiner|.n)
@@ -2083,6 +2309,18 @@
      '((NP (PRP it) (!atom (-NONE- !pseudo-attach))) (NP (PRP it-extra))) )
                                   ;`````````````` just matches *pseudo-attach*
 
+(defrule *mark-implicit-it-extra*
+; e.g., "It must be said that they partially succeeded"
+;       (S (NP (PRP IT)) ...(VP ...) (SBAR ...)) 
+   '((S (NP (PRP IT)) *expr (VP +expr) (SBAR +expr)); ** too permissive??
+     (S (NP (PRP it-extra)) 3 4 5)))
+
+(defrule *mark-implicit-it-extraposed-from-vp*
+; e.g., "It happens that I feel deeply about my district"
+;       (S (NP (PRP IT)) ...(VP ... (SBAR ...))) 
+   '((S (NP (PRP IT)) *expr (VP +expr (SBAR +expr))); ** too permissive??
+     (S (NP (PRP it-extra)) 3 4)))
+
 (defrule *del-x-wrapper*
 ; (X ...) seems to get wrapped around a phrase where the annotator thought
 ; it is implicitly some higher-level phrase, but not sure what.
@@ -2110,7 +2348,7 @@
 ; to yield a predicate:
      '((S +expr (\, \,) ![big-np]) (S (-SYMB- rep) (S 2) (NP (-SYMB- =) 4))) )
 
-; The above doesn't deal 
+; The above doesn't deal  with ...
 
 ;; This rule did the rep + *p conversion in one fell swoop; if the above rules
 ;; misidentify displaced phrases (because of not checking for the *pseudo-attach*
@@ -2171,10 +2409,24 @@
   '((NP (NP +expr) (!atom (-NONE- !pseudo-attach)))
     (NP (NP (-SYMB- np+preds) 2.2 (-SYMB *p)))) )
 
+;  Does the immediately preceding rule wrongly apply to other uses of 
+;  *pseudo-attach*, like "as ... as ..." comparatives, etc.?
+
+(defrule *add-rep-and-placeholders-for-gaps-linked-to-final-np*
+; e.g., "Bob liked, but Alice thoroughly disliked, the painting"
+;       BLLIP just makes this into coordinated sentences, but I'm 
+;       assuming that the Brown annotation would be of shape
+;       (S (S (NP ..) ... (VP (VBD ..) (NP-1 (-NONE- *pseudo-attach)))) ...
+;          (S (NP ..) ... (VP (VBD ..) (NP-1 (-NONE- *pseudo-attach)) ))
+;          (NP ...)), though maybe the NP would be in the 2nd VP
+  '((S (S (NP +expr) *expr (VP (.VB !expr) (.NP- (-NONE- !pseudo-attach))))
+       *expr (S (NP +expr) *expr (VP (.VB !expr) (.NP- (-NONE- !pseudo-attach))))
+       (.NP- +expr))
+    (S (-SYMB- rep) 
+       (S (S 2.2 2.3 (VP 2.4.2 *p)) 3 (S (S 4.2 4.3 (VP 4.4.2 *p)))) 5)))
+
 ; TBC -- thoroughly check the accuracy and coverage of the above rules for
-;    rightward displacement; In particular, does the immediately preceding
-;    rule wrongly apply to other uses of *pseudo-attach*, like "as ... as ..."
-;    comparatives, etc.?
+;    rightward displacement; 
 
 ;; This rule did the rep + *p conversion in one fell swoop; if the above rules
 ;; misidentify displaced phrases (because of not checking for the *pseudo-attach*
@@ -2286,13 +2538,23 @@
 
 ; TBC ; What about intensional verbs, where we need (= <np-ulf>)?
 
+(defrule *make-pp[to/of]-into-pp[arg]-after-verb*
+; e.g., "He spoke of her often"; "He dedicated the book to her"
+   '((VP *expr (.VB !atom) ?expr (PP (IN .OF/TO) +expr) expr*)
+     (VP 2 3 4 (PP (P-ARG 5.2.2) 5.3) 6)))
+
 (defrule *make-pp-into-pp[arg]-after-certain-verbs*
 ; e.g., "raved about it", "traveled to Italy", "spoke with Alice about it"
 ; This is a heuristic rule, treating an immediate post-verb PP as an arg-
 ; supplier, except for verbs in *complement-free-verbs* like "amble", 
 ; "cough", "flicker", "sleep", etc.;
-  '((VP ?expr ![not-complement-free-verb] ?[advp] (PP (IN !atom) *expr) *expr)
+  '((VP ?expr ![pp-expecting-verb] ?[advp] (PP (IN !atom) *expr) *expr)
     (VP 2 3 4 (PP (P-ARG 5.2.2) 5.3) 6)))
+
+(defrule *make-pp[by]-into-pp[arg]-after-passive-verb*
+; e.g., "was highly praised yesterday by the boss"
+  '((VP ?expr (VBN !atom) ?[advp] (PP (IN by) +expr) *expr)
+    (VP 2 3 4 (PP (P-ARG by) 5.3) 6)))
 
 (defrule *make-pp-into-pp[arg]-after-certain-verbs-and-np*
 ; e.g., "gave it to him", "translated the book into Hopi", "took it with him",
@@ -2301,7 +2563,9 @@
 ; supplying if the preposition is among those commonly occurring as such
 ; ("with" and "from" seem to be the most frequent; of/to/by are as well,
 ; but are handled by the next rule w/o checking the verb type)
-  '((VP ?expr ![strong-np+pp-taking-verb] ![np] ?[advp] 
+  '((VP ?expr ![strong-np+pp-taking-verb] ?[np] ?[advp] 
+                                         ;```` made optional 3/8/22 to
+                                         ;     allow for passives
                      (PP ?[advp] (IN !common-arg-preposition) *expr) *expr)
     (VP 2 3 4 5 (PP 6.2 (P-ARG 6.3.2) 6.4) 7)))
 
@@ -2310,6 +2574,26 @@
 ;       "He dreamed of a unicorn;" "It is sold exclusively by ACME."
   '((VP ?expr (.VB !atom) *expr (PP ?[advp] (IN .OF/TO/BY) +expr) *expr)
     (VP 2 3 4 (PP 5.2 (P-ARG 5.3.2) 5.4) 6)))
+
+(defrule *make-pp-into-pp[arg]-after-nn-for-prepositions-of/to/by*
+; e.g., "the nature OF our loyalty TO our families"
+  '((*expr (.NN +expr) (PP (IN .OF/TO/BY) +expr) *expr)
+    (1 2 (PP (P-ARG 3.2.2) 3.3) 4)))
+
+(defrule *make-pp-into-pp[arg]-after-adj-for-prepositions-of/to/by*
+; e.g., "loyal TO our families"
+  '((ADJP +expr (PP (IN .OF/TO/BY) +expr) *expr)
+         ;````` usually JJ, but occasionally VBN or even RB
+    (ADJP 2 (PP (P-ARG 3.2.2) 3.3) 4)))
+
+; COMMENT: For other prepositions a PP after an adjective may or may not
+; be a complement -- e.g., "contented with him" vs. "frozen with fear"
+; A common case is (ADJP (JJR ...) (PP (IN than) ...)), i.e., comparative.
+; We'd need to use subcategorization data for adjectives (e.g., from Alvey)
+; to gain greater accuracy. Adding a rule that (ADJP (VBN ...) (PP ...) ...)
+; makes PP[arg] likely would be of some use -- but a lot of Brown annotations
+; erroneously posit such constructs when the PP is actually separate and
+; thus not PP[arg], e.g., "were *[ADJP honored at the ceremony]"
 
 (defrule *pair-pp[arg-from]-with-preceding-pp[arg-to]*
 ; e.g., "went/traveled/ran {directly} to Rome from Milan",
@@ -2327,7 +2611,7 @@
                                      (PP ?[advp] (!atom to) +expr) *expr)
     (VP 2 3 4 (PP 5.2 (P-ARG from) 5.4) 6 (PP 7.2 (P-ARG to) 7.4) 8)))
 
-; ** TBC (further thought required): MAYBE THE NEXT 3 RULES SHOULD BE
+; ** TBC (further thought required): MAYBE SOME FOLLOWING RULES SHOULD BE
 ;    CHANGED TO A SINGLE ONE, CHANGING ALL REMAINING PP'S IN VP TO ADVP
 ;    MAYBE ALSO ALLOW FOR ADVP AS FIRST PP ELEMENT
 
@@ -2339,25 +2623,38 @@
 ; e.g., "deleted it in his office on Monday" (ADV-A above, ADV-E 2nd example)
   '((VP ?expr ![non-np+pred-taking-verb] (NP +expr) 
                                              (PP (IN !atom) *expr) *expr)
-    (VP 2 3 4 (make-non-arg-pp-into-advp-after-v-np! '5 '3 '5.2.2) 6)))
+    (VP 2 3 4 (make-non-arg-pp-into-advp-after-v+np! '5 '3 '5.2.2) 6)))
+    ; the long-winded function here just retains the PP for prepositions
+    ; {to,of,by} and for v_np_pp verbs. Otherwise, it prefixes ADV-E 
+    ; for space-time prepositions and ADV-A for others.
 
 ; We are potentially left with PPs that are either predicates or adverbials
 
-(defrule *make-remaining-pp-into-advp-after-v-np*
+(defrule *make-remaining-pp-into-advp-after-v+np*
 ; e.g., "drove his truck to Rome without stopping"; 
 ;       but not: "saw the truck without a driver", "regarded him as a fool"
 ; ** AGAIN, WE MAY WANT TO DROP THE 'non-np+pred-taking-verb' CHECK!
   '((VP ?expr ![non-np+pred-taking-verb] ![np] *expr 
                                              (PP (IN !atom) +expr) *expr)
-    (VP 2 3 4 5 (make-non-arg-pp-into-advp-after-v-np! '6 '3 '6.2.2) 7)))
+                                                ;```NB: P-ARG precluded
+    (VP 2 3 4 5 (make-non-arg-pp-into-advp-after-v+np! '6 '3 '6.2.2) 7)))
 
 (defrule *make-remaining-pp-into-advp-after-v*
 ; e.g., "drove all over town without stopping"; 
 ;       but not "felt like a fool", "seemed entirely on the level"
-; ** AGAIN, WE MAY WANT TO DROP THE 'non-np+pred-taking-verb' CHECK!
   '((VP ?expr ![non-pred-taking-verb] *[non-np-compl] 
                                           (PP (IN !atom) +expr) *expr)
-    (VP 2 3 4 (make-non-arg-pp-into-advp-after-v-np! '5 '3 '5.2.2) 6)))
+                                             ;````NB: P-ARG precluded
+    (VP 2 3 4 (make-non-arg-pp-into-advp-after-v+np! '5 '3 '5.2.2) 6)))
+
+(defrule *make-remaining-pp-into-advp-after-vp*
+; e.g., "drove all over town without stopping"; 
+;       but not "felt like a fool", "seemed entirely on the level"
+; ** AGAIN, WE MAY WANT TO DROP THE 'non-np+pred-taking-verb' CHECK!
+  '((.S +expr (VP ?expr ![non-pred-taking-verb] *[non-np-compl])
+                            *[non-np-compl] (PP (IN !atom) +expr) *expr)
+                                                ;````NB: P-ARG precluded
+    (1 2 3 4 (make-non-arg-pp-into-advp-after-v+np! '5 '3.3 '5.2.2) 6)))
 
 ; A final rule for making an adv-premodified PP into a two-level PP:
 ; `````````````````````````````````````````````````````````````````
@@ -2366,6 +2663,11 @@
 
 ; INFINITIVE (WITHIN VP) EDITING RULES
 ;`````````````````````````````````````
+; NP: These rules aren't general enough to deal with coordination,
+;     e.g., "He did it to surprise the boss and please him";
+;     The rules would just make the first conjunct an adverbial.
+;     Cf., "He did it to surprise the boss on Monday" (ADV-A, ADV-E).
+;
 (defrule *make-inf-into-advp-after-non-inf-taking-v*
 ; e.g., "He ran to catch the bus"; "He sprinted at top speed yesterday 
 ;       to catch the bus" (but not, "He tried in vain to catch the bus")
@@ -2373,36 +2675,37 @@
                                          (VP ?atom (TO to) +expr) *expr)
     (VP 2 3 4 (ADVP (-SYMB- adv-a) (PP (IN {for}) 5)) 6)))
 
-(defrule *make-inf-embedded-by-s-into-advp-after-non-inf-taking-v*
+(defrule *make-inf-embedded-by-vp/s-into-advp-after-non-inf-taking-v*
 ; Variant of above allowing for (BLLIP) S-embedding of the infinitive;
 ; e.g., "He ran to catch the bus"; "He sprinted at top speed yesterday 
 ;       to catch the bus" (but not, "He tried in vain to catch the bus")
   '((VP ?expr ![non-inf-taking-verb] *[non-np-compl] 
-                                      (S (VP ?atom (TO to) +expr)) *expr)
-    (VP 2 3 4 (ADVP (-SYMB- adv-a) (PP (IN {for}) 5.2)) 6)))
+                            (.VP/S (VP ?atom (TO to) +expr) *expr) *expr)
+    (VP 2 3 4 (5.1 (ADVP (-SYMB- adv-a) (PP (IN {for}) 5.2)) 5.3) 6)))
 
-(defrule *make-inf-into-advp-after-non-np[inf]-taking-v*
+(defrule *make-inf-into-advp-after-non-np+inf-taking-v*
 ; e.g., "He phoned her yesterday to tell her the good news"
 ;       (but not, "He asked Bill yesterday to tell her the good news")
   '((VP ?expr ![non-np+inf-taking-verb] ![np] *expr
                                          (VP ?atom (TO to) +expr) *expr)
     (VP 2 3 4 5 (ADVP (-SYMB- adv-a) (PP (IN {for}) 6)) 7)))
 
-(defrule *make-inf-embedded-by-s-into-advp-after-non-np[inf]-taking-v*
+(defrule *make-inf-embedded-by-vp/s-into-advp-after-non-np+inf-taking-v*
 ; Just a variant of the above rule to allow for the (S (VP (TO to) ...))
-; forms generated by the BLLIP parser.
+; forms derived by the BLLIP parser, & e.g., (VP (VP[inf]) (PP...)) in Brown.
 ; e.g., "He phoned her yesterday to tell her the good news"
 ;       (but not, "He asked Bill yesterday to tell her the good news")
   '((VP ?expr ![non-np+inf-taking-verb] ![np] *expr
-                                     (S (VP ?atom (TO to) +expr)) *expr)
-    (VP 2 3 4 5 (ADVP (-SYMB- adv-a) (PP (IN {for}) 6.2)) 7)))
+                               (.VP/S (VP ?atom (TO to) +expr) *expr) *expr)
+    (VP 2 3 4 5 (6.1 (ADVP (-SYMB- adv-a) (PP (IN {for}) 6.2)) 6.3) 7)))
 
-(defrule *make-inf-embedded-by-s-into-advp-after-np[inf]-complement*
+(defrule *make-inf-embedded-by-vp/s-into-advp-after-inf-complement*
 ; e.g., "Bob like to watch TV to relax" ("to relax" will be 
 ;       (S (NP (TO to)) (VP relax)) at this point -- i.e., an action
 ;       type (incorrectly). So check for the (TO to);
-  '((VP +expr (S (!atom (TO to) +expr)) ?expr (S (!atom (TO to) +expr)) *expr)
-    (VP 2 3 4 (ADVP (-SYMB- adv-a) (PP (IN {for}) 5.2)) 6)))
+  '((VP +expr (S (!atom (TO to) +expr)) ?expr 
+                            (.VP/S (!atom (TO to) +expr) *expr) *expr)
+    (VP 2 3 4 (5.1 (ADVP (-SYMB- adv-a) (PP (IN {for}) 5.2)) 5.3) 6)))
 
 ; Haven't considered the small set of *inf-tolerating-verbs*...
 
@@ -2418,6 +2721,13 @@
   '((!atom *expr (.VB !non-be/feel/seem/stay) ![time/place-pp] *expr)
     (1 2 3 (ADVP (-SYMB- adv-e) 4) 5)));        ```````` ** also frequency?
 
+(defrule *make-direct-pp[time/place]-adjunct-of-verb[pasv]-into-advp*
+; e.g., "[was recently] published in this country"; NB: At this point,
+;       any perfect (rather than passive) VBN has been changed to VBEN.
+;       (VP (VBN published) (PP (IN in) (NP (DT this) (NN country)))) 
+  '((VP (VBN !atom) *[advp/pp] ![time/place-pp] *expr)
+    (1 2 3 (ADVP (-SYMB- adv-e) 4) 5)));
+
 (defrule *make-indirect-pp[time/place]-adjunct-of-verb-into-advp*
 ; e.g., (VP (VBD was) (PP (IN at) (NP (NN home))) (PP (IN on) (NP (NNP Friday))))
 ;       The second PP gets (ADV-E <PP>) wrapped around it.
@@ -2426,6 +2736,11 @@
 ;       via the preceding rule and this one
   '((!atom *expr (.VB !atom) +expr ![time/place-pp] *expr)
     (1 2 3 4 (ADVP (-SYMB- adv-e) 5) 6)));```````` ** also frequency?
+
+(defrule *make-pp[time/place]-after-np-in-s-into-advp*
+; e.g., "which (VP is not subject to measurement) (PP at present)"
+  '((.S +expr (VP +expr) ![time/place-pp] *expr)
+    (1 2 3 (ADVP (-SYMB- adv-e) 4) 5)))
 
 (defrule *make-direct-pp[how]-adjunct-of-verb-into-advp*
 ; Here PP[how] refers to any PP modifying how an action is done.
@@ -2441,8 +2756,10 @@
 ; e.g., (VP (VBD saw) (NP (PRP it)) (PP (IN with) (NP (NN pleasure))))
 ;       The PP gets (ADV-A <PP>) wrapped around it.
 ; But not e.g., "plied her (PP with presents)"
-  '((!atom *expr ![non-np+pp-taking-verb] (.NP +expr) (.PP +expr) *expr)
-    (1 2 3 4 (ADVP (-SYMB- adv-a) 5) 6)))
+  '((!atom *expr ![non-np+pp-taking-verb] (.NP +expr) (PP +expr) *expr)
+    (1 2 3 4 (ADVP (-SYMB- adv-a) 5) 6)));            ``` *NOT* .PP, which
+;                                                     would allow PP-, i.e.,
+;                                                     rightward-displaced PP
 
 (defrule *make-very-indirect-pp[how]-adjunct-of-verb-into-advp*
 ; Here PP[how] refers to any PP modifying how an action is done.
@@ -2451,6 +2768,13 @@
     (1 2 3 4 5 (ADVP (-SYMB- adv-a) 6) 7)));        ``` NB: *not* P-ARG
 
 ; ** TBC
+
+(defrule *undo-adv-a-operator-wrapped-around-pp[arg]*
+; e.g., "This is usually judged by subjective methods" -- the PP becomes
+;        PP[arg], but subsequently (ADV-A ...) is wrapped around it, and
+;        it's easier to undo that than to change the rather subtle rules
+;        for adding the ADV-A wrapper.
+  '((ADVP (!atom ADV-A) (PP (P-ARG !atom) *expr)) 3))
 
 
 ; REVERSE THE RULE NAMES IN *PREPROCESSING-RULE-NAMES*, SINCE "PUSH"ING
