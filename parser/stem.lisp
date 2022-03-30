@@ -41,6 +41,7 @@
 ;   PDT  POS PRP PRP$ RB  RBR RBS RP SYM TO UH  VB  VBD VBG VBN VBEN 
 ;   VBP VBZ WDT WP WP$ WRB AUX AUXD AUXG AUXEN AUXP AUXZ  \. \: \, 
 ;   \" \` \' |``| |''| -LRB- -RRB- -LSB- -RSB- -LCB- -RCB-
+; Added Jan 2/22: MOD-N, for strictly attributive adjectives
 ;
  (prog ((tag (first pos-word)) (word (second pos-word)) backword result
         str upstr mixed-case)
@@ -137,6 +138,7 @@
                        (beasties 'BEASTIE)
                        (movies 'MOVIE)
                        (bowies 'BOWIE)
+                       ((monies moneys) 'MONEY)
               ; (mostly) Latinate exceptions to "...uses"
               ; --> "...use", in order of frequency;
               ; Also "...ses" --> "...sis".
@@ -144,7 +146,7 @@
                        (viruses 'VIRUS)
                        (bonuses 'BONUS)
                        (surplusses 'SURPLUS)
-                       (syllabuses 'SYLLABUS)
+                       ((syllabi syllabuses) 'SYLLABUS)
                        (censuses 'CENSUS)
                        (campuses 'CAMPUS)
                        (choruses 'CHORUS)
@@ -170,7 +172,7 @@
                        (pluses 'PLUS)
                        (crocuses 'CROCUS)
                        (sinuses 'SINUS)
-                       (geniuses 'GENIUS)
+                       ((geniuses genii) 'GENIUS)
                        (fetuses 'FETUS)
                        (trolleybuses 'TROLLEYBUS)
                        (statuses 'STATUS)
@@ -189,11 +191,11 @@
                        (corpuses 'CORPUS)
                        (hippopotamuses 'HIPPOPOTAMUS)
                        (mini-buses 'MINI-BUS)
-                       (cactuses 'CACTUS)
+                       ((cacti cactuses) 'CACTUS)
                        (poxviruses 'POXVIRUS)
                        (trolley-buses 'TROLLEY-BUS)
                        (ignoramuses 'IGNORAMUS)
-                       (funguses 'FUNGUS)
+                       ((funguses fungi) 'FUNGUS)
                        (conceptuses 'CONCEPTUS)
                        (boluses 'BOLUS)
                        (anuses 'ANUS)
@@ -212,6 +214,7 @@
                        (nexuses 'NEXUS)
                        (motor-buses 'MOTOR-BUS)
                        (incubuses 'INCUBUS)
+                       (millenia 'millenium)
                      )))
        (if result (return result))
                                     
@@ -279,6 +282,8 @@
            (return-from stem 'HAVE)); a guess! It could be "would"
        (if (and (eq tag 'AUX-CF) (member word '(had \'d)))
            (return-from stem 'HAD)); subjunctive stays as "had"
+       (if (and (member tag '(AUXZ AUXP)) (eq word 'has))
+           (return-from stem 'HAVE))
        (if (member tag '(VBP AUXP)) (return-from stem word)) 
                        ; actually some modals are tense-ambiguous;
                        ; e.g., "would" in "He said he would do it"
@@ -362,8 +367,16 @@
                    ((flew flown) 'FLY)
                    (flung 'FLING)
                    ((focused focussed) 'FOCUS)
-                   ((forebade forebidden) 'FOREBID)
+                   ((forbade forbidden forebade forebidden) 'FORBID)
+                   ((forbore forborne) 'FORBEAR)
+                   ((foresaw foreseen) 'FORSEE)
+                   (foretold 'FORETELL)
+                   ((foregone forgone) 'FOREGO)
+                   ((forgave forgiven) 'FORGIVE)
                    ((forgot forgotten) 'FORGET)
+                   ((foresook foresaken) 'FORSAKE)
+                   ((foreswore forswore foresworn forsworn) 'FORSWEAR)
+                   (foretold 'FORETELL)
                    (fought 'FIGHT)
                    ((froze frozen freezing freezes) 'FREEZE)
                    ((gossiped gossiping) 'GOSSIP)

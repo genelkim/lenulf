@@ -285,8 +285,9 @@
              (return tree0))
 
        ; Add occurrence indices to gap candidates; we use start values
-       ; -1, -1 for imax and lmax (highest index assigned), and we get back
-       ;  actual values along with the modified tree: (imax lmax tree1)
+       ; -1, -1 for imax and lmax (max strength, & max index assigned),
+       ; and we get back  actual values along with the modified tree:
+       ; (imax lmax tree1)
        (setq i+l+tree4 (assign-indices-to-gap-candidates (list -1 -1 tree4)))
        ; DEBUG:
     ;  (format t "~% Result of 'assign-indices-to-gap-candidates': ~%~s" i+l+tree4)
@@ -335,7 +336,9 @@
 ; We mark all possible gap positions of the appropriate type determined
 ; by expr1 (the expression "moved" out of the gap) using (:xp 1), (:xp 2),
 ; ... (:xp 4), where 1 - 4 represent "preference levels", intended to allow
-; making a choice of a maximally preferred gap position.
+; making a choice of a maximally preferred gap position. (Elsewhere, i in
+; (:xp i) is referred to as gap strength, and we'll choose the maximum gap
+; strength, imax.)
 ;
 ; Note: expr1 (i.e., (third tree) may itself contain 'sub' contexts, but
 ;       those are processed via 'globally-insert-gaps1'.
@@ -494,7 +497,7 @@
             ; 'v_np-pref!' is a function computing the strength of preference
             ; of a given verb for an NP object (0 for intransitive verb);
             ; NB: Particles have been attached to verbs when this code is run;
-            ((ok (setq ma (match '(VP (.VB !atom) ?[advp]) tree)))
+            ((ok (setq ma (match '(VP (.VB !atom) ?[advp/pp]) tree)))
              (fill-template '(VP 2 (:xp (v_np-pref! '2)) 3) ma))
 
             ; Reduced PP? (NB: the preference level of a preposition for an
@@ -596,8 +599,11 @@
              (fill-template '(VP 2 3 (:xp (v_pp-pref! '2))) ma))
 
             ; (SQ ...) with subject/be inversion
-            ; e.g., "In what class is she _3?"
-            ((ok (setq ma (match '(.SQ (.VB .be) ?[advp] ![np] *[advp]) tree)))
+            ; e.g., "In what class is she _3 (in this semester)?"
+            ; e.g., "In what class is she now _3?
+            ((ok (setq ma (match '(.SQ (.VB .be) ?[advp] ![np] ![adv]) tree)))
+             (fill-template '(1 2 3 4 5 (:xp 3.0)) ma))
+            ((ok (setq ma (match '(.SQ (.VB .be) ?[advp] ![np] *[advp/pp]) tree)))
              (fill-template '(1 2 3 4 (:xp 3.0) 5) ma))
 
             ; Question with NP after inverted subject NP -- attach PP to NN;
@@ -610,6 +616,8 @@
             ; Verb with complements/adjunct(s)?
             ; e.g., "With whom did you discuss it _ yesterday at the meeting?"
             ; e.g., "About which candidate are you claiming _2 that he lied _2?"
+            ((ok (setq ma (match '(VP (.VB !atom) ![adv] *[v-adjunct]) tree)))
+             (fill-template '(VP 2 3 (:xp 2.0) 4) ma)); NB: '2' would cause error
             ((ok (setq ma (match '(VP (.VB !atom) ?[np] +[v-adjunct]) tree)))
              (fill-template '(VP 2 3 (:xp 2.0) 4) ma)); NB: '2' would cause error
             
@@ -642,7 +650,7 @@
             ; "the foods to which he's been strongly allergic since childhood"
             ((ok (setq ma
                    (match '(VP (.VB !atom) (ADJP !expr (.JJ !atom)) +expr) tree)))
-             (fill-template '(VP 2 (ADJP (ADJP 3.2 (3.3.1 3.3 (:xp 2.0))))4) ma))
+             (fill-template '(VP 2 (ADJP (ADJP 3.2 (3.3.1 3.3 (:xp 2.0)))) 4) ma))
        
             ; Questions with copular "be" and a PP gap;
             ; e.g., "To what is he (not) allergic, besides penicillin?" 
@@ -716,7 +724,7 @@
 
             ; Subject/be inversion; "Why is(n't) he happy?" "Where are you?"
             ((ok (setq ma (match '(.SQ (.VB .be) ?[advp] ![np] ?[pred] 
-                                                               *[advp]) tree)))
+                                                               *[advp/pp]) tree)))
              (fill-template '(1 2 3 4 5 (:xp 3.0) 6) ma))
 
             ; Verb with complements/adjunct(s)?
@@ -801,14 +809,14 @@
             ; With following PPs or ADVPs, we still have a strong gap
             ; possibility (for now, also make it 3.0); e.g., "I wonder
             ; how she is _ today"; "I wonder how fond he is _ of his cat."
-            ; (The ![advp] predicate covers bothe PPs and ADVPs)
-            ((ok (setq ma (match '(VP (!atom .BE) +[advp]) tree)))
+            ; (The ![advp/pp] predicate covers bothe PPs and ADVPs)
+            ((ok (setq ma (match '(VP (!atom .BE) +[advp/pp]) tree)))
              (fill-template '(VP 2 (:xp 3.0) 3) ma))
 
             ; Even with a following infinitive, we may have a gap 
             ; (infinitive-taking adjectives, e.g., "I know how eager he 
             ; is _ (now) to participate":
-            ((ok (setq ma (match '(VP (!atom .BE) ?[advp] (S ![inf])) tree)))
+            ((ok (setq ma (match '(VP (!atom .BE) ?[advp/pp] (S ![inf])) tree)))
              (fill-template '(VP 2 (:xp 3.0) 3) ma))
 
             ; Another possibility is a following for-sentence, e.g., 
@@ -816,7 +824,7 @@
             ; (However, "easy" constructions get parsed the same way, e.g.,
             ; "How easy is it _ for him to acknowledge his mistake?",
             ; whereas here "for him" should be a constituent...
-            ((ok (setq ma (match '(VP (!atom .BE) ?[advp] 
+            ((ok (setq ma (match '(VP (!atom .BE) ?[advp/pp] 
                                         (SBAR (IN FOR) (S +expr))) tree)))
              (fill-template '(VP 2 (:xp 3.0) 3 4) ma))
             
@@ -833,18 +841,18 @@
             ; With following PPs or ADVPs, we still have a strong gap
             ; possibility (for now, also make it 3.0); e.g., "How are
             ; you _ today after all that commotion?"
-            ((ok (setq ma (match '(SQ (!atom .be) ![np] +[advp]) tree)))
+            ((ok (setq ma (match '(SQ (!atom .be) ![np] +[advp/pp]) tree)))
              (fill-template '(SQ 2 3 (:xp 3.0) 4 5) ma))
 
             ; Even with a following infinitive, we may have a gap 
             ; (infinitive-taking adjectives), e.g., "How eager is he _
             ; to join the company?"
-            ((ok (setq ma (match '(SQ (!atom .be) ![np] ?[advp] ![inf]) tree)))
+            ((ok (setq ma (match '(SQ (!atom .be) ![np] ?[advp/pp] ![inf]) tree)))
              (fill-template '(SQ 2 3 (:xp 3.0) 4 5) ma))
 
             ; Again another possibility is a following for-sentence, e.g., 
             ; "I know how eager he was _ for Mary to acknowledge him"
-            ((ok (setq ma (match '(VP (!atom .BE) ![np] ?[advp] 
+            ((ok (setq ma (match '(VP (!atom .BE) ![np] ?[advp/pp] 
                                         (SBAR (IN FOR) (S +expr))) tree)))
              (fill-template '(VP 2 3 (:xp 3.0) 4 5) ma))
 
@@ -852,23 +860,23 @@
             ; listed examples  in the comments above to get this 
             ; approximately right. ADJP-taking verb as only complement;
             ; E.g., "How old are you turning tomorrow?"
-            ((ok (setq ma (match '(VP (.vb !atom) *[advp]) tree)))
+            ((ok (setq ma (match '(VP (.vb !atom) *[advp/pp]) tree)))
              (fill-template '(VP 2 (:xp (v_ap-pref! '2)) 3) ma))
            
             ; Verb of type v_np_ap; e.g., "... how angry that made him _":
-            ((ok (setq ma (match '(VP (.vb !atom) ![np] *[advp]) tree)))
+            ((ok (setq ma (match '(VP (.vb !atom) ![np] *[advp/pp]) tree)))
              (fill-template '(VP 2 3 (:xp (v_np_ap-pref! '2)) 4) ma))
 
             ; Eager-construction with non-be verbs; e.g., "How eager 
             ; did he seem _ to leave?". The inf-VP is parsed as 
             ; (S (VP (AUX (TO TO)) (VP (VB LEAVE))))
-            ((ok (setq ma (match '(VP (.vb !atom) *[advp] (S ![inf])) tree)))
+            ((ok (setq ma (match '(VP (.vb !atom) *[advp/pp] (S ![inf])) tree)))
              (fill-template '(VP 2 (:xp (v_ap-pref! '2)) 3) ma))
 
             ; "How eager does he seem at the meeting for Mary to join the team?"
             ; The VP[seem] parse produced by BLLIP: 
             ; (VP (VB SEEM) (SBAR (IN FOR) (S (NP ...) (VP (AUX (TO TO)) ...))))
-            ((ok (setq ma (match '(VP (.vb !atom) *[advp] 
+            ((ok (setq ma (match '(VP (.vb !atom) *[advp/pp] 
                                      (SBAR (IN FOR) (S ![np] ![inf]))) tree)))
               (fill-template '(VP 2 (:xp (v_ap-pref! '2)) 3 4) ma))
 
@@ -1169,7 +1177,7 @@
       ; transduce the tree to equalize the gap candidates in the conjuncts;
       (setq result 
             (find-open-patt-inst 
-                '(.XP-OR-S +expr (CC !atom) ?[advp] (.XP-OR-S +expr)) tree))
+                '(.XP-OR-S +expr (CC !atom) ?[advp/pp] (.XP-OR-S +expr)) tree))
                            ;`````           ```````
                  ; maybe multiple conjuncts, maybe commas, errant advp, etc.
       (if (null result) (return-from equalize-coordinated-gap-candidates tree))

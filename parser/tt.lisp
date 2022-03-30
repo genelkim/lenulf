@@ -302,7 +302,7 @@
 
             ((dot-atom pa); (note: by previous case, ex is not = pa)
              ; try to get feat from pa = .feat
-             (setq feat (gethash pa *underlying-feature*))
+             (setq feat (gethash pa *underlying-feat*))
              (if (null feat)
                  (prog2
                    (format t "~%## Warning: ~s has no underlying feature!" pa)
@@ -848,6 +848,32 @@
 
 ;; NOTE: MAYBE THE CONVERSION FUNCTIONS BELOW (USED IN RULE OUTPUT TEMPLATES)
 ;;       SHOULD BE PUT IN A SEPARATE FILE, FOR ORGANIZATIONAL UNIFORMITY
+
+(defun adv2adj! (adv); Mar 8/22
+;``````````````````
+; e.g., change "quickly" to "quick", "steadily" to "steady", "enough" to 
+;       "enough" (i.e., no change), "ably" to "able", "fully" to "full"
+ (let (str n substr end-str)
+      (cond ((not (symbolp adv)) adv)
+            (t (setq str (format nil "~a" adv))
+               (setq n (length str))
+               (cond ((> n 3)
+                      (setq substr (subseq str (- n 2) n))
+                      (cond ((string-equal substr "LY")
+                             (setq str (subseq str 0 (- n 2)))
+                             (setq substr (subseq str 0 (- n 3)))
+                             (setq end-str
+                                (case (coerce (subseq str (- n 3) (- n 2))
+                                              'character)
+                                      (#\I "Y") (#\B "BLE") 
+                                      (#\L "LL") (T nil)))
+                             (intern 
+                               (if (null end-str) str
+                                   (concatenate 'string substr end-str))))
+                            (t adv)))
+                      (t adv))))
+ )); end of adv2adj!
+               
        
 (defun format-name-for-ulf! (name) ; Oct 17/20
 ;````````````````````````````````
@@ -866,6 +892,11 @@
             ; all upper case, no initial blank:
             (t name))
  )); end of format-name-for-ulf!
+
+(defun make-number-into-symbol! (n)
+;`````````````````````````````````
+; This is for incorporating a number into a name, as in "World War 2"
+  (intern (format nil "~a" n)))
 
 
 (defun merge-names! (names); Oct 17/20
@@ -907,7 +938,28 @@
                  (has 'VBZ) (had 'VBD) (having 'VBG)
                  (t aux-verb)))
 
-
+(defun change-x-to-yn! (yes-no-word.x)
+; For postprocessing {yes.x, yeah.x, uh-huh.x, no.x, nope.x} to get .yn suffix
+; the .x will have a word index after it, which we want to retain.
+  (let (chars ch result)
+       (if (or (null yes-no-word.x) (not (symbolp yes-no-word.x)))
+           (prog2 
+            (format t "~%** Faulty input ~a to 'change-x-to-yn!'" yes-no-word.x)
+            (return-from change-x-to-yn! yes-no-word.x)))
+       (setq chars (coerce (string yes-no-word.x) 'list))
+       (if (not (and (find #\. chars) 
+                     (or (not (find #\x chars)) (not (find #\X chars)))))
+           (return-from change-x-to-yn! yes-no-word.x))
+       (loop (if (null chars) (return nil)); end loop
+             (setq ch (pop chars))
+             (cond ((eq (car result) #\.)
+                    (if (not (char-equal ch #\X))
+                        (return-from change-x-to-yn! yes-no-word.x))
+                    (push #\Y result) (push #\N result))
+                   (t (push ch result))))
+       (intern (coerce (reverse result) 'string))
+ )); end of change-x-to-yn!
+                    
 (defun merge-brackets-with-atoms (names)
 ;```````````````````````````````````````
 ; This if for cases where we're forming a single name from a list of
@@ -1084,3 +1136,57 @@
  )); end of convert-aux-to-v!
 
 ; ** May need something similar for modals like (MD will), (MD would), ...
+
+; TBC -- this still needs to be handled
+;      whereas (PP (IN from) (NP (DT the) (NN file))) would become
+;        (PP (P-ARG from) (NP (DT the) (NN file)))
+
+(defun make-non-arg-pp-into-advp-after-v+np! ([pp] verb prep)
+; ``````````````````````````````````````````````````````````
+; [pp]: a prepositional phrase (PP ...)
+; verb: a (POS <verb>) pair, e.g., (VBZ saw))
+; prep: a preposition, e.g. 'in'
+; E.g., change 
+;      [pp] = (PP (IN without) (NP (NN permission))) to 
+;             (ADVP (-SYMB- adv-a) (PP (IN without) (NP (NN permission))))
+;      taken from context
+;        (VP (VBD deleted) (NP (PRP it)) (PP (IN without) (NP (NN permission))));
+;      (whereas (PP (IN from) (NP (DT the) (NN file))) would become
+;        (PP (P-ARG from) (NP (DT the) (NN file))) via other rules)
+; We just return the prepositional phrase [pp] for prepositions {to,of,by}
+; and for v_np_pp verbs. For others, we use ADV-E for space-time prepositions
+; and ADV-A otherwise.
+;
+ (let ([nn] )
+      ; First use verb & prep info to identify PP[arg]s:      
+      (cond ((find prep '(to of by)) [pp]); assume {to of by} prep's supply args
+             ; 'as' often supplies a pred, but that's separately handled as p-arg
+            ((gethash (list (stem verb) prep) *v_np_pp*) [pp]); [pp] supplies arg
+            ; now decide between ADV-E and ADV-A:
+            ((isa prep 'SPACE-TIME-PREP); actually, ![time-pp] and ![place-pp]
+                                        ; make their own prep-checks, so this
+                                        ; is a bit redundant (but fast)
+             (if (or (![time-pp] [pp]) (![place-pp] [pp]))
+                 `(ADVP (-SYMB- adv-e) ,[pp]); loc/time noun
+                 `(ADVP (-SYMB- adv-a) ,[pp]))); not confirmed loc/time noun
+            (t `(ADVP (-SYMB- adv-a) ,[pp]))); not a space-time prep
+ )); end of make-non-arg-pp-into-advp-after-v+np!
+  
+
+(defun find-pp-head-nn ([pp])
+; e.g., (PP (IN in) (NP (DT the) (NN valley))) ==> (NN valley)
+;       (PP (IN IN) (NP (-SYMB- K) (NN (-SYMB- N+PREDS) (NN FRONT) 
+;                                   (PP (IN of) (NP (DT the) (NN wall))))))
+;                                             ==> (NN FRONT)
+ (let ([np] [nn])
+      (cond ((or (atom [pp]) (null (cddr [pp]))) nil)
+            (t (setq [np] (find-type 'NP [pp]))
+               (setq [nn] (find-type 'NN/NNP (reverse [np])))
+               (if (atom (second [nn])) 
+                   [nn]
+                   (loop (setq [nn] (find-type 'NN (reverse [nn])))
+                         (if (null [nn]) (return-from find-pp-head-nn nil))
+                         (if (atom (second [nn]))
+                             (return-from find-pp-head-nn [nn]))))))
+ )); end of find-pp-head-nn
+            

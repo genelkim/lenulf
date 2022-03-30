@@ -122,8 +122,69 @@
 (defpred !pseudo-attach x (eq x '*pseudo-attach*)); needed since *pseudo-attach*
                                                   ; itself in a patterns would
                                                   ; be a sequence predicate
+(defpred ![ditransitive-verb] x
+         (and (atoms x) (gethash (stem x) *ditransitive-verbs*)))
+(defpred ![ditrans-non-prog-taking-verb] x
+         (and (![ditransitive-verb] x)
+              (not (gethash (stem x) *np+prog-taking-verbs*))))
+(defpred ![pred[as]-taking-verb] x
+         (and (atoms x) (gethash (stem x) *pred[as]-taking-verbs*)))
+(defpred ![np+pred[as]-taking-verb] x
+         (and (atoms x) (gethash (stem x) *np+pred[as]-taking-verbs*)))
+(defpred ![pp+pred[as]-taking-verb] x
+         (and (atoms x) (gethash (stem x) *pp+pred[as]-taking-verbs*)))
+(defpred ![np+pp[pred]-taking-verb] x
+         (and (atoms x) (gethash (stem x) *np+pp[pred]-taking-verbs*)))
+(defpred ![not-complement-free-verb] x ; for forming a post-verb argument PP
+         (and (atoms x) (not (gethash (stem x) *complement-free-verbs*))
+                        (not (gethash (stem x) *pred[as]-taking-verbs*))))
+(defpred ![not-complement-free-or-pasv-verb] x ; not used; rather, next rule
+        (and (atoms x) (![not-complement-free-verb] x) (not (eq (car x) 'VBN))))
+(defpred ![pp-expecting-verb] x ; (exclusive of PP[by] expectation by passives 
+                                ; & PP[to/of]-expecting verbs (done separately)
+         (and (atoms x) (![not-complement-free-verb] x)
+              (or (gethash (stem x) *pp[arg]-taking-verbs*)
+                  (gethash (stem x) *strong-np+pp-taking-verbs*))))
+(defpred ![not-bare-p] x (or (atom x); anything but an object-less PP
+                             (and (not (and (eq (car x) 'PP) (null (cddr x))))
+                                  (not (and (eq (car x) 'PP) 
+                                            (eq (car (third x)) 'NP)
+                                            (eq (caadr (third x)) '-NONE-))))))
+(defpred ![not-null-np] x (or (atom x); anything but a null NP
+                              (not (and (eq (car x) 'NP) 
+                                        (eq (caadr x) '-NONE-)))))
+(defpred ![non-null-np] x (and (listp x) (eq (car x) 'NP) 
+                               (not (eq (car (second x)) '-NONE-))
+                               (not (find (second (second x)) '(T *H)))))
+(defpred ![not-bare-p-and-not-null-np] x
+         (and (![not-bare-p] x) (![not-null-np] x)))
+(defpred ![intrans-verb] x
+         (and (atoms x) 'TBC))
+
+(defpred ![inf-taking-verb] x ;
+         (and (atoms x) (gethash (stem x) *inf-taking-verbs*)))
+(defpred ![non-np+pred-taking-verb] x ; for forming a post-v+np adverbial from PP
+         (and (atoms x) (not (gethash (stem x) *np+pred-taking-verbs*))))
+(defpred ![non-pred-taking-verb] x  ; for forming a post-v adverbial from PP
+         (and (atoms x) (not (gethash (stem x) *pred-taking-verbs*))))
+(defpred ![non-inf-taking-verb] x   ; for forming a post-v ADVP from infinitive
+         (and (atoms x) (not (gethash (stem x) *inf-taking-verbs*))))
+(defpred ![non-np+inf-taking-verb] x  ; for forming a post-v+np ADVP from inf
+         (and (atoms x) (not (gethash (stem x) *np+inf-taking-verbs*))))
+(defpred ![strong-np+pp-taking-verb] x
+         (and (atoms x) (gethash (stem x) *strong-np+pp-taking-verbs*)))
+(defpred ![at-most-weakly-transitive-verb] x ; this is a quick-and-dirty def'n;
+                                             ; See transitivity-lists.lisp
+         (and (atoms x) (or (gethash (stem x) *purely-intransitive-verbs*)
+                            (gethash (stem x) *rarely-transitive-verbs*)
+                            (gethash (stem x) *pseudo-transitive-verbs*))))
+(defpred !common-arg-preposition x ; ones that can come after v + np
+         (and (atom x) (find x '(with from in into out_of for on about upon 
+                                 down against onto)))); ** NEED TO CHECK!
 (defpred ![comma] x (equal x '(\, \,)))
-(defpred !pre-nn-pos+word x (find (car x) '(DT CD JJ JJR JJS WDT)))
+(defpred ![coord] x ; coordinators for coordinating imperatives
+         (and (listp x) (eq (car x) 'CC) (find (cadr x) '(and \& or \'r but))))
+(defpred !pre-nn-pos+word x (find (car x) '(PDT DT CD JJ JJR JJS WDT)))
 (defpred ![nn-premod] x 
          (and (listp x) (find (car x) '(DT CD JJ JJR JJS ADJP WDT NN NNS PRP$))))
 (defpred !advp x (find x '(ADVP WHADVP PP))); added PP Jan 8/21, tentatively
@@ -131,54 +192,199 @@
                              (find (car x) '(PP VP ADVP SBAR))))
 (defpred ![np] x (and (listp x) 
                    (or (find (car x) '(NP WHNP NP-1 NP-2 NP-3 NP-4))
+                       (equal (car x) '(-symb- =))
                        (equal (car x) '(-none- =))))); equative complements
 (defpred ![np-or-sbar] x (and (listp x)
                           (or (find (car x) '(NP SBAR WHNP NP-1 NP-2 NP-3 NP-4))
                               (equal (car x) '(-none- =))))); equative complements
-(defpred ![pers-pron-np] x (and (listp x); e.g., (NP (PRP you))
+(defpred ![pers-pron-np] x (and (listp x); e.g., (NP (PRP you)), in subj role
                                 (eq (car x) 'NP)
                                 (find (second (second x)) 
-                                      '(I you we he she who whom))))
+                                      '(I you ya we he she who whom))))
 (defpred !non-be x (not (find x '(be is \'s are am \'m was were being been \'re))))
+(defpred !non-be/feel/seem/stay x (not (isa x 'be/feel/seem/stay)))
 (defpred ![non-np-compl] x (and (listp x) 
                                 (find (car x) '(S VP PP ADVP ADJP))))
-(defpred !non-np x (or (atom x) 
+(defpred ![non-np] x (or (atom x) 
                        (not (find (car x) '(NP WHNP NP-1 NP-2 NP-3 NP-4)))))
 (defpred ![non-ex-np] x (and (listp x)
                              (find (car x) '(NP WHNP NP-1 NP-2 NP-3 NP-4))
                              (not (equal (second x) '(EX THERE)))))
-(defpred !non-vp x (or (atom x) (not (find (car x) '(VP S SBAR)))))
+(defpred ![non-np-non-aux] x (and (![non-np] x) (![non-aux] x)))
+;(defpred !not-vp x (or (atom x) (not (find (car x) '(VP S SBAR))))); unused
 (defpred ![non-vp] x (and (listp x) (not (eq (car x) 'VP))))
 (defpred !not-dt x (not (eq x 'DT)))
+(defpred !not-adjp x (not (eq x 'ADJP)))
+(defpred !not-advp x (not (eq x 'ADVP)))
 (defpred !not-that x (not (eq x 'that))); used to prevent (IN that) => (PS that)
 (defpred !not-none x (not (eq x '-NONE-)))
-(defpred !not-prep-or-symb x (not (member x '(IN -SYMB-))))
+(defpred !not-prep x (not (find x '(IN P-ARG))))
+(defpred !not-prep-or-symb x (not (find x '(IN P-ARG -SYMB-))))
 (defpred ![vp] x (and (listp x) (eq (car x) 'VP)))
-(defpred ![advp] x (and (listp x) 
+(defpred ![adv] x (and (listp x); single-word ADV or ADVP
+                       (or (find (car x) '(RB WRB RBR RBS NEG))
+                           (and (find (car x) '(ADVP WHADVP))
+                                (find (car (second x))
+                                      '(RB WRB RBR RBS NEG))))))
+(defpred ![advp] x (and (listp x)
+                        (find (car x) '(ADVP WHADVP RB WRB RBR RBS NEG))))
+(defpred ![advp/pp] x (and (listp x) 
                         (find (car x) '(ADVP WHADVP PP RB WRB RBR RBS NEG))))
                                                    ;^^ may lack adv operator
-(defpred ![pred] x (and (listp x) (find (car x) '(ADJP JJ JJR JJS PP))))
+(defpred ![pred] x ; used only in "insert-gaps.lisp"; 'PRED' tentatively added
+         (and (listp x) (find (car x) '(ADJP JJ JJR JJS PP PRED))))
+                                                           ;``` added MAR 8/22
 (defpred ![verb] x (and (listp x) (atom (car x)) (find (car x) 
             '(VB VBZ VBP VBD VBG VBN VBEN AUX AUXZ AUXD AUXP AUXG AUXEN MD))))
 (defpred ![inf] x (and (listp x) (eq (car x) 'VP) (eq (cadadr x) 'TO)))
 (defpred ![sbar] x (and (listp x) (eq (car x) 'SBAR)))
-(defpred ![non-aux-be-verb] x ; not of form (<aux-pos> <be-verb>)
-     (or (atom x) (not (isa (car x) '.aux)) (not (isa (cadr x) '.be))))
-(defpred ![non-aux-part] x (or (atom x) (not (isa (car x) '.aux))))
+(defpred ![do] x (and (listp x) (or (eq (second x) 'do); e.g., (VBP do), or
+                                    (and (eq (car x) 'AUX);    (AUX (VB do))
+                                         (listp (second x))
+                                         (eq (second (second x)) 'do)))))
+(defpred ![aux-be-verb] x; e.g., (AUX is), or (AUX (VBZ is)) {Brown corp}
+         (and (listp x) (isa (car x) '.aux) 
+              (or (isa (cadr x) 'be) 
+                  (and (listp (second x)) (isa (second (second x)) 'be)))))
+(defpred ![not-aux-be-verb] x (or (atom x) (not (![aux-be-verb] x)))); anything
+                                                             ; but an aux-be verb
+(defpred ![non-aux-be-verb] x  (and (listp x) (isa (car x) 'VB); verb, but not 
+                                    (not (![aux-be-verb] x)))); aux-be; see above
+(defpred ![non-aux] x (or (atom x) (not (isa (car x) 'aux))))
 (defpred ![punc-or-coord] x
      (and (listp x) (find (second x) '(\, \; - -- \( { [ and or & but nor))))
-(defpred ![quote] x (and (listp x) (find (car x) '(|``| |''|)))); no other occur?
+(defpred ![quote] x (and (listp x) (find (car x) '(|``| |''|)))); no others occur?
 (defpred ![a{n}] x (and (listp x) (member (car x) '(a an))))
 (defpred ![det-sing-alone] x (and (listp x) (find (second x) '(this that))))
          ; these can occur without a head noun
 (defpred ![det-plur-alone] x (and (listp x) (find (second x) 
          '(these those all many most few)))); can occur without a head noun
 (defpred ![non-det] x (or (atom x) (not (member (car x) '(DT PRP$)))))
-(defpred ![time-np] x (and (listp x) (eq (car x) 'NP) (listp (cadr x))
-                           (or (isa (second (second x)) 'this-day)
+(defpred ![time-np] x ; ones like "today", "next week", used w/o a preposition
+                      (and (listp x) (eq (car x) 'NP) (listp (second x))
+                           (or (isa (second (second x)) 'this-day); eg yesterday
+                               (isa (second (second x)) 'weekday); eg Monday
+                               (isa (second (second x)) 'time-period); present
                                (and (third x) 
                                     (or (isa (second (third x)) 'weekday)
                                         (isa (second (third x)) 'time-period))))))
+(defpred ![time-nn] x
+         (and (listp x) (isa (car x) 'NN/NNP)
+              (or (and (atom (second x)); simple NN
+                       (or (isa (stem x) 'weekday)
+                           (isa (stem x) 'time-period)))
+                  ; (second x) non-atomic => complex NN, like 
+                  ; (NN (NN exam) (NN week)), (NNP (NNP Labor) (NNP Day))
+                  ; This doesn't cover all complications, but a good number...
+                  (let ((nn (last x)))
+                       (and (listp (car nn)) 
+                            (setq nn (car nn))
+                            (atom (second nn))
+                            (or (isa (stem nn) 'weekday)
+                                (isa (stem nn) 'time-period)))))))
+
+; We need ![event-nn] as well, since e.g., "after the game" is an PP[time]
+;
+(defpred ![event-nn] x
+         (and (listp x) (isa (car x) 'NN/NNP)
+              (or (and (atom (second x)); simple NN
+                       (event-noun (stem x)))
+                  ; (second x) non-atomic => complex NN, like 
+                  ; (NN (NN birthday) (NN party));
+                  ; This doesn't cover all complications, but a good number...
+                  (let ((nn (last x)))
+                       (and (listp (car nn))
+                            (setq nn (car nn))
+                            (atom (second nn))
+                            (event-noun (stem nn)))))))
+
+(defpred ![time-pp] x ; time PPs like "on Sunday", "in at most three days";
+                      ; "after the game", "in the first world war"
+         (and (listp x) (atom (car x)) (isa (car x) 'PP) 
+                                       (find (car (second x)) '(IN P-ARG))
+              (or
+                  ; First, assume any PP[during/till/until] is a PP[time]:
+                  (find (second (second x)) '(during till until))
+                  ; Second, check whether we have an appropriate preposition
+                  ; followed by an NP[time]:
+                  (and (find (second (second x)) '(after at before by for from
+                                                   in on to up-to up_to))
+                       (let ((nn (find-pp-head-nn x))); {def'd in tt.lisp}
+                            (and nn (![time-nn] nn))))
+                  ; Third, check if we have an appropriate preposition
+                  ; followed by an NP[event]:
+                  (and (find (second (second x)) '(after at before in
+                                                   up-to up_to))
+                       (let ((nn (find-pp-head-nn x)))
+                            ; the NP of the PP, and the last nominal of that NP
+                            (and nn (![event-nn] nn))))))); end of ![time-pp]
+
+(defun find-type (phrase-type phrase-list)
+;`````````````````````````````````````````
+; Find the 1st phrase in phrase-list whose car C satisfies (isa C phrase-type)
+; e.g., (find-type 'NP '(PP (IN on) (WHNP (WD which) (NNS days)))) --> 
+;                                   (WHNP (WD which) (NNS days))
+;       Here the WHNP is found because (isa 'WHNP 'NP) is true.
+ (find-if 
+   #'(lambda (x) (and (listp x) (atom (car x)) (isa (car x) phrase-type)))
+   phrase-list)); end of find-type
+
+         
+(defpred ![place-pp] x ; place PPs that become (adv-e ...) as adverbials;
+         ; We crudely classify a PP that is not a verb complement as PP[place]
+         ; based on the preposition used, and excluding time-PPs, and ones
+         ; with NP objects whose head noun is listed in *n-place* (which in
+         ; turn is used to assign these nouns the isa-feature N-PLACE.
+         ; ** I haven't considered PPs whose NP object involves postmodifiers,
+         ;    as in "on the shore of the Pacific ocean".
+         (and (listp x) 
+              (atom (car x)) (isa (car x) 'PP) (find (car (second x)) '(IN P-ARG))
+              (not (![time-pp] x))
+              (find (second (second x)) 
+                   '(above along alongside at before behind below beside by
+                     in in-front-of in_front_of inside near next-to next_to
+                     next-to on on_board on-board onboard outside over 
+                     to_the_left_of to-the-left-of to_the_right_of 
+                     to-the-right-of throughout under underneath upon within))
+              ; find the main (final) NN of the NP object, and rule out
+              ; that it's an abstract noun (use 'attribute-noun' in "isa.lisp"
+              ; and whatever else can readily be ruled out)
+              (let* ((np (find-type 'np x)) 
+                     (nn{p} (find-type 'NN/NNP (reverse NP))) pos+noun noun)
+                    (and 
+                      ; rule out determiner-less NP that's not a proper noun:
+                      (not (and (null (find-type 'DT np)) (isa (car nn{p}) 'NN)))
+                      ; find the last (NN/NNS/NNP/NNPS noun) of nn{p} (which
+                      ; may be nn{p} itself or the final expression in, e.g.,
+                      ;   (NN (NNS people) (NN person))
+                      (setq pos+noun (if (atom (second nn{p})) nn{p}; simple noun
+                                         (find-type 'nn/nnp (reverse nn{p}))))
+                                        ; last NN/NNP in nn{p} (skip over postmod)
+                      (setq noun (second pos+noun))
+                      (or (isa noun 'N-PLACE); fast treatment of singulars,
+                                            ; and plurals like "boonies"
+                          (isa (stem pos+noun) 'N-PLACE)))); then try the stem 
+ )); end of ![place-pp]
+
+(defpred ![time/place-pp] x (or (![time-pp] x) (![place-pp] x)))
+; inefficient because ![place-pp] again checks for ![place-pp], but not a worry.
+
+(defpred ![non-time/place-pp] x
+    (and (listp x) (isa (car x) 'PP) (not (![time/place-pp] x))))
+
+(defpred ![pp[arg]-taking-verb] x
+    (or (atom x) (gethash x *pp[arg]-taking-verbs*)))
+
+(defpred ![non-pp-taking-verb] x ; doesn't take PP right after the verb
+   (or (atom x) (and (isa (car x) 'VB) (not (![pp[arg]-taking-verb] x))
+                     (![non-np+pp-taking-verb] x); added 3/8/22 since in
+                                                 ; passives there's no NP
+                     (not (find (stem x) '(appear be become consider deem
+                feel get keep look remain seem smell sound stay taste turn))))))
+
+(defpred ![non-np+pp-taking-verb] x
+    (and (![non-np+pred-taking-verb] x) (not (![strong-np+pp-taking-verb] x))))
+
 (defpred ![pp-or-np] x (and (listp x) (find (car x) '(PP NP))))
 (defpred ![pp-or-time-np] x (and (listp x) (or (eq (car x) 'PP) (![time-np] x))))
 (defpred !-ing x 
@@ -188,15 +394,23 @@
                        (if (< n 6) nil
                            (string-equal (subseq str (- n 3)) "ing"))))))
 
-(defpred ![v_whs] x ; example of x: (VBD knew)
+(defun atoms (expr) (and (listp expr) (not (find-if #'listp expr))))
+;``````````````````````````````````````````````````````````````````
+; check if expr is a list of atoms; intended for admissible 'stem' inputs
+
+
+(defpred ![v_whs] x ; example of x: (VBD knew); "knew when it happened"
 ;`````````````````````````
 ; Decide whether the verb (stem) subcategorizes for interpreting an
 ; immediately following when/where-clause as a nominal (rather than 
 ; adverbial); E.g., "He wondered when the tornado was arriving" (vs.,
 ; "He panicked when the tornado was arriving").
   (cond ((atom x) nil)
-        ((isa (car x) '.vb) 
-         (> (v_whs-pref! x) 0))
+        ((isa (car x) 'vb) 
+         (or (and (not (eq (car x) 'VBN)) (> (v_whs-pref! x) 0))
+             (and (eq (car x) 'VBN) (> (v_np_whs-pref! x) 0))))
+                  ; e.g., rule out "He was observed when he entered the bank"
+                  ;       but allow "It was known when he entered the bank"
         (t nil)) )
 
 (defpred ![v_np_whs] x
@@ -206,7 +420,7 @@
 ; E.g., "He told Alice when he was arriving" (vs., "He phoned Alice when
 ; he was arriving").
   (cond ((atom x) nil)
-        ((isa (car x) '.vb) 
+        ((isa (car x) 'vb) 
          (> (v_np_whs-pref! x) 0))
         (t nil)) )
  
@@ -217,7 +431,7 @@
 ; E.g., "He confided to Alice when he was arriving" (vs., "He chatted
 ; with Alice when he was arriving").
   (cond ((atom x) nil)
-        ((isa (car x) '.vb)
+        ((isa (car x) 'vb)
          (> (v_pp_whs-pref! x) 0))
         (t nil)) )
 
@@ -232,7 +446,7 @@
 
 (defpred ![big-np] x
 ;```````````````````
-  (and (listp x) (isa (car x) '.NP) (!big-expr x)))
+  (and (listp x) (isa (car x) 'NP) (!big-expr x)))
 
 
 ; DOT-ATOMS: These are also predicates, for matching particular atoms
@@ -426,6 +640,11 @@
  ;; `````````````````````````````````````````````````````````````````````````  ` ;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defpred !yes-no-x~ x
+; Is x one of {yes, yeah, yep, uh-huh, no, nope} with an .x tag & word index?
+ (and (symbolp x)
+      (let ((sym (recover-unindexed-atom x)))
+           (find sym '(YES.X YEAH.X YEP.X UH-HUH.X NO.X NOPE.X)))))
 
 (defpred !coord~ x  ; briefly tested May 17/21
 ;`````````````````

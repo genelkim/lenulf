@@ -33,11 +33,18 @@
 ;; ; because in this case BLLIP makes the initial "lazy" an NP.
 ;;    '((= !pred~) 2))
 
-(defrule2 *remove-repeated-coord*
-; E.g., in "He is lazy and a fool and a thief" we remove extra "and";
-; It's assumed that if there are *different* coordinators, they will
-; be at different structural levels
-   '((+expr !coord~ *expr !coord~ +expr) (1 2 3 5)))
+;; ** SINCE I DECIDED TO LEAVE COORDINATORS IN THEIR USUAL 2ND-LAST PLACE,
+;; I'LL ALSO LEAVE MULTIPLE COORDINATORS IN PLACE FOR NOW, COMMENTING THIS OUT:
+; (defrule2 *remove-repeated-coord*
+; ; E.g., in "He is lazy and a fool and a thief" we remove extra "and";
+; ; It's assumed that if there are *different* coordinators, they will
+; ; be at different structural levels
+;    '((+expr !coord~ *expr !coord~ +expr) (1 2 3 5)))
+
+(defrule2 *repair-type-tag-of-yes-no*
+; "Yes", "yeah", "yes", "no", "nope" should get type tag .yn instead of .x;
+; But we need to detach & the reattach the word index
+   '((*expr !yes-no-x~ *expr) (1 (change-x-to-yn! '2) 3)))
 
 ; ** I considered writing *flatten-nested-ands*, for cases like ternary 
 ; conjunctions of form (-- and (-- and --)), but this can't safely be done

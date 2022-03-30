@@ -1,0 +1,81 @@
+
+THINGS TO BE AWARE OF IN USING BROWN-DERIVED ULFs FOR PARSER TRAINING
+(Please let me know if you'd like me to do something about some of them):
+
+NB:  I ADVISE USING FOR PARSER TRAINING ANY SENTENCES THAT
+     - contain more than 30 words;
+     - contain more than two occurrences of phrase types suffixed with
+       "-1", "-2", ..., e.g., PP-1, PP-2, ..., PP-5; these are likely
+       to involve rightmost phrases filling earlier gaps, as in
+       "the Methodist chapel committee has authorized the demolition _
+        or, more often, the sale _ of 764 chapels" 
+   
+     More filtering may be necessary to optimize training, as there
+     may be Brown corpus files with "weird stuff" compared to our
+     manually created training/testing corpora.
+
+- "yesterday", "today" "next year", "last night", etc. are currently parsed as
+   (ADV-E ({DURING}.P (K YESTERDAY.N~4))), etc., rather than
+    yesterday.adv-e, etc. (which won't work for "last night", or
+    "the day before", etc.)
+
+- We're not dealing with things like "five years after the war",
+  "shortly after the war" in the guidelines -- this requires forming
+  a PP premodifier -- adv-a?? mod-pp??
+
+- I've kept 'and' in its surface position for conjunctions of size > 2
+  (ULF postprocessing to change to infix form is tricky; it could be
+  done in phrase structure preprocessing, if desired)
+
+- I've used ambiguous tense operator 'FIN' for auxiliaries like 'would',
+  which can be PAST, PRES, and CF.
+
+- In retrospect, the decision in the guidelines to treat modal "have to"
+  as (have.v (Ka ...)) seems unfortunate; the motivation was that unlike
+  other modals this can occur after another modal, as in "I will have to
+  do it after all". But it's so close to "ought to" in meaning, it would
+  be clearer as (have_to.aux-v ...). It also seems to have an S-level
+  reading, as in "It surely has to rain soon." But I haven't acted on this...
+
+- There's an odd little group of verbs where the infinitive denotes some 
+  sort of emotion-evoking perception or thought. The infinitive seems part 
+  of a tacit ADVP (but not a purpose-ADVP):
+     {awake blanch blush exult shudder tremble}
+  E.g.,  "He awoke to see a stranger stand by the tent"
+     (This seems to mean something like, "He awoke and thereupon saw ...")
+  E.g., "He blanched to see her so emaciated"
+     (This seems to mean something like "He blanched at seeing her ...",
+     and that also applies to the remaining verbs)
+  Currently, these probably come out as purpose adverbials, i.e., in the form
+  (adv-a ({for}.p (to ...)))
+
+  Another odd type of infinitive adverbial is exemplified by "He retook the 
+  exam, only to fail again" (perhaps meaning "with result ..."?). Again
+  the current rules don't try to do justice to these uses.
+
+- Adjective gaps in comparatives are coded as *adj, not *h; e.g., 
+  "would have been sadder than it was" ==>
+  ((FIN WOULD.AUX~27)
+    (HAVE.AUX~28
+     ((PERF BE.V~29)
+      (SADDER.A~30 (THAN.PS~31 (IT.PRO~32 ((PAST BE.V~33) *ADJ)))))))
+
+- Predeterminers are not addressed in the annotation guide, and Brown
+  parses just do this:  (NP (PDT ALL) (DT THE) (NNS ...)), so the resulting
+  ULF also comes out as (ALL.D THE.D (PLUR ...)). Ideally, we'd have a
+  partitive structure here (all.d ((plur {member}.n) (of.p (the.d (plur ...)))))
+
+- Speaking of PP[of], the ULFs produced here do not form hyphenated nominals
+  like (part-of.n (the.d ...)), but rather (part.n (of.p (the.d ...)))
+
+- The code may sometimes insert gaps where there aren't any -- I've fixed
+  some of these cases (e.g., in relative clauses where the relative pronoun 
+  is the subject) but probably not all.
+
+- "as if" is rendered in Brown as (PP (IN AS) (SBAR (IN IF) (S ...))); I've
+  changed what I got originally for some such cases, viz., (AS.P (IF.PS <WFF>)),
+  to obtain (AS_IF.PS <WFF>), becaue "as if" feels like a single operator,
+  taking a finite or subjunctive complement and forming a PP predicate that 
+  can also function as an adverbial: "It seems as if the sky is/were falling";
+  vs., "He walks as if he were drunk".
+  

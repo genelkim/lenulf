@@ -102,7 +102,13 @@
                          ; the pipes are missing, we add 'name
                (if (equal (string-upcase stem-str) stem-str) 'name nil))
              ((JJ JJR JJS) 'a)
-             (IN 'p); may become 'ps'
+             (MOD-N 'mod-n); strictly attributive adjectives
+             (MOD-A 'mod-a); adverb premodifying an adjective
+             ((RB RBR RBS) 'adv); should become 'adv-a', 'adv-s', 'adv-e'
+                                ; (.RB is changed to 'mod-a' before adj)
+             (IN 'p); may become 'p-arg' or 'ps'
+             (P-ARG 'p-arg)
+             (ADV-S 'adv-s)
              (PS 'ps); some preproc'g rules (e.g., "with[out]") change IN/WRB to PS 
              (PQ 'pq); e.g., "WHEN did it rain?"
              ((DT CD) 'd); may be changed to 'a'
@@ -113,9 +119,8 @@
              (PDT 'd) ; might be re-formulated, e.g., "half"-> "one half of" [a pie]
              (POS nil); temporary -- possessive 's is left as such (later rephrased 
                       ; in terms of "the N poss-by ...")
-             ((PRP PRP$) 'pro)
-             ((RB RBR RBS) 'adv); should become 'adv-a', 'adv-s', 'adv-e',
-                                ; 'mod-a', 'mod-n'
+             (PRP 'pro)
+             (PRP$ 'd)
              ((PRT RP) 'prt); same, i.e., particle?? To be attached to verb
              (SYM 'c); to be modified to pipes, perhaps
              (UH 'x) ; However, filler sounds like "er" are deleted from ULF,

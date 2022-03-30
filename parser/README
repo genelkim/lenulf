@@ -1,4 +1,16 @@
-Version 3 of the English-to-ULF parser, and new version of TT; Aug 20/21
+Version 4 of the English-to-ULF parser (Jan 31/22), and TT version of Aug 20/21
+
+Updated Mar 1/22
+=================================================================
+Jan 31/22
+
+The list of files being loaded by "init.lisp" has not changed.
+But there have been numerous changes (not logged, alas) in rules 
+(e.g., in "preprocessing-rules.lisp" and "isa.lisp") and in various 
+types of lexical information (e.g., in "transitivity-lists.lisp",
+and "subcat-pref.lisp")
+
+SEE ALSO "README-SUPPLEMENT-FOR-BROWN-CORPUS", & "REVISION-LOG".
 =================================================================
 
 The main ULF-derivation programs are in "parse-tree-to-ulf.lisp"
@@ -75,4 +87,65 @@ still "get at" any arbitrarily deeply nested part of a match (via the above
 indices) and use these parts (expressions or expression sequences) any
 way we want in the reassembly templates.
 
+            -=-=-=-=-=-=-=-=-=-=-==-=-=-
+
+KNOWN ISSUES
+````````````
+
+- We don't have a specific way of annotating pre-PP adverbs, e.g.,
+  "deeply in debt", "forty-five feet under the ice"; possibly use
+   deeply.mod-p     (mod-p (forty-five.a (plur food))
+
+- There's no attempt to disambiguate modal auxiliaries into .AUX-V, AUX-S;
+  they're just left as AUX;
+
+- Also there's no attempt to disambiguate .ADV to .ADV-E (now), .ADV-S 
+  (maybe), .ADV-A (quickly), .ADV-F (frequently), although combinations 
+  like "rather quickly" becomes (ADV-A ((rather.mod-a) quick.a))
+
+- We don't have a good way to handle participial VP[-ing] or VP[pasv]
+  adjuncts; e.g., consider the two VP[-ing] adjuncts in
+   "Reaching the summit, he removed his backpack, setting it on a boulder."
+  Currently the code wraps (Ka ...) around such adjuncts. But actually
+  the first VP[-ing] seems to have an implicit temporal 'upon.p' operating
+  on it, while the second has an implicit 'thereafter.p' -- or one might
+  view this conjunctively, i.e., "and then he set it on a boulder".
+  Depending on aspectual category, the implict preposition could also
+  be "while"; e.g., in "Standing in the doorway, he smiled at her."
+  A VP[pasv] example would be "Continually harrassed by the boss, he
+  decided to quit." Maybe that's elliptic for "having been continually
+  harrassed by the boss", which would again make it VP[-ing]. More
+  thought required!
+
+- Comparatives of every kind (more ... than, as ... as, etc.) are handled
+  poorly at this time; this will require expansion of the annotation guide;
+
+- No proper handling of postfixed "all", e.g., "We all agree to pass them all")
+  It seems we want the equivalent of "All of us agree to pass all of them"
+
+- Sometimes coordinated items are simple listed separated by commas,
+  e.g., part of a Brown sentence:
+     "We owe our loyalty as legislators to our community, our district,
+      our state."
+  In such a case we could replace the last comma by 'and', and delete
+  the others, but currently the commas are just left in place.
+
+- Gap-denoting *h doesn't always end up in the right place.
+
+- The ADV-E / ADV-A insertion can be faulty (not wanted or wrong choice)
+
+- The .P vs .P-ARG distinction isn't always gotten right
+
+- noun premodification by nouns and NNPs is just left w/o type-shifters,
+  e.g., "The impressive New York skyline" might come out as
+  (THE.D~3 (MOD-N IMPRESSIVE.A~4) |New| |York| SKYLINE.N);
+  though sometimes noun-noun premod comes out as ((mod-n <N1> <N2>).
+
+- There's no attempt yet to handle "set-of", as in "He brought along
+  a bag of food and drinks"
+
+- Nothing has been done about predeterminers, as in "all its components"
+  which in Brown is (NP (DT all) (PRP$ its) (NNS components) ), so, two
+  determiners in a row ---  (ALL.D ITS.D (PLUR COMPONENT.N))
+                              
 
