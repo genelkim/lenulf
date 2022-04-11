@@ -169,6 +169,8 @@
          (and (atoms x) (not (gethash (stem x) *pred-taking-verbs*))))
 (defpred ![non-inf-taking-verb] x   ; for forming a post-v ADVP from infinitive
          (and (atoms x) (not (gethash (stem x) *inf-taking-verbs*))))
+(defpred ![non-inf-taking-noun] x   ; for forming a post-v ADVP from infinitive
+         (and (atoms x) (isa (car x) 'NN) (not (gethash (stem x) *inf-taking-nouns*))))
 (defpred ![non-np+inf-taking-verb] x  ; for forming a post-v+np ADVP from inf
          (and (atoms x) (not (gethash (stem x) *np+inf-taking-verbs*))))
 (defpred ![strong-np+pp-taking-verb] x
