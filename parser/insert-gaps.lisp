@@ -511,7 +511,7 @@
             ; intended to allow for coordination, as in "Who did you approach,
             ; greet, and talk to?"
             ((ok (setq ma (match '(VP (.VB !atom) +[punc-or-coord] 
-                                    *non-np (.VB !atom) *non-np) tree)))
+                                    *[non-np] (.VB !atom) *[non-np]) tree)))
              (fill-template '(VP 2 (:xp (v_np-contextual-pref! '2)) 3 4 5
                                (:xp (v_np-contextual-pref! '5)) 6) ma))
 
