@@ -8,6 +8,21 @@
   (in-intern (inx x :standardize-ulf)
     (standardize-ulf::possible-relative-clause? x)))
 
+(defun fix-comparatives (inx)
+  (inout-intern (inx x :standardize-ulf :callpkg :standardize-ulf/tests)
+    (standardize-ulf::fix-comparatives x)))
+
+;; Tests that check the fix-comparatives function on
+;; standardize-ulf.lisp
+(define-test fix-comparatives-correction
+  (:tag :fix-comparatives)
+  (assert-equal
+    (fix-comparatives '(a.d (n+preds (cuter.a kitten.n) (than.p |Anne|))))  
+		      '(A.D (REP ((CUTER.A *P) KITTEN.N) (THAN.P |Anne|))))
+  (assert-equal
+    (fix-comparatives '(a.d (n+preds (fatter.a politician.n) (than.p |Bill|))))  
+		      '(A.D (REP ((FATTER.A *P) POLITICIAN.N) (THAN.P |Bill|)))))
+
 ;; Tests that check the possible-relative-clause? function on
 ;; standardize-ulf.lisp
 
@@ -76,9 +91,9 @@
 
   )
 
-(define-test relational-bad-n+preds
-  ..)
+;;(define-test relational-bad-n+preds
+;;  ..)
 
-(defune-test relational-bad-plur
-  ..)
+;;(defune-test relational-bad-plur
+;;  ..)
 

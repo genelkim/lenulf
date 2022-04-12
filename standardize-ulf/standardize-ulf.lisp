@@ -284,6 +284,70 @@
       simple-res
       complex-res)))
 
+(defparameter *setup-complete* nil)
+(defun setup-pattern-en-env (pyfn)
+  "Sets up the python environment for pattern.en calls. 'pyfn' is the function
+  for interfacing with the Python environment (python-over-socket or
+  pyhton-over-py4cl)."
+  (funcall pyfn "from pattern.en import *" 'ulf2english::exec)
+  ;; For some reason these aren't defined in pattern.en
+  (funcall pyfn "IMPERFECTIVE='imperfective'" 'ulf2english::exec)
+  (funcall pyfn "PERFECTIVE='perfective'" 'ulf2english::exec)
+  (funcall pyfn "from nltk.stem import WordNetLemmatizer" 'ulf2english::exec)
+  (funcall pyfn "wnl = WordNetLemmatizer()" 'ulf2english::exec)
+  (setq *setup-complete* t))
+
+;; Function that checks if the adjective given
+;; ends in er.a (comparative form)
+;; Note: Does not account for all comparative adjectives
+;; yet.
+;; Important Note: We are considering using the following
+;; package to detect adjectives that end in -er but are
+;; not in the comparative form
+;; https://stackoverflow.com/questions/22999273/python-nltk-lemmatization-of-the-word-further-with-wordnet
+(defun is-comp-adj? (adj)
+  ;;(if (atom adj) 
+  ;;    (let* ((initial-str (string adj)) 
+  ;;           (length-str (length initial-str))
+  ;;           (sub-str (subseq initial-str (- length-str 4) length-str)))
+  ;;           (if (and (> length-str 4) (string-equal sub-str "er.a")) 
+  ;;               t nil)) nil)
+  (when (not *setup-complete*)
+   	(setup-pattern-en-env #'ulf2english::python-over-py4cl))
+
+  (let* ( (changed-wrd
+            (python-eval
+                (let ((*package* (find-package :standardize-ulf)))
+                (format nil "str(comparative(wnl.lemmatize(~s, \"a\")))" 
+			(string-downcase (string (split-by-suffix adj)))))))
+           (wrd (string (split-by-suffix adj))))
+        (if (string-equal changed-wrd wrd)
+            t nil)
+        )         
+)
+
+;; Function that changes the form of the comparatives
+;; From: (<det> (n+preds (<comparative adjective> <noun>)
+;;                       (than.p <term>)))
+;; To: (<det> (rep ((<comparative adjective> *p) <noun>)
+;;                 (than.p <term>)))
+(defun fix-comparatives! (ulf)
+    (let ((det (first ulf))
+          (comp-adj (first (second (second ulf))))
+          (noun (second (second (second ulf))))
+          (n+preds (first (second ulf)))
+          (than+term (third (second ulf)))
+          (term (second (third (second ulf)))))
+          (if (and (det? det) (equal n+preds 'n+preds)
+                   (is-comp-adj? comp-adj) (noun? noun)
+                   (equal (first than+term) 'than.p) 
+                   (term? term))
+            (list det (list 'rep (list (list comp-adj '*p) noun) than+term))
+            ulf
+            )
+     )
+)
+
 ;; Only checks for cases without modifiers around the sentence.
 (defun possible-simple-relative-clause? (ulf)
   (ttt::match-expr '(! (possible-relativizer? _+)
@@ -799,14 +863,19 @@
     ;; Basic it-extraposition.
     '(/ (it.pro ((lex-tense? be.v) adj? term?))
         (it-extra.pro (((lex-tense? be.v) adj?) term?)))
+
+    ;; Fix comparatives form
+    '(/ (! (det? (n+preds (is-comp-adj? noun?) (than.p term?))))
+	(fix-comparatives! !))
+
     ))
 
 (defun standardize-ulf (inulf &key pkg)
   "Fixes the parsed ULF with domain-specific fixes which may not generalize
   outside of this package. Assumes the token-indexing has already been
   removed."
-  (when (not ulf2english::*setup-complete*)
-    (ulf2english::setup-pattern-en-env #'ulf2english::python-over-py4cl))
+  (when (not *setup-complete*)
+    (setup-pattern-en-env #'ulf2english::python-over-py4cl))
 
   (inout-intern (inulf ulf :standardize-ulf :callpkg pkg)
     ;; TODO: make max-n a multiplicative factor of the ulf size
