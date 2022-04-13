@@ -257,10 +257,10 @@
      (and (listp x) (find (second x) '(\, \; - -- \( { [ and or & but nor))))
 (defpred ![quote] x (and (listp x) (find (car x) '(|``| |''|)))); no others occur?
 (defpred ![a{n}] x (and (listp x) (member (car x) '(a an))))
-(defpred ![det-sing-alone] x (and (listp x) (find (second x) '(this that))))
+(defpred ![det-sing-alone] x (and (listp x) (find (second x) '(this that some))))
          ; these can occur without a head noun
 (defpred ![det-plur-alone] x (and (listp x) (find (second x) 
-         '(these those all many most few)))); can occur without a head noun
+         '(these those all many most few some any)))); can occur w/o a head noun
 (defpred ![non-det] x (or (atom x) (not (member (car x) '(DT PRP$)))))
 (defpred ![time-np] x ; ones like "today", "next week", used w/o a preposition
                       (and (listp x) (eq (car x) 'NP) (listp (second x))
@@ -360,13 +360,29 @@
                       ; may be nn{p} itself or the final expression in, e.g.,
                       ;   (NN (NNS people) (NN person))
                       (setq pos+noun (if (atom (second nn{p})) nn{p}; simple noun
-                                         (find-type 'nn/nnp (reverse nn{p}))))
+                                         (final-nn+noun nn{p})))
                                         ; last NN/NNP in nn{p} (skip over postmod)
                       (setq noun (second pos+noun))
                       (or (isa noun 'N-PLACE); fast treatment of singulars,
                                             ; and plurals like "boonies"
                           (isa (stem pos+noun) 'N-PLACE)))); then try the stem 
  )); end of ![place-pp]
+
+(defun final-nn+noun (phrase); Apr 12/22
+;````````````````````````````
+; find the final constituent of form (NN|NNS|NNP|NNPS <noun>) in phrase,
+; if any (o/w nil). After writing this I found I'd written a very similar
+; function 'find-pp-head-nn' (see "tt.lisp") for finding the head NN of
+; PP -- and that's what I use in ![time-pp]. It uses a loop rather than
+; recursion. Oh well...
+;
+ (if (or (atom phrase) (null (cdr phrase))) (return-from final-nn+noun nil))
+ (let (([nn] (find-type 'nn/nnp (reverse phrase))))
+      (if (null [nn]) nil
+          (if (atoms [nn]) [nn]
+              (final-nn+noun [nn])))
+ )); end of final-nn+noun
+   
 
 (defpred ![time/place-pp] x (or (![time-pp] x) (![place-pp] x)))
 ; inefficient because ![place-pp] again checks for ![place-pp], but not a worry.
@@ -386,6 +402,9 @@
 
 (defpred ![non-np+pp-taking-verb] x
     (and (![non-np+pred-taking-verb] x) (not (![strong-np+pp-taking-verb] x))))
+
+(defpred ![non-inf-taking-noun] x
+    (and (atoms x) (isa (car x) 'NN) (not (gethash (stem x) *inf-taking-nouns*))))
 
 (defpred ![pp-or-np] x (and (listp x) (find (car x) '(PP NP))))
 (defpred ![pp-or-time-np] x (and (listp x) (or (eq (car x) 'PP) (![time-np] x))))
