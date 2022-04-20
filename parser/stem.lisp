@@ -187,6 +187,8 @@
                        (walruses 'WALRUS)
                        (thymuses 'THYMUS)
                        (baculoviruses 'BACULOVIRUS)
+                       (blitzes 'blitz)
+                       (klutzes 'klutz)
                        (phalluses 'PHALLUS)
                        (corpuses 'CORPUS)
                        (hippopotamuses 'HIPPOPOTAMUS)
