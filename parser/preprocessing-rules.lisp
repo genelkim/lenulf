@@ -129,12 +129,18 @@
      (1 2 (NP (-SYMB- np+preds) 3 (NP (-SYMB- =) 5)) 7)))
 
 ; Apart from these two deletion types, it's hard to deal systematically
-; with brackets, and we'll just enclose single items in brackets, and
-; "package" multiple bracket contents, and enclose them. 
+; with brackets, and we'll just enclose single *nonlexical* items in 
+; brackets, and "package" multiple bracket contents, and enclose them. 
+; For bracketed lexical items, like "...(been)...", parsed as 
+; (... (-LRB- -LRB-) (VBN BEEN) (-RRB- -RRB-) ...), we don't want
+; to end up with (... (VBN (-SYMB- |(|) (VBN BEEN) (-SYMB- |)|)) ...)
+; because lexical items with multiple constituents (and especially
+; list-structured constituents) are unacceptable. Further down below,
+; we delete brackets in such cases.
 ;
-(defrule *package-and-enclose-single-bracketed-phrases*
+(defrule *package-and-enclose-single-nonlexical-bracketed-phrases*
 ; E.g., "Bob (Alice's spouse) ..."
-   '((!atom *expr (-LRB- -LRB-) (!atom *expr) (-RRB- -RRB-) *expr)
+   '((!atom *expr (-LRB- -LRB-) (!atom !list *expr) (-RRB- -RRB-) *expr)
      (1 2 (4.1 (-SYMB- \() 4 (-SYMB- \))) 6)))
 ;
 (defrule *package-and-enclose-multiple-bracketed-phrases*

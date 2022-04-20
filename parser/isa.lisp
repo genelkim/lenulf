@@ -228,7 +228,7 @@
        night midnight day week-day holiday week month year decade century 
        millenium eon aeon January February March April May June July August 
        September October November December Christmas spring summer fall winter
-       dusk dawn start beginning interim moment instant intermission pause
+       dusk dawn start beginning interim moment instant intermission pause 
        |January| |February| |March| |April| |May| |June| |July| |August| 
        |September| |October| |November| |December| |Christmas|
        | January| | February| | March| | April| | May| | June| | July| | August| 

@@ -2,6 +2,31 @@
 IN REVERSE CHRONOLOGICAL ORDER  (since July 2021)
 
 ################################################################################
+Apr 14/22
+
+In "preprocessing-rules.lisp", *package-and-enclose-single-bracketed-phrases*
+was edited & renamed *package-and-enclose-single-nonlexical-bracketed-phrases*
+so that brackets around sungle lexical items, as in "...(been)..." won't
+be retained.
+================================================================
+Apr 13/22
+
+Stemming of "blitzes", "klutzes" corrected to give "blitz", "klutz"
+(w/o final "e")
+================================================================
+Apr 12/22
+
+I fixed the error that gave "is not a string designator" messages. 
+The culprit was ![place-pp] in "tt-match-predicates.lisp" .
+(I repaired the pred, adding a helper function)
+=================================================================
+Apr 8/22: slight modification to ![det-sing-standalone] and 
+![det-plur-standalone] to allow for standalone NP "some", as in
+"I made some" {coffee}, or "I see some" {stars}.
+================================================================
+Mar 30/22: Missing ![non-inf-taking-noun] definition inserted in 
+"tt-match-predicates.lisp".
+=================================================================
 Last revisions Mar 12/22 -- many fixes, including ones for KA, ADV- etc.
 
 For some known "issues", see README
