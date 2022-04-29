@@ -45,7 +45,18 @@
 ;
  (prog ((tag (first pos-word)) (word (second pos-word)) backword result
         str upstr mixed-case)
-       
+
+       ; Symbolify some symbol-like expressions to avoid errors when calling
+       ; the #'string function.
+       (cond
+         ; Put bars around quoted expressions.
+         ((and (listp word)
+               (eql 'quote (first word)))
+          (setf word (read-from-string (format nil "|~s|" word))))
+         ; Put bars around numbers.
+         ((numberp word)
+          (setf word (read-from-string (format nil "|~s|" word)))))
+
        ; No multiwords expected for deriving ULFs from Treebank parses, but ...
        ; handle multi-words as a special case, with recursion to find the stem:
        (when (cddr pos-word)

@@ -30,7 +30,8 @@
       (if (and (listp tree) (listp (car tree)) (null (cdr tree)))
           (setq tree1 (car tree))); drop extra global brackets
       (if (and (listp tree1) (>= (length tree1) 2)
-               (listp (second tree1)) (find (car (second tree1)) '(\. \:)))
+               (listp (second tree1)) (find (car (second tree1)) '(\. \:))
+               (listp (first tree1)))
           ; e.g., change ((S ...) (\. \.)) to (S (S ...) (\. \.))
           ; for uniform atomic initial list elements
           (setq tree1 (cons (caar tree1) tree1)))
