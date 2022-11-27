@@ -960,7 +960,6 @@
        (intern (coerce (reverse result) 'string))
  )); end of change-x-to-yn!
                     
-
 (defun merge-brackets-with-atoms (names)
 ;```````````````````````````````````````
 ; This if for cases where we're forming a single name from a list of

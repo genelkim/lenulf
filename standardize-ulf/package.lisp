@@ -8,4 +8,4 @@
   (:shadow :insert)
   (:shadowing-import-from :gute #:compose)
   (:shadowing-import-from :cl-strings #:join)
-  (:export :standardize-ulf))
+  (:export :standardize-ulf :standardize-brown-ulf))

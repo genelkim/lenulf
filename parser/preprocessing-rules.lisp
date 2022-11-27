@@ -2166,6 +2166,14 @@
 ; e.g., "the Celts" should come out as (the.d (plur | Celt|.n))
    '((NP (.DT !atom) *expr (NNPS +expr)) (NP 2 3 (NNS 4.2))))
 
+(defrule *change-final-nnp-to-nn-after-initial-dt*
+; e.g., "the Examiner" should come out as (the.d | Examiner|.n)
+   '((NP (.DT !atom) *expr (NNP +expr)) (NP 2 3 (NN 4.2))))
+
+(defrule *change-final-nnps-to-nns-after-initial-dt*
+; e.g., "the Celts" should come out as (the.d (plur | Celt|.n))
+   '((NP (.DT !atom) *expr (NNPS +expr)) (NP 2 3 (NNS 4.2))))
+
 (defrule *change-nnp-to-nn-before-pp-of*
 ; e.g., "Speaker of the House" -- "Speaker" is a name-like *noun* here
 ; But "Stratford on Avon" leaves "Stratford" as a name.

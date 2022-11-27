@@ -3,7 +3,7 @@
 
 (asdf:defsystem :lenulf
   :name "lenulf"
-  :version "0.4.3"
+  :version "0.4.4"
   :author "Lenhart K. Schubert, packaged by Gene Louis Kim"
   :components ((:file "package")
                (:file "gene-util")

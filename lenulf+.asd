@@ -2,7 +2,7 @@
 
 (asdf:defsystem :lenulf+
   :name "lenulf"
-  :version "0.4.3"
+  :version "0.4.4"
   :author "Lenhart K. Schubert, packaged and extened by Gene Louis Kim"
   :depends-on (:py4cl :ptb2cf)
   :components ((:file "package")
