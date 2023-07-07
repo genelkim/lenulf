@@ -6,6 +6,10 @@
 
 (in-package :standardize-ulf)
 
+(defun protected-python-eval (expression)
+	(handler-case (py4cl:python-eval expression)
+		(py4cl:python-error () (py4cl:python-eval expression))))
+
 (defun cdrassoc (x y) (cdr (assoc x y)))
 
 (defun remove-token-index (idxsym &key (delim #\~))
@@ -60,7 +64,7 @@
   (labels
     ((get-tense (wrd)
        (let* (;; Returns a list of lists where the inner list is the full conjugation info.
-              (tenses (python-eval
+              (tenses (protected-python-eval
                         (let ((*package* (find-package :standardize-ulf)))
                           (format nil "list(tenses(\"~s\"))" wrd))))
               ;; Pull out tenses, first element, and count.
@@ -86,7 +90,7 @@
            (t
             (let ((*package* (find-package :standardize-ulf)))
               (read-from-string
-                (python-eval
+                (protected-python-eval
                   (format nil "str(lemma(\"~s\"))" wrd)))))))
        ;; Tense
        (ulf-tense (if (atom aux) (get-tense wrd) (first aux)))
@@ -107,7 +111,7 @@
     lead.v -> leading.v"
   (multiple-value-bind (wrd suffix) (split-by-suffix ulf-atom)
     (let ((conjugated
-            (python-eval
+            (protected-python-eval
               (let ((*package* (find-package :standardize-ulf)))
                 (format nil "str(conjugate(\"~s\", aspect=PROGRESSIVE))" wrd)))))
       (add-suffix (intern (string-upcase conjugated) :standardize-ulf) suffix))))
